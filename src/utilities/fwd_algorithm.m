@@ -23,6 +23,6 @@ function [fwd_probs, logL_seq, logL_tot] = fwd_algorithm(seq_cell, A_curr, v_cur
         end
         fwd_probs{s} = fwd_array;
         logL_seq(s) = logsumexp(fwd_array(:,end),1);        
-    end
-    logL_tot = logsumexp(logL_seq,1);
+    end    
+    logL_tot = sum(logL_seq);
 end

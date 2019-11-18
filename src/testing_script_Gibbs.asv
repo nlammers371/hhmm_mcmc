@@ -65,7 +65,7 @@ tic
         particle_mcmc_fwd(n_particles,emissions_cell,A_curr,v_curr,pi0_curr);    
 toc
 
-bkd_probs_pt = particle_mcmc_bkd(n_particles,emissions_cell, A_curr, v_curr, pi0_curr);
+[pi_cell] = particle_mcmc_bkd(n_particles,emissions_cell, A_curr, v_curr, pi0_curr)
 % calculate initial likelihood    
 tic
 [fwd_probs, logL_seq, logL_tot] = fwd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);

@@ -1,4 +1,4 @@
-function [v_cts_out, v_wts_out, A_count, pi_cell,prob_cell] = particle_mcmc_bkd(n_particles,...
+function [v_cts_out, v_wts_out, A_count, pi_cell] = particle_mcmc(n_particles,...
     emissions_cell, A_curr, v_curr, pi0_curr)
 
 K = size(A_curr,1);
@@ -27,7 +27,7 @@ for e = 1:numel(emissions_cell)
     rs_indices = randsample(index_vec,numel(index_vec),true,emit_probs);
     pt_array(:,1) = init_prop_vec(rs_indices);
     % store probabilities
-    prob_array(:,1) = emit_probs(rs_indices).*pi0_curr(pt_array(:,1))';
+    prob_array(:,1) = m    
     A_tracker = zeros(K,K);
     %%%% iteration through time points
     for n = 2:T
@@ -40,25 +40,25 @@ for e = 1:numel(emissions_cell)
         end
         % resample
         emit_probs = poisspdf(init_vec(n-1),v_curr(state_vec_prop));
-        rs_indices = randsample(index_vec,numel(index_vec),true,emit_probs);        
+        rs_indices = randsample(index_vec,numel(index_vec),true,emit_probs);
         % track transitions
         rs_from = pt_array(rs_indices,n-1);
         rs_to = state_vec_prop(rs_indices)';   
         for i = 1:n_particles
             A_tracker(rs_to(i),rs_from(i)) = A_tracker(rs_to(i),rs_from(i)) + 1;
-            % store probabilities
-            prob_array(i,n) = A_curr(rs_to(i),rs_from(i))*emit_probs(rs_indices(i));
         end        
         pt_array(:,n) = rs_to;
-    end     
+    end
+    % calculate sequence likelihood
+    emit_probs = poisspdf(repelem(init_vec,K),repmat(v_curr',1,T));
+    seq_log_probs = log(sum(reshape(emit_probs,K,T)) + log(occ_array));
     % record         
     pi_array = NaN(K,size(pt_array,2));
     for k = 1:K
         pi_array(k,:) = sum(pt_array == k);
     end
     pi_array = pi_array ./ size(pt_array,1);
-    pi_cell{e} = pi_array;   
-    prob_cell{e} = prob_array;
+    pi_cell{e} = pi_array;    
     %%% now check implied "A" and "v" values for consistency
     % v first   
     for k = 1:K

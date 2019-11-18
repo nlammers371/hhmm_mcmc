@@ -1,4 +1,4 @@
-function [v_cts_out, v_wts_out, A_count, pi_cell,prob_cell] = particle_mcmc_bkd(n_particles,...
+function [pi_cell,logL_seq,logL_tot] = particle_mcmc_fwd(n_particles,...
     emissions_cell, A_curr, v_curr, pi0_curr)
 
 K = size(A_curr,1);
@@ -6,7 +6,7 @@ A_tracker_array = NaN(K,K,numel(emissions_cell));
 v_cts = NaN(K,1,numel(emissions_cell));
 v_wts = NaN(K,1,numel(emissions_cell));
 pi_cell = cell(1,numel(emissions_cell));
-logL_cell = cell(1,numel(emissions_cell));
+logL_seq = NaN(1,numel(emissions_cell));
 for e = 1:numel(emissions_cell)     
     init_vec = emissions_cell{e};
     T = numel(init_vec);
@@ -18,14 +18,14 @@ for e = 1:numel(emissions_cell)
     index_vec = 1:n_particles;
     %%%% initial state
     % sample initial state
-    init_prop_vec = randsample(1:K,n_particles,true,pi0_curr);
-    for k = 1:K
-        occ_array(k,1) = sum(init_prop_vec==k);
-    end
+    init_prop_vec = randsample(1:K,n_particles,true,pi0_curr);    
     % resample
     emit_probs = poisspdf(init_vec(1),v_curr(init_prop_vec));
     rs_indices = randsample(index_vec,numel(index_vec),true,emit_probs);
     pt_array(:,1) = init_prop_vec(rs_indices);
+    for k = 1:K
+        occ_array(k,1) = sum(init_prop_vec==k);
+    end
     % store probabilities
     prob_array(:,1) = emit_probs(rs_indices).*pi0_curr(pt_array(:,1))';
     A_tracker = zeros(K,K);
