@@ -4,11 +4,11 @@ close all
 addpath('utilities')
 
 % define parameters
-K =2;
-R = [-.02, .04; .02 -.04];
+R = [-.02, .04, 0; .02 -.05 .08; 0 .01 -.08];
 tres = 3;
 A = expm(R*tres);
-v = [.1,2]';
+K = size(A,1);
+v = [.05,2,4]';
 seq_length = 40*60/3;
 w = 7;
 [V, D] = eig(A);
@@ -45,8 +45,8 @@ A_alpha(eye(K)==1) = A_alpha(eye(K)==1)*10; % distribution hyper params
 
 % emission rate priors. For now assume v_i's to be Poisson. Thus, the
 % conjugate prior is gamma distributed
-vp_mean = [.1, 1]; % prior on RNAP initiation rates
-theta_prior = [2 2]./(n_particles); % 1 over number of intervals observed (make this of order N counts per round)
+vp_mean = [.1, 2.1 4.2]; % prior on RNAP initiation rates
+theta_prior = [2 2 2]./(n_particles); % 1 over number of intervals observed (make this of order N counts per round)
 k_prior = vp_mean ./ theta_prior; % prior on k param
 
 
@@ -54,61 +54,46 @@ k_prior = vp_mean ./ theta_prior; % prior on k param
 % initialize variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A_curr = sample_A_dirichlet(A_alpha, zeros(K));
-v_curr = [gamrnd(k_prior(1),theta_prior(1),1) gamrnd(k_prior(2),theta_prior(2),1)];
+
+for k = 1:K
+    v_curr(k) = gamrnd(k_prior(k),theta_prior(k),1);
+end
 % calculate pi0 
 [V, D] = eig(A_curr);
 [~, mi] = max(diag(D));
 pi0_curr = V(:,mi)/sum(V(:,mi));
 % calculate forward and backward trajectories
-tic
-[fwd_probs_pt,logL_seq_pt,logL_tot_pt] = ...
+[n_init, n_steps,A_counts,logL_seq,logL_curr] = ...
         particle_mcmc_fwd(n_particles,emissions_cell,A_curr,v_curr,pi0_curr);    
-toc
 
-[pi_cell] = particle_mcmc_bkd(n_particles,emissions_cell, A_curr, v_curr, pi0_curr)
-% calculate initial likelihood    
-tic
-[fwd_probs, logL_seq, logL_tot] = fwd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);
-toc
 % record
-logL_vec(1) = logL_avg;
-A_inf_array(:,:,1) = A_curr;
+logL_vec(1) = logL_curr;
+A_inf_array(:,:,1) = A;%A_curr;
 v_inf_array(:,1) = v_curr;
-for s = 2:n_steps
+for s = 2:20%n_steps
     tic
+    % get current parameter values
     A_curr = A_inf_array(:,:,s-1);
-    v_curr = v_inf_array(:,s-1);
-    logL_curr = logL_vec(s-1);
+    v_curr = v_inf_array(:,s-1)';    
     [V, D] = eig(A_curr);
     [~, mi] = max(diag(D));
     pi0_curr = V(:,mi)/sum(V(:,mi));
-    % sequential MCMC step for sampling promoter trajectories   
-    [v_cts_out, v_wts_out, A_count, pi_cell, prob_cell] = ...
-        particle_mcmc(n_particles,emissions_cell,A_curr,v_curr,pi0_curr);                   
-    % standard MCMC move for A
-    A_prop = sample_A(A_curr,n_a);
-    [V, D] = eig(A_prop);
-    [~, mi] = max(diag(D));
-    pi0_prop = V(:,mi)/sum(V(:,mi));
-    logL_A_prop = calculate_likelihood(emissions_cell,pt_cell,v_curr);    
-    % compare likelihoods
-    take_A_move = logL_curr/logL_A_prop > rand();
-    if take_A_move
-        A_curr = A_prop;
-        pi0_curr = pi0_prop;
-        logL_curr = logL_A_prop;
-    end
-    % standard MCMC move for v
-    v_prop = sample_v(v_curr,v_sigma);
-    logL_v_prop = calculate_likelihood(emissions_cell,pt_cell,v_prop);    
-    % compare likelihoods
-    take_v_move = logL_curr/logL_v_prop > rand();
-    if take_v_move
-        v_curr = v_prop;        
-        logL_curr = logL_v_prop;
+    
+    % sequential MCMC step for sampling promoter trajectories  
+    [n_init, n_steps,A_counts,logL_seq,logL_curr] = particle_mcmc_fwd(n_particles,emissions_cell,A_curr,v_curr,pi0_curr);    
+            
+    % Draw A and v samples
+    %%% A
+    A_alpha_update = A_alpha + A_counts;
+    A_curr = sample_A_dirichlet(A_alpha_update, zeros(K));
+    %%% v
+    theta_update = 1 ./ (theta_prior.^-1 + n_steps');
+    k_update = k_prior + n_init';
+    for k = 1:K
+        v_curr(k) = gamrnd(k_update(k),theta_update(k),1);
     end    
     % record
-    A_inf_array(:,:,s) = A_curr;
+    A_inf_array(:,:,s) = A;%A_curr;
     v_inf_array(:,s) = v_curr;
     logL_vec(s) = logL_curr;
     toc

@@ -1,10 +1,10 @@
-function [pi_cell,logL_seq,logL_tot] = particle_mcmc_fwd(n_particles,...
+function [n_init, n_steps,A_counts,logL_seq,logL_tot] = particle_mcmc_fwd(n_particles,...
     emissions_cell, A_curr, v_curr, pi0_curr)
 
 K = size(A_curr,1);
-A_tracker_array = NaN(K,K,numel(emissions_cell));
-v_cts = NaN(K,1,numel(emissions_cell));
-v_wts = NaN(K,1,numel(emissions_cell));
+A_counts = zeros(K,K);
+% v_cts = NaN(K,1,numel(emissions_cell));
+% v_wts = NaN(K,1,numel(emissions_cell));
 pi_cell = cell(1,numel(emissions_cell));
 logL_seq = NaN(1,numel(emissions_cell));
 for e = 1:numel(emissions_cell)     
@@ -27,8 +27,7 @@ for e = 1:numel(emissions_cell)
         occ_array(k,1) = sum(pt_array(:,1)==k);
     end
     % store probabilities
-    prob_array(:,1) = emit_probs(rs_indices).*pi0_curr(pt_array(:,1))';
-    A_tracker = zeros(K,K);
+    prob_array(:,1) = emit_probs(rs_indices).*pi0_curr(pt_array(:,1))';    
     %%%% iteration through time points
     for n = 2:T
         % simulate transitions
@@ -48,15 +47,26 @@ for e = 1:numel(emissions_cell)
         % get occupancy
         for k = 1:K
             occ_array(k,n) = sum(pt_array(:,n)==k);
+            for l = 1:K
+                A_counts(l,k) = A_counts(l,k) + sum(rs_to==l & rs_from == k);
+            end
         end
     end     
     % record         
-    pi_array = NaN(K,size(pt_array,2));
-    for k = 1:K
-        pi_array(k,:) = sum(pt_array == k);
-    end
-    pi_array = pi_array ./ size(pt_array,1);
+    pi_array = occ_array ./ size(pt_array,1);
     pi_cell{e} = pi_array;   
     logL_seq(e) = sum(mean(log(prob_array)));           
 end
 logL_tot = sum(logL_seq);
+
+% get counts of emission events
+n_init = zeros(K,1);
+n_steps = zeros(K,1);
+for e = 1:numel(emissions_cell)     
+    init_vec = emissions_cell{e};    
+    prob_array = pi_array + 1e-6;%fwd_array.*bkd_array;
+    prob_array = pi_cell{e} ./ sum(prob_array);
+    wt_array = init_vec .* prob_array;
+    n_init = n_init + sum(wt_array,2);
+    n_steps = n_steps + sum(prob_array,2);
+end

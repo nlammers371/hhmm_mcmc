@@ -16,7 +16,7 @@ w = 7;
 pi0 = V(:,mi)/sum(V(:,mi));
 noise = 1;
 alpha = 1.4;
-n_traces = 20;
+n_traces = 10;
 
 emissions_cell = cell(1,n_traces);
 for i = 1:n_traces
@@ -28,7 +28,7 @@ end
 %% Gibbs MCMC 
 
 % basic inference params 
-n_particles = 100; % number of particles to simulate
+n_particles = 1000; % number of particles to simulate
 n_steps = 100; % number of MCMC steps (need to add convergence criteria)
 
 % initialize arrays
@@ -63,14 +63,16 @@ end
 [~, mi] = max(diag(D));
 pi0_curr = V(:,mi)/sum(V(:,mi));
 % calculate forward and backward trajectories
-[n_init, n_steps,A_counts,logL_seq,logL_curr] = ...
-        particle_mcmc_fwd(n_particles,emissions_cell,A_curr,v_curr,pi0_curr);    
+[fwd_probs, logL_seq, logL_curr] = fwd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);
+[bkd_probs] = bkd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);
 
+% [n_init, n_steps, A_counts, posterior_prob_cell] = det_event_counts(...
+%     emissions_cell, fwd_probs, bkd_probs, A_curr, v_curr);
 % record
 logL_vec(1) = logL_curr;
 A_inf_array(:,:,1) = A_curr;
 v_inf_array(:,1) = v_curr;
-for s = 2:50
+for s = 2:20
     tic
     % get current parameter values
     A_curr = A_inf_array(:,:,s-1);
@@ -80,8 +82,11 @@ for s = 2:50
     pi0_curr = V(:,mi)/sum(V(:,mi));
     
     % sequential MCMC step for sampling promoter trajectories  
-    [n_init, n_steps,A_counts,logL_seq,logL_curr] = particle_mcmc_fwd(n_particles,emissions_cell,A_curr,v_curr,pi0_curr);    
-            
+    [fwd_probs, logL_seq, logL_curr] = fwd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);
+    [bkd_probs] = bkd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);
+
+    [n_init, n_steps, A_counts, posterior_prob_cell] = det_event_counts(...
+        emissions_cell, fwd_probs, bkd_probs, A_curr, v_curr);
     % Draw A and v samples
     %%% A
     A_alpha_update = A_alpha + A_counts;
