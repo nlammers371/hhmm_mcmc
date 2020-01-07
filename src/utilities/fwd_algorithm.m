@@ -12,15 +12,16 @@ function [fwd_probs, logL_seq, logL_tot] = fwd_algorithm(seq_cell, A_curr, v_cur
     for s = 1:n_seq        
         init_seq = seq_cell{s};
         T = numel(init_seq);
+        % precalculate array of emission probabilities
+        init_probs_log = log(poisspdf(repmat(init_seq,K,1),repmat(v_curr',1,T)));
         % inistialize fwd array
-        fwd_array = NaN(K,T);
+        fwd_array = NaN(K,T);        
         % iterate
-        prev = repmat(pi0_log',K,1);
+        prev = repmat(pi0_log',K,1);                
         for t = 1:T            
-            init_probs_log = log(poisspdf(init_seq(t),v_curr))';
-            fwd_array(:,t) = logsumexp(prev + A_log,2) + init_probs_log;
+            fwd_array(:,t) = logsumexp(prev + A_log,2) + init_probs_log(:,t);
             prev = repmat(fwd_array(:,t)',K,1);
-        end
+        end       
         fwd_probs{s} = fwd_array;
         logL_seq(s) = logsumexp(fwd_array(:,end),1);        
     end    

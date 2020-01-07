@@ -11,14 +11,15 @@ function [bkd_probs] = bkd_algorithm(seq_cell, A_curr, v_curr, pi0_curr)
     for s = 1:n_seq        
         init_seq = seq_cell{s};
         T = numel(init_seq);
-        % initialize bkd array
+        % precalculate array of emission probabilities
+        init_probs_log = log(poisspdf(repmat(init_seq,K,1),repmat(v_curr',1,T)));
+        % initialize bkd array                
         bkd_array = NaN(K,T);
-        % iterate
-        post = repmat(pi0_log',K,1);
-        for t = fliplr(1:T)            
-            init_probs_log = log(poisspdf(init_seq(t),v_curr))';
-            bkd_array(:,t) = logsumexp(post + A_log,2) + init_probs_log;
-            post = repmat(bkd_array(:,t)',K,1);
+        bkd_array(:,T) = pi0_log;
+        % iterate        
+        for t = fliplr(1:T-1)                        
+            post = repmat(bkd_array(:,t+1),1,K);
+            bkd_array(:,t) = logsumexp(post + A_log + repmat(init_probs_log(:,t+1),1,K),1);            
         end
         bkd_probs{s} = bkd_array;
     end    
