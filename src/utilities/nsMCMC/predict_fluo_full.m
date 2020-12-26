@@ -2,8 +2,9 @@ function mcmcInfo = predict_fluo_full(mcmcInfo)
 
     n_traces = mcmcInfo.n_traces;    
     coeff_MS2 = mcmcInfo.coeff_MS2;
+    
     % convert to emission values
-    emissions_full = mcmcInfo.v(mcmcInfo.sample_chains);
+    emissions_full = mcmcInfo.v_curr(mcmcInfo.sample_chains);
     mcmcInfo.sample_fluo = NaN(size(mcmcInfo.sample_chains));
     
     for n = 1:n_traces

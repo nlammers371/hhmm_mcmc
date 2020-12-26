@@ -1,0 +1,12 @@
+function fluo_fragment = predict_fluo_fragment(sample_chains_slice,seq_length,...
+                                            nSteps,coeff_MS2,v,state_ref)
+                                          
+
+    postInd = min([mcmcInfo.seq_length,mcmcInfo.ind+mcmcInfo.nSteps-1]);
+    prevInd = max([1,mcmcInfo.ind-mcmcInfo.nSteps]);
+    chain_fragment = repmat(mcmcInfo.sample_chains_slice(prevInd:postInd,:),1,1,mcmcInfo.nStates);        
+    chain_fragment = vertcat(chain_fragment(1:mcmcInfo.ind-prevInd,:,:),mcmcInfo.state_ref,...
+                                  chain_fragment(ind-prevInd+1:postInd-prevInd,:,:));
+    initiation_fragment = v(chain_fragment);
+    fluo_fragment = convn(initiation_fragment,coeff_MS2,'full');        
+    fluo_fragment = fluo_fragment(ind-prevInd+1:end-nSteps+1,:,:);

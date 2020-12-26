@@ -14,24 +14,33 @@ mcmcInfo.R = [-.02, .04, 0; .02 -.05 .08; 0 .01 -.08];
 mcmcInfo.tres = 20;
 mcmcInfo.A = expm(mcmcInfo.R*mcmcInfo.tres);
 mcmcInfo.nStates = size(mcmcInfo.A,1);
-mcmcInfo.v = [.05,2,4];
+mcmcInfo.v = [.05,2,4]';
 mcmcInfo.seq_length = 60*60/mcmcInfo.tres;
+
 mcmcInfo.nSteps = 7;
 [V, D] = eig(mcmcInfo.A);
 [~, mi] = max(real(diag(D)));
 mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
 
-mcmcInfo.noise = 1;
-mcmcInfo.alpha = 1.4;
-mcmcInfo.n_traces = 10;
+mcmcInfo.sigma = .5;
+mcmcInfo.alpha = 0;
+mcmcInfo.n_traces = 1;
 mcmcInfo.eps = 1e-2;
 
+%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
+% basic inference params 
+mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 1;
+
+%%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
+mcmcInfo.state_options = 1:mcmcInfo.nStates;
+mcmcInfo.state_ref = repmat(reshape(mcmcInfo.state_options,1,1,[]),1,mcmcInfo.n_chains);
 
 mcmcInfo.masterSimStruct = struct;
 for i = 1:mcmcInfo.n_traces
     synthetic_data = synthetic_prob(mcmcInfo.seq_length, mcmcInfo.alpha, mcmcInfo.nStates, ...
-                          mcmcInfo.nSteps, mcmcInfo.A, mcmcInfo.v, mcmcInfo.noise, mcmcInfo.pi0);                                     
+                          mcmcInfo.nSteps, mcmcInfo.A, mcmcInfo.v', mcmcInfo.sigma, mcmcInfo.pi0);                                     
     
     % record full simulation info
     fieldNames = fieldnames(synthetic_data);
@@ -40,11 +49,7 @@ for i = 1:mcmcInfo.n_traces
     end
 end
 
-%% Gibbs MCMC 
-
-% basic inference params 
-mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 10;
+%%% Nonsequential MCMC
 
 % initialize arrays
 mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,1);
@@ -66,7 +71,7 @@ v_prior = mcmcInfo.v; % prior on RNAP initiation rates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo.A_curr = sample_A_dirichlet(A_alpha, zeros(mcmcInfo.nStates));
+mcmcInfo.A_curr = mcmcInfo.A;%sample_A_dirichlet(A_alpha, zeros(mcmcInfo.nStates));
 mcmcInfo.v_curr = mcmcInfo.v;
 
 % calculate pi0 
@@ -80,11 +85,13 @@ mcmcInfo = initialize_chains(mcmcInfo);
 % get predicted fluorescence
 mcmcInfo = predict_fluo_full(mcmcInfo);
 
+mcmcInfoInit = mcmcInfo;
 
-for step = 1:mcmcInfo.n_mcmc_steps
-    
+for step = 1:150 %mcmcInfo.n_mcmc_steps    
+  
     % resample chains
     mcmcInfo = resample_chains(mcmcInfo);
+    
+    % get predicted fluorescence
+    mcmcInfo = predict_fluo_full(mcmcInfo);
 end
-
-%%  
