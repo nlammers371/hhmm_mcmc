@@ -64,7 +64,7 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
         mcmcInfo.trace_logL_array(:,:,n) = logL_fluo_conv + logL_transition;
         
         % get total trace likelihoods
-        mcmcInfo.trace_logL_vec(1,:,n) = sum(mcmcInfo.trace_logL_array(:,:,n));
+        mcmcInfo.trace_logL_vec(1,:,n) = mean(mcmcInfo.trace_logL_array(:,:,n));
     end
     
     mcmcInfo.logL_vec(mcmcInfo.step) = mean(mcmcInfo.trace_logL_vec(:));

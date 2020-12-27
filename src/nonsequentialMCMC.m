@@ -56,7 +56,7 @@ end
 % initialize arrays
 mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,1);
 mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
-mcmcInfo.v_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
+mcmcInfo.v_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.nStates);
 
 % specify hyperparameters
 
@@ -66,13 +66,13 @@ mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
 mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1)*10; % distribution hyper params
 
 % emission rate priors
-v_prior = mcmcInfo.v; % prior on RNAP initiation rates
+% v_prior = mcmcInfo.v; % prior on RNAP initiation rates
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates));
-mcmcInfo.v_curr = mcmcInfo.v;
+mcmcInfo.v_curr = normrnd(mcmcInfo.v,mcmcInfo.v*.2);
 
 % calculate pi0 
 [V, D] = eig(mcmcInfo.A_curr);
@@ -93,7 +93,7 @@ for step = 1:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps
     
     % resample chains
     mcmcInfo = resample_chains(mcmcInfo);
-    
+      
     % get predicted fluorescence
     mcmcInfo = predict_fluo_full(mcmcInfo);
     
