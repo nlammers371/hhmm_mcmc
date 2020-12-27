@@ -24,28 +24,30 @@ mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
 
 mcmcInfo.sigma = .5;
 mcmcInfo.alpha = 0;
-mcmcInfo.n_traces = 1;
+mcmcInfo.n_traces = 10;
 mcmcInfo.eps = 1e-2;
 
 %%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
 mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 1;
+mcmcInfo.n_chains = 10;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
 mcmcInfo.state_options = 1:mcmcInfo.nStates;
 mcmcInfo.state_ref = repmat(reshape(mcmcInfo.state_options,1,1,[]),1,mcmcInfo.n_chains);
 
+mcmcInfo.observed_fluo = NaN(mcmcInfo.seq_length,mcmcInfo.n_traces);
 mcmcInfo.masterSimStruct = struct;
-for i = 1:mcmcInfo.n_traces
+for n = 1:mcmcInfo.n_traces
     synthetic_data = synthetic_prob(mcmcInfo.seq_length, mcmcInfo.alpha, mcmcInfo.nStates, ...
                           mcmcInfo.nSteps, mcmcInfo.A, mcmcInfo.v', mcmcInfo.sigma, mcmcInfo.pi0);                                     
     
+    mcmcInfo.observed_fluo(:,n) = synthetic_data.fluo_MS2;
     % record full simulation info
     fieldNames = fieldnames(synthetic_data);
     for f = 1:length(fieldNames)
-        mcmcInfo.masterSimStruct(i).(fieldNames{f}) = synthetic_data.(fieldNames{f});
+        mcmcInfo.masterSimStruct(n).(fieldNames{f}) = synthetic_data.(fieldNames{f});
     end
 end
 
@@ -87,11 +89,16 @@ mcmcInfo = predict_fluo_full(mcmcInfo);
 
 mcmcInfoInit = mcmcInfo;
 
-for step = 1:150 %mcmcInfo.n_mcmc_steps    
-  
+for step = 1:50 %mcmcInfo.n_mcmc_steps    
+    
+    mcmcInfo.step = step;
+    
     % resample chains
     mcmcInfo = resample_chains(mcmcInfo);
     
     % get predicted fluorescence
     mcmcInfo = predict_fluo_full(mcmcInfo);
+    
+    % get empirical transition and occupancy counts
+    mcmcInfo = get_empirical_counts(mcmcInfo);
 end

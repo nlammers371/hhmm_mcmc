@@ -3,25 +3,19 @@ function mcmcInfo = resample_chains(mcmcInfo)
 % extract parameters
 A_curr = mcmcInfo.A_curr;
 A_log = log(mcmcInfo.A_curr);
-% v_curr = mcmcInfo.v_curr;
-
 nStates = size(A_curr,1);
 n_traces = mcmcInfo.n_traces;
-% nSteps = mcmcInfo.nSteps;
 n_chains = mcmcInfo.n_chains;
 seq_length = mcmcInfo.seq_length;
-% coeff_MS2 = mcmcInfo.coeff_MS2;
-% sigma = mcmcInfo.sigma;
-% sigma_log = log(sigma);
+
 
 % initialize
 sample_chains_curr = mcmcInfo.sample_chains;
 
 % interate through traces
-for n = 1:n_traces
-    % extract true fluorescence
-    mcmcInfo.true_fluo = mcmcInfo.masterSimStruct(n).fluo_MS2';
-    
+for n = 1:n_traces    
+    mcmcInfo.trace_id = n;
+  
     % slice sampling array
     mcmcInfo.sample_chains_slice = sample_chains_curr(:,:,n);    
     
@@ -41,15 +35,15 @@ for n = 1:n_traces
             post_probs_log = A_log(mcmcInfo.sample_chains_slice(ind+1,:),:);            
         end
         % combine
-        tr_probs_log = zeros(size(prev_probs_log));%prev_probs_log + post_probs_log';
+        tr_probs_log = prev_probs_log + post_probs_log';
         
         %%% calculate fluorescence probability component
            
-        % calculate fluo error term
+        % calculate fluo error term      
         log_fluo_diffs = calculate_fluo_logL(mcmcInfo);
-
+        
         %%% put everything together
-        total_log_likelihoods = log_fluo_diffs;% + tr_probs_log;
+        total_log_likelihoods = log_fluo_diffs + tr_probs_log;
         total_log_likelihoods = exp(total_log_likelihoods - logsumexp(total_log_likelihoods,1));
         
         %%% draw new samples
