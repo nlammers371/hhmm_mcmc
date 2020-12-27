@@ -11,9 +11,9 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
     seq_length = mcmcInfo.seq_length;
     
     % initialize count arrays 
-    mcmcInfo.transition_count_array = zeros(size(A_curr,1),size(A_curr,2),n_chains);
-    mcmcInfo.state_count_array = zeros(n_chains,size(A_curr,2));
-    mcmcInfo.pi0_count_array = zeros(n_chains,size(A_curr,2));
+    mcmcInfo.transition_count_array = zeros(size(A_curr,1),size(A_curr,2),n_traces);
+    mcmcInfo.state_count_array = zeros(n_traces,size(A_curr,2));
+    mcmcInfo.pi0_count_array = zeros(n_traces,size(A_curr,2));
     
     % initialize likelihood array
     mcmcInfo.trace_logL_array = -Inf(seq_length,n_chains,n_traces);

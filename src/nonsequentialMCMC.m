@@ -30,7 +30,7 @@ mcmcInfo.eps = 1e-2;
 %%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
 mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 10;
+mcmcInfo.n_chains = 100;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
@@ -62,18 +62,16 @@ mcmcInfo.v_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
 
 % A prior--assume strongly diagonal PDF given short timescale
 % take A columns to follow multinomial Dirichlet distribution
-A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
-mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = A_alpha(eye(mcmcInfo.nStates)==1)*10; % distribution hyper params
+mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
+mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1)*10; % distribution hyper params
 
-% emission rate priors. For now assume v_i's to be Poisson. Thus, the
-% conjugate prior is gamma distributed
+% emission rate priors
 v_prior = mcmcInfo.v; % prior on RNAP initiation rates
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo.A_curr = mcmcInfo.A;%sample_A_dirichlet(A_alpha, zeros(mcmcInfo.nStates));
+mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates));
 mcmcInfo.v_curr = mcmcInfo.v;
 
 % calculate pi0 
@@ -89,7 +87,7 @@ mcmcInfo = predict_fluo_full(mcmcInfo);
 
 mcmcInfoInit = mcmcInfo;
 
-for step = 1:50 %mcmcInfo.n_mcmc_steps    
+for step = 1:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
     
     mcmcInfo.step = step;
     
@@ -101,4 +99,7 @@ for step = 1:50 %mcmcInfo.n_mcmc_steps
     
     % get empirical transition and occupancy counts
     mcmcInfo = get_empirical_counts(mcmcInfo);
+    
+    % use Gibbs sampling to update hyperparameters
+    mcmcInfo = update_hmm_parameters(mcmcInfo);
 end
