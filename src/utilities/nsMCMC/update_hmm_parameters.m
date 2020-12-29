@@ -12,26 +12,34 @@ function mcmcInfo = update_hmm_parameters(mcmcInfo)
     mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, A_counts);
     mcmcInfo.A_inf_array(:,:,mcmcInfo.step) = mcmcInfo.A_curr;
     
-    %%% use ML formula to sample emissions %%%
-    
-    % generate F count arrays
-    F_array = zeros(seq_length,nStates,n_traces);    
-        
-    for m = 1:nStates
-        state_counts = convn(coeff_MS2,mcmcInfo.sample_chains==m,'full');
-        F_array(:,m,:) = mean(state_counts(1:end-length(coeff_MS2)+1,:,:),2);
+    % update V               
+         
+    % get current likelihood
+    v_orig = mcmcInfo.v_curr;
+    logL_fluo_orig = calculate_fluo_logL_full(mcmcInfo);
+
+    % draw sample
+    v_new = mcmcInfo.v_curr;
+    prop_sigma = max([0.1*v_new,repmat(0.025,nStates,1)],[],2);
+    v_new = normrnd(v_new,prop_sigma);%trandn(-v_new(n),Inf)*mcmcInfo.v_prop_sigma + v_new(n);
+
+    % calculate updated likelihood
+    mcmcInfo.v_curr = v_new;
+    logL_fluo_new = calculate_fluo_logL_full(mcmcInfo);
+
+    % perform MH move
+    accept_flag = exp(logL_fluo_new-logL_fluo_orig) > rand();
+
+    % reset value if move not accepted
+    if ~accept_flag
+        mcmcInfo.v_curr = v_orig;
     end
-    
-    % generate M and b arrays    
-    M = zeros(nStates);
-    b = zeros(nStates,1);
-    y_array = mcmcInfo.observed_fluo;
-    for m = 1:nStates
-        for n = 1:nStates
-            M(m,n) = sum(sum(F_array(:,m,:).*F_array(:,n,:)),3);
-            b(m) = sum(sum(permute(F_array(:,m,:),[1 3 2]).*y_array),2);
-        end
-    end
-    % update
-    mcmcInfo.v_curr = M\b;
+
+    % record outcome
+    mcmcInfo.v_acceptance_array(mcmcInfo.step) = accept_flag;
+   
     mcmcInfo.v_inf_array(mcmcInfo.step,:) = mcmcInfo.v_curr;
+    
+    % fix sigma for now
+    mcmcInfo.sigma_curr = mcmcInfo.sigma;
+    

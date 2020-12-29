@@ -56,7 +56,7 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
         mcmcInfo.state_count_array(n,GR) = GC;        
         
         % calculate fluo probabilities
-        logL_fluo = -.5*((mcmcInfo.observed_fluo(:,n) - mcmcInfo.sample_fluo(:,:,n))./mcmcInfo.sigma).^2 - log(sqrt(2*pi)*mcmcInfo.sigma);
+        logL_fluo = -.5*((mcmcInfo.observed_fluo(:,n) - mcmcInfo.sample_fluo(:,:,n))./mcmcInfo.sigma_curr).^2 - log(sqrt(2*pi)*mcmcInfo.sigma_curr);
         logL_fluo_conv = convn(fluo_logL_kernel,logL_fluo,'full');  
         logL_fluo_conv = logL_fluo_conv(1:end-nSteps+1,:,:);
         

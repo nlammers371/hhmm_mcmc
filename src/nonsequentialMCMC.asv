@@ -4,78 +4,122 @@
 clear 
 close all
 
-addpath('utilities')
+addpath(genpath('utilities'))
+
+% initialize info structure
+mcmcInfo = struct;
 
 % define parameters
-R = [-.02, .04, 0; .02 -.05 .08; 0 .01 -.08];
-tres = 20;
-A = expm(R*tres);
-nStates = size(A,1);
-v = [.05,2,4];
-seq_length = 60*60/tres;
-nSteps = 7;
-[V, D] = eig(A);
-[~, mi] = max(real(diag(D)));
-pi0 = V(:,mi)/sum(V(:,mi));
-noise = 1;
-alpha = 1.4;
-n_traces = 10;
-eps = 1e-2;
+mcmcInfo.R = [-.02, .04, 0; .02 -.05 .08; 0 .01 -.08];
+mcmcInfo.tres = 20;
+mcmcInfo.A = expm(mcmcInfo.R*mcmcInfo.tres);
+mcmcInfo.nStates = size(mcmcInfo.A,1);
+mcmcInfo.v = [.05,2,4]';
+mcmcInfo.seq_length = 60*60/mcmcInfo.tres;
 
-emissions_cell = cell(1,n_traces);
-master_sim_struct = struct;
-for i = 1:n_traces
-    synthetic_data = synthetic_prob(seq_length, alpha, nStates, nSteps, A, ...
-                                                            v, noise, pi0);                                     
-    emissions_cell{i} = v(synthetic_data.naive_states);
+mcmcInfo.nSteps = 7;
+[V, D] = eig(mcmcInfo.A);
+[~, mi] = max(real(diag(D)));
+mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
+
+mcmcInfo.sigma = .5;
+mcmcInfo.alpha = 0;
+mcmcInfo.n_traces = 10;
+mcmcInfo.eps = 1e-2;
+
+%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
+% basic inference params 
+mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 100;
+
+%%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
+mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
+mcmcInfo.state_options = 1:mcmcInfo.nStates;
+mcmcInfo.state_ref = repmat(reshape(mcmcInfo.state_options,1,1,[]),1,mcmcInfo.n_chains);
+
+mcmcInfo.observed_fluo = NaN(mcmcInfo.seq_length,mcmcInfo.n_traces);
+mcmcInfo.masterSimStruct = struct;
+for n = 1:mcmcInfo.n_traces
+    synthetic_data = synthetic_prob(mcmcInfo.seq_length, mcmcInfo.alpha, mcmcInfo.nStates, ...
+                          mcmcInfo.nSteps, mcmcInfo.A, mcmcInfo.v', mcmcInfo.sigma, mcmcInfo.pi0);                                     
     
+    mcmcInfo.observed_fluo(:,n) = synthetic_data.fluo_MS2;
     % record full simulation info
     fieldNames = fieldnames(synthetic_data);
     for f = 1:length(fieldNames)
-        master_sim_struct(i).(fieldNames{f}) = synthetic_data.(fieldNames{f});
+        mcmcInfo.masterSimStruct(n).(fieldNames{f}) = synthetic_data.(fieldNames{f});
     end
 end
 
-%% Gibbs MCMC 
-
-% basic inference params 
-n_steps = 100; % number of MCMC steps (need to add convergence criteria)
+%%% Nonsequential MCMC
 
 % initialize arrays
-logL_vec = NaN(n_steps,1);
-A_inf_array = NaN(nStates,nStates,n_steps);
-v_inf_array = NaN(nStates,n_steps);
+mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,1);
+mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
+mcmcInfo.v_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.nStates);
+mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,1);
 
 % specify hyperparameters
-
-% A prior--assume strongly diagonal PDF given short timescale
-% take A columns to follow multinomial Dirichlet distribution
-A_alpha = ones(nStates);%*n_particles*n_traces;
-A_alpha(eye(nStates)==1) = A_alpha(eye(nStates)==1)*10; % distribution hyper params
-
-% emission rate priors. For now assume v_i's to be Poisson. Thus, the
-% conjugate prior is gamma distributed
-v_prior = v; % prior on RNAP initiation rates
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-A_curr = sample_A_dirichlet(A_alpha, zeros(nStates));
-v_curr = v;
-
-% calculate pi0 
-[V, D] = eig(A_curr);
-[~, mi] = max(real(diag(D)));
-pi0_curr = V(:,mi)/sum(V(:,mi));
 
 % initialize chains
-[fwd_probs, logL_seq, logL_curr] = fwd_algorithm(emissions_cell, A_curr, v_curr, pi0_curr);
+mcmcInfo = initialize_chains(mcmcInfo);
 
-% record
-logL_vec(1) = logL_curr;
-A_inf_array(:,:,1) = A_curr;
-v_inf_array(:,1) = v_curr;
+% get predicted fluorescence
+mcmcInfo = predict_fluo_full(mcmcInfo);
 
-step = 2;
-deltaL = Inf;
+% A prior--assume strongly diagonal PDF given short timescale
+% take A columns to follow multinomial Dirichlet distribution
+mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
+mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1)*10; % distribution hyper params
+mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates));
+
+% initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
+fluo_vec = mcmcInfo.observed_fluo(:);
+mcmcInfo.sigma_curr = sqrt(1./gamrnd(mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+
+% initialize v as normal
+
+% generate F count arrays
+F_array = zeros(mcmcInfo.seq_length,mcmcInfo.nStates,mcmcInfo.n_traces);    
+
+for m = 1:mcmcInfo.nStates
+    state_counts = convn(mcmcInfo.coeff_MS2,mcmcInfo.sample_chains==m,'full');
+    F_array(:,m,:) = mean(state_counts(1:end-length(mcmcInfo.coeff_MS2)+1,:,:),2);
+end
+F_array_long = reshape(permute(F_array,[1,3,2]),[],3);
+
+% generate M and b arrays    
+M = F_array_long'*F_array_long;
+y_vec = mcmcInfo.observed_fluo(:);
+b = F_array_long'*y_vec;
+
+% draw sample
+mcmcInfo.v_curr = normrnd(b\M,mcmcInfo.sigma_curr);
+
+% calculate pi0 
+[V, D] = eig(mcmcInfo.A_curr);
+[~, mi] = max(real(diag(D)));
+mcmcInfo.pi0_curr = V(:,mi)/sum(V(:,mi));
+
+
+for step = 1:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
+    
+    mcmcInfo.step = step;
+    
+    % resample chains
+    mcmcInfo = resample_chains(mcmcInfo);
+      
+    % get predicted fluorescence
+    mcmcInfo = predict_fluo_full(mcmcInfo);
+    
+    % get empirical transition and occupancy counts
+    mcmcInfo = get_empirical_counts(mcmcInfo);
+    
+    % use Gibbs sampling to update hyperparameters
+    mcmcInfo = update_hmm_parameters(mcmcInfo);
+    
+end

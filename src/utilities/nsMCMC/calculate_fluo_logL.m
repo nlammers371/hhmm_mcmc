@@ -1,11 +1,11 @@
-function log_fluo_diffs = calculate_fluo_logL(mcmcInfo)
+function logL_fluo = calculate_fluo_logL(mcmcInfo)
                   
     % extrac useful parameters
     seq_length = mcmcInfo.seq_length;
     ind = mcmcInfo.ind;
     nSteps = mcmcInfo.nSteps;
     nStates = mcmcInfo.nStates;
-    sigma = mcmcInfo.sigma;    
+    sigma_curr = mcmcInfo.sigma_curr;    
     coeff_MS2 = mcmcInfo.coeff_MS2;
     
     v_ref = repmat(reshape(mcmcInfo.v_curr,1,1,[]),1,mcmcInfo.n_chains);
@@ -24,11 +24,11 @@ function log_fluo_diffs = calculate_fluo_logL(mcmcInfo)
     fluo_fragment = fluo_fragment(ind-prevInd+1:end-length(coeff_MS2)+1,:,:);%+1(ind-prevInd+1:end-nSteps+1,:,:);
     
     % get differences
-    log_fluo_diffs_full = ((mcmcInfo.observed_fluo(ind:postInd,mcmcInfo.trace_id)-fluo_fragment)./sigma).^2;
+    logL_fluo_full = ((mcmcInfo.observed_fluo(ind:postInd,mcmcInfo.trace_id)-fluo_fragment)./sigma_curr).^2;
                                       
     % take average
-    log_fluo_diffs = -mean(log_fluo_diffs_full,1);%-sum(0.5.*ms2_weights.*log_fluo_diffs_full,1)./ sum(coeff_MS2);% - log(sqrt(2*pi)*sigma);
+    logL_fluo = -mean(logL_fluo_full,1);%-sum(0.5.*ms2_weights.*log_fluo_diffs_full,1)./ sum(coeff_MS2);% - log(sqrt(2*pi)*sigma);
     
     % reshape to be consistent with transition prob format    
-    log_fluo_diffs = permute(log_fluo_diffs,[3 2 1]);
+    logL_fluo = permute(logL_fluo,[3 2 1]);
    

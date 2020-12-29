@@ -35,15 +35,15 @@ for n = 1:n_traces
             post_probs_log = A_log(mcmcInfo.sample_chains_slice(ind+1,:),:);            
         end
         % combine
-        tr_probs_log = prev_probs_log + post_probs_log';
+        logL_tr = prev_probs_log + post_probs_log';
         
         %%% calculate fluorescence probability component
            
         % calculate fluo error term      
-        log_fluo_diffs = calculate_fluo_logL(mcmcInfo);
+        logL_fluo = calculate_fluo_logL(mcmcInfo);
         
         %%% put everything together
-        total_log_likelihoods = log_fluo_diffs + tr_probs_log;
+        total_log_likelihoods = logL_fluo + logL_tr;
         total_log_likelihoods = exp(total_log_likelihoods - logsumexp(total_log_likelihoods,1));
         
         %%% draw new samples
