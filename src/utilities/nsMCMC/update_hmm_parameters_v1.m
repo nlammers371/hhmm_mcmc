@@ -8,7 +8,7 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
     coeff_MS2 = mcmcInfo.coeff_MS2;
     
     % update A
-    A_counts = sum(mcmcInfo.transition_count_array,3)/mcmcInfo.n_chains;    
+    A_counts = mean(mcmcInfo.transition_count_array,3);    
     mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, A_counts);
     mcmcInfo.A_inf_array(:,:,mcmcInfo.step) = mcmcInfo.A_curr;
     
@@ -25,8 +25,8 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
         y_array(ind1:ind2,:) = mcmcInfo.observed_fluo;
         for m = 1:nStates
             % record counts
-            state_counts = convn(coeff_MS2,mcmcInfo.sample_chains==m,'full');            
-            F_array(ind1:ind2,:,m) = state_counts(1:end-length(coeff_MS2)+1,n,:);                        
+            state_counts = convn(coeff_MS2,mcmcInfo.sample_chains(:,n,:)==m,'full');            
+            F_array(ind1:ind2,:,m) = state_counts(1:end-length(coeff_MS2)+1,1,:);                        
         end
     end
        
@@ -40,7 +40,7 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
     v_cov_mat = mcmcInfo.sigma^2 * inv(M);
     
     % sample
-    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat)';
+    mcmcInfo.v_curr = v_mean;%mvnrnd(v_mean, v_cov_mat)';
     mcmcInfo.v_inf_array(mcmcInfo.step,:) = mcmcInfo.v_curr;
     
     % get predicted fluorescence
@@ -52,5 +52,5 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
     b = F_diff'*F_diff / 2;
 %     y_vec = mcmcInfo.observed_fluo(:);    
 %     F_diff = F_array_long * mcmcInfo.v_curr - y_vec;    
-    mcmcInfo.sigma_curr = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
+    mcmcInfo.sigma_curr = mcmcInfo.sigma;%sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
     

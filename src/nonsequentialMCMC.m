@@ -15,7 +15,7 @@ mcmcInfo.tres = 20;
 mcmcInfo.A = expm(mcmcInfo.R*mcmcInfo.tres);
 mcmcInfo.nStates = size(mcmcInfo.A,1);
 mcmcInfo.v = [.05,2,4]';
-mcmcInfo.seq_length = 60*60/mcmcInfo.tres;
+mcmcInfo.seq_length = 360*60/mcmcInfo.tres;
 
 mcmcInfo.nSteps = 7;
 [V, D] = eig(mcmcInfo.A);
@@ -24,13 +24,13 @@ mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
 
 mcmcInfo.sigma = .5;
 mcmcInfo.alpha = 0;
-mcmcInfo.n_traces = 10;
+mcmcInfo.n_traces = 1;
 mcmcInfo.eps = 1e-2;
 
 %%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 100;
+mcmcInfo.n_mcmc_steps = 200; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 1;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
@@ -59,9 +59,6 @@ mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_ste
 mcmcInfo.v_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.nStates);
 mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,1);
 
-% initialize arrays to store inference diagnostics
-mcmcInfo.v_acceptance_array = NaN(mcmcInfo.n_mcmc_steps,1);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,8 +66,9 @@ mcmcInfo.v_acceptance_array = NaN(mcmcInfo.n_mcmc_steps,1);
 % A prior--assume strongly diagonal PDF given short timescale
 % take A columns to follow multinomial Dirichlet distribution
 mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
-mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1)*10; % distribution hyper params
-mcmcInfo.A_curr = mcmcInfo.A;%sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates));
+mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) + rand(mcmcInfo.nStates,1)*10; % distribution hyper params
+mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates));
+mcmcInfo.A_inf_array(:,:,1) = mcmcInfo.A_curr;
 
 % calculate pi0 
 [V, D] = eig(mcmcInfo.A_curr);
@@ -80,10 +78,12 @@ mcmcInfo.pi0_curr = V(:,mi)/sum(V(:,mi));
 % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
 fluo_vec = mcmcInfo.observed_fluo(:);
 mcmcInfo.sigma_curr = mcmcInfo.sigma;%0.1*mean(fluo_vec);%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+mcmcInfo.sigma_inf_array(1) = mcmcInfo.sigma_curr;
 
 % initialize v
-v2 = prctile(fluo_vec,95) / 7;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
-mcmcInfo.v_curr = mcmcInfo.v;%[0 ; v2 ; 2*v2] + rand(3,1)*.2;
+v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+mcmcInfo.v_curr = [0 ; v2 ; 2*v2] + rand(3,1)*1 - .5;
+mcmcInfo.v_inf_array(1,:) = mcmcInfo.v_curr;
 % mcmcInfo.v_prop_sigma = .1*v2;
 
 % initialize chains
@@ -93,7 +93,7 @@ mcmcInfo = initialize_chains(mcmcInfo);
 mcmcInfo = predict_fluo_full(mcmcInfo);
 
 wb = waitbar(0,'conducting MCMC inference...');
-for step = 1:50%mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
+for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
     waitbar(step/mcmcInfo.n_mcmc_steps,wb);
     
     mcmcInfo.step = step;

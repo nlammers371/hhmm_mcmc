@@ -1,6 +1,6 @@
 function mcmcInfo = initialize_chains(mcmcInfo)
 
-% extract parameters
+    % extract parameters
     A_curr = mcmcInfo.A_curr;
     nStates = size(A_curr,1);
     pi0 = mcmcInfo.pi0_curr;

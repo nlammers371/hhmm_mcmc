@@ -18,9 +18,8 @@ for n = 1:n_traces
     % slice sampling array
     mcmcInfo.sample_chains_slice = sample_chains_curr(:,:,n);    
     
-    % determine order of sampling    
-    n_reps = 2;%max([2 round(200/(mcmcInfo.step-1)^2)]);    
-    sample_indices = randsample(repelem(1:seq_length,n_reps),n_reps*seq_length,false);
+    % determine order of sampling
+    sample_indices = randsample(1:seq_length,seq_length,true);
     
     % iterate through indices to sample
     for ind = sample_indices

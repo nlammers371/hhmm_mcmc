@@ -67,4 +67,4 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
         mcmcInfo.trace_logL_vec(1,:,n) = mean(mcmcInfo.trace_logL_array(:,:,n));
     end
     
-    mcmcInfo.logL_vec(mcmcInfo.step) = mean(mcmcInfo.trace_logL_vec(:));
+    mcmcInfo.logL_vec(mcmcInfo.step-1) = mean(mcmcInfo.trace_logL_vec(:));
