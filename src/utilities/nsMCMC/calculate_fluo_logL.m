@@ -7,13 +7,8 @@ function logL_fluo = calculate_fluo_logL(mcmcInfo)
     nStates = mcmcInfo.nStates;
     sigma_curr = mcmcInfo.sigma_curr;    
     coeff_MS2 = mcmcInfo.coeff_MS2;
-    chain_id = mcmcInfo.chain_id;
     
-    if ~mcmcInfo.par_chain_flag
-        v_ref = repmat(reshape(mcmcInfo.v_curr,1,1,[]),1,mcmcInfo.n_chains);
-    else
-        v_ref = repmat(reshape(mcmcInfo.v_curr(chain_id,:),1,1,[]),1,mcmcInfo.n_traces);
-    end
+    v_ref = repmat(reshape(mcmcInfo.v_curr,1,1,[]),1,mcmcInfo.n_chains);
     
     % get start and stop indices
     postInd = min([seq_length,ind+nSteps-1]);
@@ -29,7 +24,7 @@ function logL_fluo = calculate_fluo_logL(mcmcInfo)
     fluo_fragment = fluo_fragment(ind-prevInd+1:end-length(coeff_MS2)+1,:,:);%+1(ind-prevInd+1:end-nSteps+1,:,:);
     
     % get differences
-    logL_fluo_full = ((mcmcInfo.observed_fluo(ind:postInd,:)-fluo_fragment)./sigma_curr(chain_id)).^2;
+    logL_fluo_full = ((mcmcInfo.observed_fluo(ind:postInd,mcmcInfo.trace_id)-fluo_fragment)./sigma_curr).^2;
                                       
     % take average
     logL_fluo = -mean(logL_fluo_full,1);%-sum(0.5.*ms2_weights.*log_fluo_diffs_full,1)./ sum(coeff_MS2);% - log(sqrt(2*pi)*sigma);
