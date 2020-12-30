@@ -85,3 +85,6 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
     
     mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,chain_indices,:);
     mcmcInfo.transition_count_array = mcmcInfo.transition_count_array(:,:,chain_indices);
+    mcmcInfo.v_curr = mcmcInfo.v_curr(chain_indices,:);
+    mcmcInfo.pi0_curr = mcmcInfo.pi0_curr(chain_indices,:);
+    mcmcInfo.sigma_curr = mcmcInfo.sigma_curr(chain_indices);

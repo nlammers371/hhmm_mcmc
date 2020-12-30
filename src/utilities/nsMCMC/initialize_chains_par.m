@@ -23,6 +23,7 @@ function mcmcInfo = initialize_chains_par(mcmcInfo)
             % get indices
             state_vec = repelem(mcmcInfo.sample_chains(t-1,:,n),nStates);
             linear_indices = sub2ind(size(A_curr),row_index_vec,state_vec,depth_index_vec);
+            
             % simulate transitions
             A_array = cumsum(reshape(A_curr(linear_indices),nStates,n_chains));
             rand_array = repmat(rand(1,n_chains),nStates,1);

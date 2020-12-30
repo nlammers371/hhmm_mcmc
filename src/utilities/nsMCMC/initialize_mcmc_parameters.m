@@ -8,11 +8,13 @@ function mcmcInfo = initialize_mcmc_parameters(mcmcInfo)
     else
         mcmcInfo.sigma_curr = trandn(repmat(-2,mcmcInfo.n_chains,1),Inf(mcmcInfo.n_chains,1))*f_sigma + 2*f_sigma;
     end
-
+    mcmcInfo.sigma_inf_array(mcmcInfo.step) = 2*f_sigma;
+    
     %% initialize v
     v2 = prctile(fluo_vec,96) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     v2_err = std(fluo_vec) / mcmcInfo.nSteps;
     v_vec = [0 ; v2 ; 2*v2];
+    mcmcInfo.v_inf_array(mcmcInfo.step,:) = v_vec;
     if ~mcmcInfo.par_chain_flag
         mcmcInfo.v_curr = [0 ; v2 ; 2*v2] + rand(3,1)*.2;
     else
@@ -25,11 +27,13 @@ function mcmcInfo = initialize_mcmc_parameters(mcmcInfo)
     % take A columns to follow multinomial Dirichlet distribution
     mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
     mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1)*10; % distribution hyper params
+    mcmcInfo.A_inf_array(:,:,mcmcInfo.step) = mcmcInfo.A_alpha;  
     if ~mcmcInfo.par_chain_flag
         mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates),1);
     else
         mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates),mcmcInfo.n_chains);
     end
+    
     % calculate pi0
     if ~mcmcInfo.par_chain_flag 
         [V, D] = eig(mcmcInfo.A_curr);

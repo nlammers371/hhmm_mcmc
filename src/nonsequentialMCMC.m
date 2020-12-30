@@ -12,7 +12,7 @@ mcmcInfo = struct;
 %%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
 mcmcInfo.n_mcmc_steps = 50; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 100;
+mcmcInfo.n_chains = 10;
 
 % employ parallel inference?
 mcmcInfo.par_chain_flag = true;
@@ -56,7 +56,14 @@ for n = 1:mcmcInfo.n_traces
     end
 end
 
-%%% Nonsequential MCMC
+%% %%%%%%%%%%%%%%%%%%%%%% Nonsequential MCMC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% initialize arrays to store inference results
+mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,1);
+mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
+mcmcInfo.v_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.nStates);
+mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,1);
+
+mcmcInfo.step = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
@@ -65,13 +72,6 @@ end
 mcmcInfo = initialize_mcmc_parameters(mcmcInfo);
 
 % mcmcInfo.v_prop_sigma = .1*v2;
-
-% initialize arrays to store inference results
-mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,1);
-mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
-mcmcInfo.v_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.nStates);
-mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,1);
-
 % initialize chains
 if ~mcmcInfo.par_chain_flag
     mcmcInfo = initialize_chains(mcmcInfo);
@@ -80,20 +80,23 @@ else
 end
 
 % get predicted fluorescence
-mcmcInfo = predict_fluo_full(mcmcInfo);
+mcmcInfo = predict_fluo_full(mcmcInfo,mcmcInfo.v_curr);
 
-wb = waitbar(0,'conducting MCMC inference...');
+wb = waitbar(1,'conducting MCMC inference...');
 tic
-for step = 1:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
+for step = 2:10%mcmcInfo.n_mcmc_steps
+  
     waitbar(step/mcmcInfo.n_mcmc_steps,wb);    
     mcmcInfo.step = step;    
     
-    % resample chains    
+    % resample chains   
+    tic
     mcmcInfo = resample_chains(mcmcInfo);  
-    
+    toc
     % get empirical transition and occupancy counts    
+    tic
     mcmcInfo = get_empirical_counts(mcmcInfo);    
-    
+    toc
     % use Gibbs sampling to update hyperparameters    
     mcmcInfo = update_hmm_parameters_gibbs(mcmcInfo);
 end
