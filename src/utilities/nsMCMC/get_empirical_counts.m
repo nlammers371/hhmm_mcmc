@@ -67,12 +67,4 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
         mcmcInfo.trace_logL_vec(1,:,n) = mean(mcmcInfo.trace_logL_array(:,:,n));
     end
     
-    mcmcInfo.logL_vec(mcmcInfo.step-1) = mean(mcmcInfo.trace_logL_vec(:));
-    
-    % resample based on chain probabilities
-%     chain_probs = mean(mcmcInfo.trace_logL_vec,3) - min(mean(mcmcInfo.trace_logL_vec,3));
-%     resample_indices = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,chain_probs);
-%     mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,resample_indices,:);
-%     if mcmcInfo.step == 10
-%       error('check')
-%     end
+    mcmcInfo.logL_vec(mcmcInfo.step) = mean(mcmcInfo.trace_logL_vec(:));
