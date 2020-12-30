@@ -6,7 +6,8 @@ function mcmcInfo = initialize_chains_par(mcmcInfo)
     pi0_curr = mcmcInfo.pi0_curr;
     seq_length = mcmcInfo.seq_length;
     n_chains = mcmcInfo.n_chains;
-    n_traces = mcmcInfo.n_traces;    
+    n_traces = mcmcInfo.n_traces;
+    state_options = 1:nStates;
 
     % initialize
     mcmcInfo.sample_chains = NaN(seq_length,n_chains,n_traces);
@@ -24,7 +25,7 @@ function mcmcInfo = initialize_chains_par(mcmcInfo)
             state_vec = repelem(mcmcInfo.sample_chains(t-1,:,n),nStates);
             linear_indices = sub2ind(size(A_curr),row_index_vec,state_vec,depth_index_vec);
             % simulate transitions
-            A_array = cumsum(reshape(A_curr(linear_indices),nStates,n_chains));
+            A_array = cumsum();
             rand_array = repmat(rand(1,n_chains),nStates,1);
             mcmcInfo.sample_chains(t,:,n) = sum(rand_array > A_array) + 1;
         end    

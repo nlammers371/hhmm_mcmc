@@ -78,10 +78,3 @@ function mcmcInfo = get_empirical_counts(mcmcInfo)
     end
     
     mcmcInfo.logL_vec(mcmcInfo.step) = mean(mcmcInfo.trace_logL_vec(:));
-    
-    % resample based on chain likelihood
-    chain_weights = exp(mean(mcmcInfo.trace_logL_vec,3)/10); %NL: factor of 10 is an add hoc temperature variable
-    chain_indices = randsample(1:n_chains,n_chains,true,chain_weights);
-    
-    mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,chain_indices,:);
-    mcmcInfo.transition_count_array = mcmcInfo.transition_count_array(:,:,chain_indices);
