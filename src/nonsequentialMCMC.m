@@ -77,7 +77,7 @@ mcmcInfo.pi0_curr = V(:,mi)/sum(V(:,mi));
 
 % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
 fluo_vec = mcmcInfo.observed_fluo(:);
-mcmcInfo.sigma_curr = mcmcInfo.sigma;%0.1*mean(fluo_vec);%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+mcmcInfo.sigma_curr = 0.1*mean(fluo_vec);%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
 mcmcInfo.sigma_inf_array(1) = mcmcInfo.sigma_curr;
 
 % initialize v

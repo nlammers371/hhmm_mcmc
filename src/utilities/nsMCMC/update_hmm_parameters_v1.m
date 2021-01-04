@@ -40,7 +40,7 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
     v_cov_mat = mcmcInfo.sigma^2 * inv(M);
     
     % sample
-    mcmcInfo.v_curr = v_mean;%mvnrnd(v_mean, v_cov_mat)';
+    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat)';
     mcmcInfo.v_inf_array(mcmcInfo.step,:) = mcmcInfo.v_curr;
     
     % get predicted fluorescence
@@ -52,5 +52,5 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
     b = F_diff'*F_diff / 2;
 %     y_vec = mcmcInfo.observed_fluo(:);    
 %     F_diff = F_array_long * mcmcInfo.v_curr - y_vec;    
-    mcmcInfo.sigma_curr = mcmcInfo.sigma;%sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
+    mcmcInfo.sigma_curr = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
     
