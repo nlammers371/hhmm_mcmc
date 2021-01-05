@@ -40,15 +40,15 @@ function mcmcInfo = update_hmm_parameters_v1(mcmcInfo)
     v_cov_mat = mcmcInfo.sigma^2 * inv(M);
     
     % sample
-    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat)';
-    mcmcInfo.v_inf_array(mcmcInfo.step,:) = mcmcInfo.v_curr;        
+    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat);
+    mcmcInfo.v_inf_array(:,:,mcmcInfo.step) = mcmcInfo.v_curr;        
     
     % get predicted fluorescence
     mcmcInfo = predict_fluo_full(mcmcInfo);
     
     % Update sigma
     a = numel(mcmcInfo.observed_fluo)/2;
-    F_diff = reshape(permute(mcmcInfo.sample_fluo(:,1),[1 3 2]) - mcmcInfo.observed_fluo,[],1);
+    F_diff = reshape(permute(mcmcInfo.sample_fluo,[1 3 2]) - mcmcInfo.observed_fluo,[],1);
     b = F_diff'*F_diff / 2;
   
 %     y_vec = mcmcInfo.observed_fluo(:);    

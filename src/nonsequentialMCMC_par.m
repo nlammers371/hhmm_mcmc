@@ -15,7 +15,7 @@ mcmcInfo.tres = 20;
 mcmcInfo.A = expm(mcmcInfo.R*mcmcInfo.tres);
 mcmcInfo.nStates = size(mcmcInfo.A,1);
 mcmcInfo.v = [.05, 2, 4]';
-mcmcInfo.seq_length = 60*60/mcmcInfo.tres;
+mcmcInfo.seq_length = 120*60/mcmcInfo.tres;
 
 mcmcInfo.nSteps = 7;
 [V, D] = eig(mcmcInfo.A);
@@ -29,8 +29,8 @@ mcmcInfo.eps = 1e-2;
 
 %%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 200; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 100;
+mcmcInfo.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 1;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
@@ -81,8 +81,8 @@ end
 % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
 fluo_vec = mcmcInfo.observed_fluo(:);
 f_factor = 0.1*mean(fluo_vec);
-mcmcInfo.sigma_curr = trandn(repelem(-1,mcmcInfo.n_chains),Inf(1,mcmcInfo.n_chains))*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
-mcmcInfo.sigma_inf_array(1,:) = mcmcInfo.sigma_curr;
+mcmcInfo.sigma_curr = .2;%trandn(repelem(-1,mcmcInfo.n_chains),Inf(1,mcmcInfo.n_chains))*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+mcmcInfo.sigma_inf_array(1) = mcmcInfo.sigma_curr;
 
 % initialize v
 v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
