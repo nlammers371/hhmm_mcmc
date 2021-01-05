@@ -51,7 +51,8 @@ for n = 1:n_traces
         rand_array = repmat(rand(1,n_chains),nStates,1);
         mcmcInfo.sample_chains_slice(ind,:) = sum(rand_array > option_array) + 1;
                 
-    end
+    end    
+%     mcmcInfo.sample_chains_slice = repmat(mcmcInfo.masterSimStruct.naive_states',1,10);
     sample_chains_curr(:,:,n) = mcmcInfo.sample_chains_slice;
 end   
 mcmcInfo.sample_chains = sample_chains_curr;

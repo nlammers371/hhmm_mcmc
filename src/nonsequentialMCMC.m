@@ -14,7 +14,7 @@ mcmcInfo.R = [-.02, .04, 0; .02 -.05 .08; 0 .01 -.08];
 mcmcInfo.tres = 20;
 mcmcInfo.A = expm(mcmcInfo.R*mcmcInfo.tres);
 mcmcInfo.nStates = size(mcmcInfo.A,1);
-mcmcInfo.v = [.05,2,4]';
+mcmcInfo.v = [.05, 2, 4]';
 mcmcInfo.seq_length = 360*60/mcmcInfo.tres;
 
 mcmcInfo.nSteps = 7;
@@ -91,6 +91,9 @@ mcmcInfo = initialize_chains(mcmcInfo);
 
 % get predicted fluorescence
 mcmcInfo = predict_fluo_full(mcmcInfo);
+mcmcInfo.sum_flag = 0;
+mcmcInfoTest = mcmcInfo;
+mcmcInfoTest.sum_flag = 1;
 
 wb = waitbar(0,'conducting MCMC inference...');
 for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
@@ -110,3 +113,21 @@ for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps
 end
 disp('done')
 delete(wb);
+% wb = waitbar(0,'conducting MCMC inference (2)...');
+% for step = 2:mcmcInfoTest.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
+%     waitbar(step/mcmcInfoTest.n_mcmc_steps,wb);
+%     
+%     mcmcInfoTest.step = step;
+%     
+%     % resample chains
+%     mcmcInfoTest = resample_chains(mcmcInfoTest);          
+%     
+%     % get empirical transition and occupancy counts
+%     mcmcInfoTest = get_empirical_counts(mcmcInfoTest);
+%     
+%     % use Gibbs sampling to update hyperparameters
+%     mcmcInfoTest = update_hmm_parameters_v1(mcmcInfoTest);
+%     
+% end
+% disp('done')
+% delete(wb);
