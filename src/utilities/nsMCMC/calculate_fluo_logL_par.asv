@@ -1,23 +1,25 @@
-function logL_fluo = calculate_fluo_logL(mcmcInfo)
+function logL_fluo = calculate_fluo_logL_par(mcmcInfo)
                   
     % extrac useful parameters
     seq_length = mcmcInfo.seq_length;
     ind = mcmcInfo.ind;
     nSteps = mcmcInfo.nSteps;
     nStates = mcmcInfo.nStates;
+    n_chains = mcmcInfo.n_chains;
     sigma_curr = mcmcInfo.sigma_curr;    
     coeff_MS2 = mcmcInfo.coeff_MS2;
     
-    v_ref = repmat(reshape(mcmcInfo.v_curr,1,1,[]),1,mcmcInfo.n_chains);
+    v_ref = mcmcInfo.v_curr';
     
     % get start and stop indices
     postInd = seq_length;%min([seq_length,ind+nSteps-1]);
     prevInd = 1;%max([1,ind-nSteps+1]);
     
     % extract relevant promoter state fragment    
-    initaition_fragment_init = mcmcInfo.v_curr(mcmcInfo.sample_chains_slice(prevInd:postInd,:));
-    initiation_fragment = repmat(initaition_fragment_init,1,1,nStates);
-    initiation_fragment(ind-prevInd+1,:,:) = v_ref;%repmat(mcmcInfo.sample_chains_slice(prevInd:postInd,:),1,1,nStates);           
+    linear_indices = (mcmcInfo.sample_chains-1)*n_chains + (1:n_chains);
+    initaition_fragment_init = mcmcInfo.v_curr(linear_indices);
+    initiation_fragment = repmat(initaition_fragment_init,1,1,1,nStates);
+    initiation_fragment(ind,:,:,:) = v_ref;%repmat(mcmcInfo.sample_chains_slice(prevInd:postInd,:),1,1,nStates);           
                                         
     % calculate predicted fluorescence
     fluo_fragment = convn(coeff_MS2,initiation_fragment,'full');             

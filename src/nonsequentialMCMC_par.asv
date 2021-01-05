@@ -54,10 +54,10 @@ end
 %%% Nonsequential MCMC
 
 % initialize arrays to store inference results
-mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,1);
-mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
-mcmcInfo.v_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.nStates);
-mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,1);
+mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.n_chains);
+mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps,mcmcInfo.n_chains);
+mcmcInfo.v_inf_array = NaN(mcmcInfo.n_chains,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
+mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.n_chains);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables
@@ -67,23 +67,27 @@ mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,1);
 % take A columns to follow multinomial Dirichlet distribution
 mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
 mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) + rand(mcmcInfo.nStates,1)*10; % distribution hyper params
-mcmcInfo.A_curr = sample_A_dirichlet(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates));
-mcmcInfo.A_inf_array(:,:,1) = mcmcInfo.A_curr;
+mcmcInfo.A_curr = sample_A_dirichlet_par(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates), mcmcInfo.n_chains);
+mcmcInfo.A_inf_array(:,:,1,:) = mcmcInfo.A_curr;
 
 % calculate pi0 
-[V, D] = eig(mcmcInfo.A_curr);
-[~, mi] = max(real(diag(D)));
-mcmcInfo.pi0_curr = V(:,mi)/sum(V(:,mi));
+mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains,mcmcInfo.nStates);
+for n = 1:mcmcInfo.n_chains
+    [V, D] = eig(mcmcInfo.A_curr(:,:,n));
+    [~, mi] = max(real(diag(D)));
+    mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));
+end
 
 % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
 fluo_vec = mcmcInfo.observed_fluo(:);
-mcmcInfo.sigma_curr = 0.1*mean(fluo_vec);%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
-mcmcInfo.sigma_inf_array(1) = mcmcInfo.sigma_curr;
+f_factor = 0.1*mean(fluo_vec);
+mcmcInfo.sigma_curr = trandn(repelem(-1,mcmcInfo.n_chains),Inf(1,mcmcInfo.n_chains))*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+mcmcInfo.sigma_inf_array(1,:) = mcmcInfo.sigma_curr;
 
 % initialize v
 v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
-mcmcInfo.v_curr = [0 ; v2 ; 2*v2] + rand(3,1)*1 - .5;
-mcmcInfo.v_inf_array(1,:) = mcmcInfo.v_curr;
+mcmcInfo.v_curr = [0 v2 2*v2] + rand(mcmcInfo.n_chains,mcmcInfo.nStates) - .5;
+mcmcInfo.v_inf_array(:,:,1) = mcmcInfo.v_curr;
 % mcmcInfo.v_prop_sigma = .1*v2;
 
 % initialize chains
