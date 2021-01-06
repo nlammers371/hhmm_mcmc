@@ -29,7 +29,8 @@ function logL_fluo = calculate_fluo_logL_par(mcmcInfo)
     % get differences   
     ref_fluo = repmat(permute(mcmcInfo.observed_fluo(ind:postInd,:,:),[1 3 2]),1,n_chains,1,nStates);
     sigma_ref = repmat(sigma_curr',size(ref_fluo,1),1,n_traces,nStates);
-    logL_fluo_full = -0.5*((ref_fluo-fluo_fragment)./sigma_ref).^2 - log(sqrt(2*pi)*sigma_ref);
+    
+    logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
                                       
     % take average    
     logL_fluo = sum(logL_fluo_full,1);%-sum(0.5.*ms2_weights.*log_fluo_diffs_full,1)./ sum(coeff_MS2);% - log(sqrt(2*pi)*sigma);
