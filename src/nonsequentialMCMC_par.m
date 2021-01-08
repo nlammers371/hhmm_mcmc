@@ -17,7 +17,7 @@ mcmcInfo.nStates = size(mcmcInfo.A,1);
 mcmcInfo.v = [.05, 2, 6]';
 mcmcInfo.seq_length = 120*60/mcmcInfo.tres;
 
-mcmcInfo.nSteps = 4;
+mcmcInfo.nSteps = 10;
 [V, D] = eig(mcmcInfo.A);
 [~, mi] = max(real(diag(D)));
 mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
@@ -29,8 +29,8 @@ mcmcInfo.eps = 1e-2;
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 500; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 5;
+mcmcInfo.n_mcmc_steps = 1e4; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 100;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
