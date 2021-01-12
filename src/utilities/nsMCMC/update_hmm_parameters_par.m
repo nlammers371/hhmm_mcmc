@@ -54,7 +54,7 @@ function mcmcInfo = update_hmm_parameters_par(mcmcInfo)
 
         % calculate mean and variance
         v_mean = M\b;
-        v_cov_mat = mcmcInfo.sigma_curr^2 * inv(M);
+        v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(M);
 
         % sample
         mcmcInfo.v_curr(n,:) = mvnrnd(v_mean, v_cov_mat);             

@@ -23,7 +23,7 @@ mcmcInfo.nSteps = 4;
 mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
 
 mcmcInfo.sigma = 1;
-mcmcInfo.alpha = 1.4;
+mcmcInfo.alpha = 1;
 mcmcInfo.n_traces = 10;
 mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 

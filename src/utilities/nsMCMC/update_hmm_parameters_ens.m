@@ -51,27 +51,25 @@ function mcmcInfo = update_hmm_parameters_ens(mcmcInfo)
     v_cov_mat = mcmcInfo.sigma_curr^2 * inv(M);
 
     % sample
-    mcmcInfo.v_curr(n,:) = mvnrnd(v_mean, v_cov_mat);             
+    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat);             
     
     if update_flag
-        mcmcInfo.v_inf_array(:,:,update_index) = mcmcInfo.v_curr;   
+        mcmcInfo.v_inf_array(update_index,:) = mcmcInfo.v_curr;   
     end
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
 
     % get predicted fluorescence
-    mcmcInfo = predict_fluo_full_par(mcmcInfo);
+    mcmcInfo = predict_fluo_full_ens(mcmcInfo);          
+        
+    % Update sigma
+    a = numel(mcmcInfo.observed_fluo)/2;
+    F_diff = reshape(mean(permute(mcmcInfo.sample_fluo,[1 3 2]),3) - mcmcInfo.observed_fluo,[],1);
+    b = F_diff'*F_diff / 2;
+
+    % fraw sample
+    mcmcInfo.sigma_curr = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
     
-    for n = 1:n_chains        
-        
-        % Update sigma
-        a = numel(mcmcInfo.observed_fluo)/2;
-        F_diff = reshape(permute(mcmcInfo.sample_fluo(:,n,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);
-        b = F_diff'*F_diff / 2;
-        
-        % fraw sample
-        mcmcInfo.sigma_curr(n) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
-    end
     if update_flag
-        mcmcInfo.sigma_inf_array(update_index,:) = mcmcInfo.sigma_curr;
+        mcmcInfo.sigma_inf_array(update_index) = mcmcInfo.sigma_curr;
     end
         
