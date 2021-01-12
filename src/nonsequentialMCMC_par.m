@@ -17,20 +17,21 @@ mcmcInfo.nStates = size(mcmcInfo.A,1);
 mcmcInfo.v = [.05, 2, 6]';
 mcmcInfo.seq_length = 120*60/mcmcInfo.tres;
 
-mcmcInfo.nSteps = 10;
+mcmcInfo.nSteps = 4;
 [V, D] = eig(mcmcInfo.A);
 [~, mi] = max(real(diag(D)));
 mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
 
 mcmcInfo.sigma = 1;
-mcmcInfo.alpha = 0;
+mcmcInfo.alpha = 1.4;
 mcmcInfo.n_traces = 10;
-mcmcInfo.eps = 1e-2;
+mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 1e4; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 100;
+mcmcInfo.n_mcmc_steps = 250; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays
+mcmcInfo.n_chains = 10;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
@@ -54,10 +55,11 @@ end
 %%% Nonsequential MCMC
 
 % initialize arrays to store inference results
-mcmcInfo.logL_vec = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.n_chains);
-mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps,mcmcInfo.n_chains);
-mcmcInfo.v_inf_array = NaN(mcmcInfo.n_chains,mcmcInfo.nStates,mcmcInfo.n_mcmc_steps);
-mcmcInfo.sigma_inf_array = NaN(mcmcInfo.n_mcmc_steps,mcmcInfo.n_chains);
+n_updates = mcmcInfo.n_mcmc_steps/mcmcInfo.update_increment + 1;
+mcmcInfo.logL_vec = NaN(n_updates,mcmcInfo.n_chains);
+mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,n_updates,mcmcInfo.n_chains);
+mcmcInfo.v_inf_array = NaN(mcmcInfo.n_chains,mcmcInfo.nStates,n_updates);
+mcmcInfo.sigma_inf_array = NaN(n_updates,mcmcInfo.n_chains);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize variables

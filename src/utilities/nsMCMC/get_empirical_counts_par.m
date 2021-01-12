@@ -16,6 +16,7 @@ function mcmcInfo = get_empirical_counts_par(mcmcInfo)
 
     % initialize count arrays 
     mcmcInfo.transition_count_array = zeros(size(A_curr,1),size(A_curr,2),n_chains);        
+    mcmcInfo.initial_state_array = zeros(n_chains,nStates);   
     
     % initialize likelihood array
     mcmcInfo.trace_logL_array = -Inf(seq_length,n_chains,n_traces);
@@ -30,7 +31,12 @@ function mcmcInfo = get_empirical_counts_par(mcmcInfo)
     row_col_array = (from_array-1)*nStates+to_array;
     lin_index_array = row_col_array + chain_id_ref*nStates^2;
     
-    % get counts
+    % get state counts
+    for k = 1:nStates
+        mcmcInfo.initial_state_array(:,k) = sum(mcmcInfo.sample_chains(1,:,:)==k,3);
+    end
+    
+    % get transition counts
     unique_indices = unique(lin_index_array(:));
     transition_counts = histc(lin_index_array(:),unique_indices);
     
@@ -57,4 +63,13 @@ function mcmcInfo = get_empirical_counts_par(mcmcInfo)
     % record
     mcmcInfo.trace_logL_array = logL_transition_array_full + logL_fluo;
     mcmcInfo.trace_logL_vec = mean(mcmcInfo.trace_logL_array);
-    mcmcInfo.logL_vec(mcmcInfo.step-1,:) = mean(mcmcInfo.trace_logL_vec,3);%
+    
+    update_flag = mod(mcmcInfo.step-1,mcmcInfo.update_increment) == 0 || mcmcInfo.step-1 == 1;
+    update_index = (mcmcInfo.step-1)/mcmcInfo.update_increment + 1;
+    if mcmcInfo.step-1 == 1
+        update_index = 1;
+    end
+    if update_flag
+        mcmcInfo.logL_vec(update_index,:) = mean(mcmcInfo.trace_logL_vec,3);%
+    end
+    

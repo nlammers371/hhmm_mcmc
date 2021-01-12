@@ -11,20 +11,17 @@ function mcmcInfo = update_hmm_parameters_par(mcmcInfo)
     A_counts = mcmcInfo.transition_count_array;    
     for n = 1:n_chains
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet(mcmcInfo.A_alpha, A_counts(:,:,n));
-    end       
+    end
+    
+    update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0;
+    update_index = mcmcInfo.step/mcmcInfo.update_increment
+    mcmcInfo.A_inf_array(:,:,mcmcInfo.step,:) = mcmcInfo.A_curr;
     
     % update pi0
     for n = 1:mcmcInfo.n_chains
         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
         [~, mi] = max(real(diag(D)));
         mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));
-    end
-    
-    update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0;
-    update_index = mcmcInfo.step/mcmcInfo.update_increment + 1;
-    if update_flag
-        mcmcInfo.A_inf_array(:,:,update_index,:) = mcmcInfo.A_curr;
-        mcmcInfo.pi0_inf_array(:,:,update_index,:) = mcmcInfo.pi0_curr;
     end
     
     %% %%%%%%%%%%%%% update emission vector(V) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,9 +56,7 @@ function mcmcInfo = update_hmm_parameters_par(mcmcInfo)
         % sample
         mcmcInfo.v_curr(n,:) = mvnrnd(v_mean, v_cov_mat);             
     end
-    if update_flag
-        mcmcInfo.v_inf_array(:,:,update_index) = mcmcInfo.v_curr;   
-    end
+    mcmcInfo.v_inf_array(:,:,mcmcInfo.step) = mcmcInfo.v_curr;   
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
 
     % get predicted fluorescence
@@ -77,7 +72,5 @@ function mcmcInfo = update_hmm_parameters_par(mcmcInfo)
         % fraw sample
         mcmcInfo.sigma_curr(n) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
     end
-    if update_flag
-        mcmcInfo.sigma_inf_array(update_index,:) = mcmcInfo.sigma_curr;
-    end
+    mcmcInfo.sigma_inf_array(mcmcInfo.step,:) = mcmcInfo.sigma_curr;
         
