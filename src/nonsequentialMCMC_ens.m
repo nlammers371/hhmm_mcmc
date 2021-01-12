@@ -108,10 +108,10 @@ for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps
     mcmcInfo = resample_chains_ens(mcmcInfo);              
     
     % get empirical transition and occupancy counts    
-    mcmcInfo = get_empirical_counts_par(mcmcInfo);
+    mcmcInfo = get_empirical_counts_ens(mcmcInfo);
    
     % use Gibbs sampling to update hyperparameters      
-    mcmcInfo = update_hmm_parameters_par(mcmcInfo);    
+    mcmcInfo = update_hmm_parameters_ens(mcmcInfo);    
  
 end
 toc
