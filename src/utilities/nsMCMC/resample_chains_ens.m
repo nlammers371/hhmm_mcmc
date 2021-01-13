@@ -17,10 +17,11 @@ mcmcInfo.row_ref = (1:nStates)';
 mcmcInfo.step_ref = (-nSteps+1:nSteps-1)';
 
 % generate random sampling orders
-sample_indices = NaN(size(mcmcInfo.sample_chains));%randsample(repelem(1:seq_length,n_reps),n_reps*seq_length,false);
+n_reps = 2;
+sample_indices = NaN(n_reps*seq_length,size(mcmcInfo.sample_chains,2),size(mcmcInfo.sample_chains,3));%randsample(repelem(1:seq_length,n_reps),n_reps*seq_length,false);
 for n = 1:n_chains
     for t = 1:n_traces
-        sample_indices(:,n,t) = randperm(seq_length);
+        sample_indices(:,n,t) = randsample(repelem(1:seq_length,n_reps),n_reps*seq_length,false);
     end
 end
 
@@ -34,7 +35,8 @@ sample_chains_temp(end,:,:) = reshape(randsample(1:nStates,n_chains*n_traces,tru
 seq_len_temp = seq_length+2;
 
 % create dummy chain array for fluorescence sampling
-mcmcInfo.sample_chains_dummy = cat(1,ones(nSteps-1,n_chains,n_traces),mcmcInfo.sample_chains,ones(nSteps-1,n_chains,n_traces));
+true_states = repmat(permute(vertcat(mcmcInfo.masterSimStruct.naive_states)',[1 3 2]),1, n_chains,1);
+mcmcInfo.sample_chains_dummy = cat(1,ones(nSteps-1,n_chains,n_traces),true_states,ones(nSteps-1,n_chains,n_traces));
 mcmcInfo.observed_fluo_dummy = cat(1,zeros(nSteps-1,n_traces),mcmcInfo.observed_fluo,zeros(nSteps-1,n_traces));
 
 % iterate through indices to sample
@@ -48,10 +50,10 @@ for i = 1:seq_length
     %%% previous state %%%
     % calculate linear indices 
     prev_state_array = sample_chains_temp(prev_lin_index_array);
-    row_col_array_prev = (prev_state_array-1)*nStates+mcmcInfo.row_ref;    
+    row_col_array_from = (prev_state_array-1)*nStates+mcmcInfo.row_ref;    
     
     % extract probabilities
-    prev_probs_log = A_log(row_col_array_prev);
+    prev_probs_log = A_log(row_col_array_from);
           
     %%% following state %%%
     % calculate linear indices 

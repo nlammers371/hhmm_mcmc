@@ -35,12 +35,12 @@ function logL_fluo = calculate_fluo_logL_ens(mcmcInfo)
     % get differences   
     linIndexArrayFluo = indexArrayFull(nSteps:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
     ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);
-    ref_fluo(dummyFilter(nSteps:end,:,:)) = fluo_fragment(dummyFilter(nSteps:end,:,:));
+    dummy_trunc = dummyFilter(nSteps:end,:,:);
+    ref_fluo(dummy_trunc) = fluo_fragment(dummy_trunc);
     % set leading and trailing observations equal to model fluo. This is
     % the easiest way to remove from likelihood calculation
-    
     logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_curr).^2 + log(2*pi*sigma_curr.^2));
-                                      
+ 
     % take average    
     logL_fluo = sum(logL_fluo_full,1);%-sum(0.5.*ms2_weights.*log_fluo_diffs_full,1)./ sum(coeff_MS2);% - log(sqrt(2*pi)*sigma);
    

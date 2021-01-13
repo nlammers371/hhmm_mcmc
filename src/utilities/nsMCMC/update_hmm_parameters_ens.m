@@ -27,24 +27,24 @@ function mcmcInfo = update_hmm_parameters_ens(mcmcInfo)
     % update V   
     
     % generate F count arrays
-    F_array = zeros(seq_length*n_traces,nStates);    
-    y_array = NaN(seq_length*n_traces,1);    
+    F_array = zeros(seq_length*n_traces*n_chains,nStates);    
+    y_array = NaN(seq_length*n_traces*n_chains,1);    
     
     for n = 1:n_traces        
-        ind1 = (n-1)*seq_length+1;
-        ind2 = n*seq_length;
+        ind1 = (n-1)*seq_length*n_chains+1;
+        ind2 = n*seq_length*n_chains;
         % record observed fluo
-        y_array(ind1:ind2,:) = mcmcInfo.observed_fluo(:,n);
+        y_array(ind1:ind2,:) = repmat(mcmcInfo.observed_fluo(:,n),n_chains,1);
         for m = 1:nStates
             % record counts
-            state_counts = convn(coeff_MS2,mean(mcmcInfo.sample_chains(:,:,n)==m,2),'full');            
-            F_array(ind1:ind2,m) = state_counts(1:end-length(coeff_MS2)+1,:);                        
+            state_counts = convn(coeff_MS2,mcmcInfo.sample_chains(:,:,n)==m,'full');            
+            F_array(ind1:ind2,m) = reshape(state_counts(1:end-length(coeff_MS2)+1,:),[],1);                        
         end
     end
        
-    % update for each chain        
-    M = F_array'*F_array + 1e-4;    
-    b = F_array'*y_array;
+    % update for each chain       
+    M = (F_array'*F_array + 1e-4)/n_chains;    
+    b = (F_array'*y_array)/n_chains;
 
     % calculate mean and variance
     v_mean = M\b;
@@ -59,16 +59,16 @@ function mcmcInfo = update_hmm_parameters_ens(mcmcInfo)
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
 
     % get predicted fluorescence
-    mcmcInfo = predict_fluo_full_ens(mcmcInfo);          
-        
+    mcmcInfo = predict_fluo_full_ens(mcmcInfo);
+       
     % Update sigma
     a = numel(mcmcInfo.observed_fluo)/2;
-    F_diff = reshape(mean(permute(mcmcInfo.sample_fluo,[1 3 2]),3) - mcmcInfo.observed_fluo,[],1);
-    b = F_diff'*F_diff / 2;
+    F_diff = reshape(permute(mcmcInfo.sample_fluo,[1 3 2]) - mcmcInfo.observed_fluo,[],1);
+    b = F_diff'*F_diff / 2 / n_chains^2;
 
     % fraw sample
     mcmcInfo.sigma_curr = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
-    
+  
     if update_flag
         mcmcInfo.sigma_inf_array(update_index) = mcmcInfo.sigma_curr;
     end

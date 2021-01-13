@@ -29,9 +29,9 @@ mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 200; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays
-mcmcInfo.n_chains = 10;
+mcmcInfo.n_chains = 15;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
