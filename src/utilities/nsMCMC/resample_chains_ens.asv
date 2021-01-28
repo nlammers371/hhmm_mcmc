@@ -85,13 +85,9 @@ for i = 1:seq_length
 %     
 %     mcmcInfo.sample_chains(curr_lin_index_array) = sum(rand_array > option_array) + 1;
     sample_chains_temp(prev_time_index_array+1) = sum(rand_array > option_array) + 1;
-%     for c = 1:n_chains
-%         for t = 1:n_traces
-%             mcmcInfo.sample_chains(mcmcInfo.indArray(1,c,t),c,t) = randsample(1:nStates,1,true,total_likelihoods(:,c,t));
-%         end
-%     end
     curr_lin_index_array = (mcmcInfo.indArray+nSteps-1) + mcmcInfo.chain_id_ref*seq_len_dummy + mcmcInfo.trace_id_ref*seq_len_dummy*n_chains;
     mcmcInfo.sample_chains_dummy(curr_lin_index_array) = sample_chains_temp(prev_time_index_array+1);
 
-end   
+end  
+
 mcmcInfo.sample_chains = sample_chains_temp(2:end-1,:,:);

@@ -37,6 +37,7 @@ function logL_fluo = calculate_fluo_logL_ens(mcmcInfo)
     ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);
     dummy_trunc = dummyFilter(nSteps:end,:,:);
     ref_fluo(dummy_trunc) = fluo_fragment(dummy_trunc);
+    
     % set leading and trailing observations equal to model fluo. This is
     % the easiest way to remove from likelihood calculation
     logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_curr).^2 + log(2*pi*sigma_curr.^2));
