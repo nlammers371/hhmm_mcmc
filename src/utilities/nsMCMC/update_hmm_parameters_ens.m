@@ -43,15 +43,15 @@ function mcmcInfo = update_hmm_parameters_ens(mcmcInfo)
     end
        
     % update for each chain       
-    M = (F_array'*F_array + 1e-4)/n_chains;    
-    b = (F_array'*y_array)/n_chains;
+    M = (F_array'*F_array + 1e-4) / n_chains;    
+    b = (F_array'*y_array) / n_chains;
 
     % calculate mean and variance
     v_mean = M\b;
     v_cov_mat = mcmcInfo.sigma_curr^2 * inv(M);
 
     % sample
-    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat);             
+    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat)';             
     
     if update_flag
         mcmcInfo.v_inf_array(update_index,:) = mcmcInfo.v_curr;   
@@ -64,7 +64,7 @@ function mcmcInfo = update_hmm_parameters_ens(mcmcInfo)
     % Update sigma
     a = numel(mcmcInfo.observed_fluo)/2;
     F_diff = reshape(permute(mcmcInfo.sample_fluo,[1 3 2]) - mcmcInfo.observed_fluo,[],1);
-    b = F_diff'*F_diff / 2 / n_chains^2;
+    b = F_diff'*F_diff / 2 / n_chains;
 
     % fraw sample
     mcmcInfo.sigma_curr = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%

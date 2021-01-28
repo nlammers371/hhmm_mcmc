@@ -44,7 +44,7 @@ for ind = sample_indices
     %%% calculate fluorescence probability component
 
     % calculate fluo error term          
-    logL_fluo = calculate_fluo_logL_par(mcmcInfo);
+    logL_fluo = calculate_fluo_logL_ens_temp(mcmcInfo);
     
     %%% put everything together
     total_log_likelihoods = logL_fluo + logL_tr  - logsumexp(logL_fluo + logL_tr,1);        

@@ -29,7 +29,7 @@ mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 500; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_mcmc_steps = 250; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays
 mcmcInfo.n_chains = 25;
 

@@ -17,7 +17,7 @@ mcmcInfo.nStates = size(mcmcInfo.A,1);
 mcmcInfo.v = [.05, 2, 6]';
 mcmcInfo.seq_length = 120*60/mcmcInfo.tres;
 
-mcmcInfo.nSteps = 4;
+mcmcInfo.nSteps = 7;
 [V, D] = eig(mcmcInfo.A);
 [~, mi] = max(real(diag(D)));
 mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
@@ -31,7 +31,7 @@ mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 % basic inference params 
 mcmcInfo.n_mcmc_steps = 100; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays
-mcmcInfo.n_chains = 15;
+mcmcInfo.n_chains = 5;
 
 %%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%
 mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
@@ -69,7 +69,7 @@ mcmcInfo.sigma_inf_array = NaN(n_updates,1);
 % take A columns to follow multinomial Dirichlet distribution
 mcmcInfo.A_alpha = ones(mcmcInfo.nStates);%*n_particles*n_traces;
 mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) = mcmcInfo.A_alpha(eye(mcmcInfo.nStates)==1) + rand(mcmcInfo.nStates,1)*10; % distribution hyper params
-mcmcInfo.A_curr = mcmcInfo.A;% sample_A_dirichlet_par(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates), 1);
+mcmcInfo.A_curr = sample_A_dirichlet_par(mcmcInfo.A_alpha, zeros(mcmcInfo.nStates), 1);
 mcmcInfo.A_inf_array(:,:,1) = mcmcInfo.A_curr;
 
 % calculate pi0 
@@ -82,12 +82,12 @@ mcmcInfo.pi0_inf_array(1,:) = mcmcInfo.pi0_curr;
 % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
 fluo_vec = mcmcInfo.observed_fluo(:);
 f_factor = 0.1*mean(fluo_vec);
-mcmcInfo.sigma_curr = mcmcInfo.sigma;%trandn(-1,Inf)*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+mcmcInfo.sigma_curr = trandn(-1,Inf)*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
 mcmcInfo.sigma_inf_array(1) = mcmcInfo.sigma_curr;
 
 % initialize v
 v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
-mcmcInfo.v_curr = mcmcInfo.v;%[0 v2 2*v2] + rand(1,mcmcInfo.nStates) - .5;
+mcmcInfo.v_curr = [0 v2 2*v2]' + rand(mcmcInfo.nStates,1) - .5;
 mcmcInfo.v_inf_array(1,:) = mcmcInfo.v_curr;
 
 % initialize chains

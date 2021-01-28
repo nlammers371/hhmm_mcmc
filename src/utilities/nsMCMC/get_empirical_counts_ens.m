@@ -54,6 +54,9 @@ function mcmcInfo = get_empirical_counts_ens(mcmcInfo)
         
     % calculate initial state likelihoods    
     logL_pi0 = pi0_log(mcmcInfo.sample_chains(1,:,:));  
+    if n_chains == 1
+        logL_pi0 = reshape(logL_pi0,1,1,[]);
+    end
     logL_transition_array_full = cat(1,logL_pi0,logL_transition_array);
     
     % record
