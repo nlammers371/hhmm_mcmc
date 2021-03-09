@@ -30,8 +30,10 @@ sample_chains_temp = NaN(size(mcmcInfo.sample_chains,1)+2,size(mcmcInfo.sample_c
 sample_chains_temp(2:end-1,:,:) = mcmcInfo.sample_chains;
 
 % initialize starting and end indices randomly using pi0
-sample_chains_temp(1,:,:) = reshape(randsample(1:nStates,n_chains*n_traces,true,pi0),1,n_chains,n_traces);
-sample_chains_temp(end,:,:) = reshape(randsample(1:nStates,n_chains*n_traces,true,pi0),1,n_chains,n_traces);
+for n = 1:n_chains
+    sample_chains_temp(1,n,:) = reshape(randsample(1:nStates,n_traces,true,pi0(n,:)),1,1,n_traces);
+    sample_chains_temp(end,n,:) = reshape(randsample(1:nStates,n_traces,true,pi0(n,:)),1,1,n_traces);
+end    
 seq_len_temp = seq_length+2;
 seq_len_dummy = seq_length+2*(nSteps-1);
 
@@ -54,7 +56,7 @@ for i = 1:seq_length
     %%% previous state %%%
     % calculate linear indices 
     prev_state_array = sample_chains_temp(prev_lin_index_array);
-    row_col_array_from = (prev_state_array-1)*nStates+mcmcInfo.row_ref;    
+    row_col_array_from = mcmcInfo.chain_id_ref*nStates^2 + (prev_state_array-1)*nStates+mcmcInfo.row_ref;    
     
     % extract probabilities
     prev_probs_log = A_log(row_col_array_from);
@@ -62,7 +64,7 @@ for i = 1:seq_length
     %%% following state %%%
     % calculate linear indices 
     post_state_array = sample_chains_temp(post_lin_index_array);  
-    row_col_array_to = (mcmcInfo.row_ref-1)*nStates+post_state_array;
+    row_col_array_to = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates+post_state_array;
         
     % extract probabilities
     post_probs_log = A_log(row_col_array_to);
@@ -73,7 +75,8 @@ for i = 1:seq_length
     %%% calculate fluorescence probability component
 
     % calculate fluo error term          
-    logL_fluo = calculate_fluo_logL_ens(mcmcInfo);
+    logL_fluo = calculate_fluo_logL_v3(mcmcInfo);    
+%     logL_fluo = calculate_fluo_logL_ens(mcmcInfo);
     
     %%% put everything together
     total_log_likelihoods = logL_tr + logL_fluo;

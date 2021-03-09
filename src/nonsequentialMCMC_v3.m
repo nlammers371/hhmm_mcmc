@@ -17,7 +17,7 @@ mcmcInfo.nStates = size(mcmcInfo.A,1);
 mcmcInfo.v = [.05, 2, 4]';
 mcmcInfo.seq_length = 120*60/mcmcInfo.tres;
 
-mcmcInfo.nSteps = 3;
+mcmcInfo.nSteps = 7;
 [V, D] = eig(mcmcInfo.A);
 [~, mi] = max(real(diag(D)));
 mcmcInfo.pi0 = V(:,mi)/sum(V(:,mi));
@@ -29,7 +29,7 @@ mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 250; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_mcmc_steps = 200; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays
 mcmcInfo.n_chains = 10;
 
@@ -80,16 +80,17 @@ for n = 1:n_chains
     % calculate pi0 
     [V, D] = eig(mcmcInfo.A_curr(:,:,n));
     [~, mi] = max(real(diag(D)));
-    mcmcInfo.pi0_curr = V(:,mi)/sum(V(:,mi));
-    mcmcInfo.pi0_inf_array(1,:,n) = mcmcInfo.pi0_curr;
+    mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));
+    mcmcInfo.pi0_inf_array(1,:,n) = mcmcInfo.pi0_curr(n,:);
 end
 
 % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
 fluo_vec = mcmcInfo.observed_fluo(:);
 f_factor = 0.1*mean(fluo_vec);
-mcmcInfo.sigma_curr = trandn(-1,Inf)*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
-mcmcInfo.sigma_inf_array(1) = mcmcInfo.sigma_curr;
-
+for n = 1:n_chains
+    mcmcInfo.sigma_curr(n) = trandn(-1,Inf)*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
+    mcmcInfo.sigma_inf_array(1,n) = mcmcInfo.sigma_curr(n);
+end
 % initialize v
 mcmcInfo.v_curr = NaN(mcmcInfo.n_chains,mcmcInfo.nStates);
 v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
@@ -99,7 +100,7 @@ for n = 1:n_chains
 end
 
 % initialize chains
-mcmcInfo = initialize_chains_ens(mcmcInfo);
+mcmcInfo = initialize_chains_v3(mcmcInfo);
 
 % get predicted fluorescence
 mcmcInfo = predict_fluo_full(mcmcInfo);

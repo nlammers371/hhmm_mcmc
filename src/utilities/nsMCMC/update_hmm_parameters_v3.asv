@@ -20,34 +20,32 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));    
         
         if update_flag
-            mcmcInfo.A_inf_array(:,:,update_index) = mcmcInfo.A_curr;
-            mcmcInfo.pi0_inf_array(:,:,update_index) = mcmcInfo.pi0_curr;
+            mcmcInfo.A_inf_array(:,:,update_index,n) = mcmcInfo.A_curr(:,:,n);
+            mcmcInfo.pi0_inf_array(:,:,update_index,n) = mcmcInfo.pi0_curr(n,:);
         end
     end
-    
-    
-    
-    
+                
     
     %% %%%%%%%%%%%%% update emission vector(V) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % update V   
     
     % generate F count arrays
-    F_array = zeros(seq_length*n_traces*n_chains,nStates);    
-    y_array = NaN(seq_length*n_traces*n_chains,1);    
+    F_array = zeros(seq_length*n_traces,nStates,n_chains);    
+    y_array = NaN(seq_length*n_traces,n_chains);    
     
-    for n = 1:n_traces        
-        ind1 = (n-1)*seq_length*n_chains+1;
-        ind2 = n*seq_length*n_chains;
-        % record observed fluo
-        y_array(ind1:ind2,:) = repmat(mcmcInfo.observed_fluo(:,n),n_chains,1);
-        for m = 1:nStates
-            % record counts
-            state_counts = convn(coeff_MS2,mcmcInfo.sample_chains(:,:,n)==m,'full');            
-            F_array(ind1:ind2,m) = reshape(state_counts(1:end-length(coeff_MS2)+1,:),[],1);                        
+    for c = 1:n_chains
+        for n = 1:n_traces        
+            ind1 = (n-1)*seq_length+1;
+            ind2 = n*seq_length;
+            % record observed fluo
+            y_array(ind1:ind2,:) = mcmcInfo.observed_fluo(:,n),n_chains,1);
+            for m = 1:nStates
+                % record counts
+                state_counts = convn(coeff_MS2,mcmcInfo.sample_chains(:,:,n)==m,'full');            
+                F_array(ind1:ind2,m) = reshape(state_counts(1:end-length(coeff_MS2)+1,:),[],1);                        
+            end
         end
-    end
-       
+    end  
     % update for each chain       
     M = (F_array'*F_array + 1e-4) / n_chains;    
     b = (F_array'*y_array) / n_chains;

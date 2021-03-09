@@ -28,7 +28,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     % get linear indices
     from_array = mcmcInfo.sample_chains(1:end-1,:,:);
     to_array = mcmcInfo.sample_chains(2:end,:,:);        
-    row_col_array = (from_array-1)*nStates+to_array;
+    row_col_array = (from_array-1)*nStates+ to_array;% + nStates^2*mcmcInfo.chain_id_ref;
     lin_index_array = row_col_array;
     
     % get state counts
@@ -38,9 +38,8 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     
     % get transition counts
     unique_indices = unique(lin_index_array(:));    
-
-    mcmcInfo.transition_count_array_alt
-    n_vec = (0:n_chains-1)*numel(A_curr);
+  
+    n_vec = (0:n_chains-1)*nStates^2;
     for i = 1:length(unique_indices)        
         mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==i,1),2);
     end
@@ -50,7 +49,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     
     % calculate fluo-based likelihood
     ref_fluo = repmat(permute(mcmcInfo.observed_fluo,[1 3 2]),1,n_chains,1);
-    sigma_ref = repmat(sigma_curr',size(ref_fluo,1),1,n_traces);    
+    sigma_ref = repmat(sigma_curr,size(ref_fluo,1),1,n_traces);    
     logL_fluo = -0.5*(((ref_fluo-mcmcInfo.sample_fluo)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
         
     % calculate initial state likelihoods    

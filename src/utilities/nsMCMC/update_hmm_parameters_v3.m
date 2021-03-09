@@ -21,61 +21,63 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         
         if update_flag
             mcmcInfo.A_inf_array(:,:,update_index,n) = mcmcInfo.A_curr(:,:,n);
-            mcmcInfo.pi0_inf_array(:,:,update_index,n) = mcmcInfo.pi0_curr(n,:);
+            mcmcInfo.pi0_inf_array(update_index,:,n) = mcmcInfo.pi0_curr(n,:);
         end
     end
-    
-    
-    
-    
+                
     
     %% %%%%%%%%%%%%% update emission vector(V) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % update V   
     
     % generate F count arrays
-    F_array = zeros(seq_length*n_traces*n_chains,nStates);    
-    y_array = NaN(seq_length*n_traces*n_chains,1);    
+    F_array = zeros(seq_length*n_traces,nStates,n_chains);    
+    y_array = NaN(seq_length*n_traces,n_chains);    
     
-    for n = 1:n_traces        
-        ind1 = (n-1)*seq_length*n_chains+1;
-        ind2 = n*seq_length*n_chains;
-        % record observed fluo
-        y_array(ind1:ind2,:) = repmat(mcmcInfo.observed_fluo(:,n),n_chains,1);
-        for m = 1:nStates
-            % record counts
-            state_counts = convn(coeff_MS2,mcmcInfo.sample_chains(:,:,n)==m,'full');            
-            F_array(ind1:ind2,m) = reshape(state_counts(1:end-length(coeff_MS2)+1,:),[],1);                        
+    for c = 1:n_chains
+        for n = 1:n_traces        
+            ind1 = (n-1)*seq_length+1;
+            ind2 = n*seq_length;
+            % record observed fluo
+            y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            for m = 1:nStates
+                % record counts
+                state_counts = convn(coeff_MS2,mcmcInfo.sample_chains(:,c,n)==m,'full');            
+                F_array(ind1:ind2,m,c) = reshape(state_counts(1:end-length(coeff_MS2)+1,:),[],1);                        
+            end
         end
-    end
-       
-    % update for each chain       
-    M = (F_array'*F_array + 1e-4) / n_chains;    
-    b = (F_array'*y_array) / n_chains;
-
-    % calculate mean and variance
-    v_mean = M\b;
-    v_cov_mat = mcmcInfo.sigma_curr^2 * inv(M);
-
-    % sample
-    mcmcInfo.v_curr = mvnrnd(v_mean, v_cov_mat)';             
+    end  
     
-    if update_flag
-        mcmcInfo.v_inf_array(update_index,:) = mcmcInfo.v_curr;   
+    for c = 1:n_chains
+        % update for each chain       
+        M = (F_array(:,:,c)'*F_array(:,:,c) + 1e-4);    
+        b = (F_array(:,:,c)'*y_array(:,c));
+
+        % calculate mean and variance
+        v_mean = M\b;
+        v_cov_mat = mcmcInfo.sigma_curr(c)^2 * inv(M);
+
+        % sample
+        mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)';             
+
+        if update_flag
+            mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_curr(c,:);   
+        end
     end
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
 
     % get predicted fluorescence
-    mcmcInfo = predict_fluo_full_ens(mcmcInfo);
+    mcmcInfo = predict_fluo_full_v3(mcmcInfo);
        
     % Update sigma
-    a = numel(mcmcInfo.observed_fluo)/2;
-    F_diff = reshape(permute(mcmcInfo.sample_fluo,[1 3 2]) - mcmcInfo.observed_fluo,[],1);
-    b = F_diff'*F_diff / 2 / n_chains;
+    for c = 1:n_chains
+        a = numel(mcmcInfo.observed_fluo)/2;
+        F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);
+        b = F_diff'*F_diff / 2;
 
-    % fraw sample
-    mcmcInfo.sigma_curr = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
-  
-    if update_flag
-        mcmcInfo.sigma_inf_array(update_index) = mcmcInfo.sigma_curr;
-    end
-        
+        % fraw sample
+        mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
+
+        if update_flag
+            mcmcInfo.sigma_inf_array(update_index,c) = mcmcInfo.sigma_curr(c);
+        end
+    end   
