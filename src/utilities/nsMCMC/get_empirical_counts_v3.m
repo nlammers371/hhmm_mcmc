@@ -41,7 +41,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
   
     n_vec = (0:n_chains-1)*nStates^2;
     for i = 1:length(unique_indices)        
-        mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==i,1),2);
+        mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==i,1),3);
     end
     
     % calculate transition likelihoods
@@ -63,12 +63,12 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     mcmcInfo.trace_logL_array = logL_transition_array_full + logL_fluo;
     mcmcInfo.trace_logL_vec = mean(mcmcInfo.trace_logL_array);
     
-    update_flag = mod(mcmcInfo.step-1,mcmcInfo.update_increment) == 0 || mcmcInfo.step-1 == 1;
-    update_index = (mcmcInfo.step-1)/mcmcInfo.update_increment + 1;
+    update_flag = mod(mcmcInfo.step-1,mcmcInfo.update_increment) == 0 || mcmcInfo.step-1 == 1 || mcmcInfo.step == mcmcInfo.n_mcmc_steps;
+    update_index = floor((mcmcInfo.step-1)/mcmcInfo.update_increment) + 1;
     if mcmcInfo.step-1 == 1
         update_index = 1;
     end
     if update_flag
-        mcmcInfo.logL_vec(update_index,:) = mean(mcmcInfo.trace_logL_vec,2);%
+        mcmcInfo.logL_vec(update_index,:) = mean(mcmcInfo.trace_logL_vec,3);%
     end
     

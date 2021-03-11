@@ -1,4 +1,4 @@
-function mcmcInfo = resample_chains_v3(mcmcInfo)
+function mcmcInfo = resample_chains_MH(mcmcInfo)
 
 % extract parameters
 A_log = log(mcmcInfo.A_curr);
@@ -15,7 +15,6 @@ mcmcInfo.chain_id_ref = 0:n_chains-1;
 mcmcInfo.trace_id_ref = reshape(0:n_traces-1,1,1,[]);
 mcmcInfo.row_ref = (1:nStates)';
 mcmcInfo.step_ref = (-nSteps+1:nSteps-1)';
-% mcmcInfo.step_ref_trunc = (0:nSteps-1)';
 
 % generate random sampling orders
 n_reps = mcmcInfo.n_reps;
@@ -76,6 +75,7 @@ for i = 1:seq_length*n_reps
     % combine
     logL_tr = prev_probs_log + post_probs_log;
 
+    % 
     %%% calculate fluorescence probability component
 
     % calculate fluo error term          

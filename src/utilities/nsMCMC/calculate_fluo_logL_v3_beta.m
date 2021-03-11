@@ -1,7 +1,8 @@
-function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
+function logL_fluo = calculate_fluo_logL_v3_beta(mcmcInfo)
                   
     % extrac useful parameters
     seq_length_dummy = size(mcmcInfo.sample_chains_dummy,1);%mcmcInfo.seq_length;
+    seq_length_dummy2 = size(mcmcInfo.sample_fluo_dummy2,1);
     seq_length = mcmcInfo.seq_length;
     indexArray = mcmcInfo.indArray;
     nSteps = mcmcInfo.nSteps;
@@ -34,6 +35,13 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     % calculate predicted fluorescence
     fluo_fragment = convn(coeff_MS2,initiation_fragment,'full');             
     fluo_fragment = fluo_fragment(nSteps:2*nSteps-1,:,:,:);
+    
+    %%
+    indexArrayTrunc = indexArray + mcmcInfo.step_ref_trunc;
+    linIndexArrayTrunc = indexArrayTrunc + mcmcInfo.chain_id_ref*seq_length_dummy2 + mcmcInfo.trace_id_ref*seq_length_dummy2*n_chains;  
+    predicted_fluo_curr = mcmcInfo.sample_fluo_dummy2(linIndexArrayTrunc);
+    
+    %%
     
     % get differences   
     linIndexArrayFluo = indexArrayFull(nSteps:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;

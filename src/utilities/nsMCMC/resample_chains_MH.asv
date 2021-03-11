@@ -1,4 +1,4 @@
-function mcmcInfo = resample_chains_v3(mcmcInfo)
+function mcmcInfo = resample_chains_MH(mcmcInfo)
 
 % extract parameters
 A_log = log(mcmcInfo.A_curr);
@@ -15,7 +15,6 @@ mcmcInfo.chain_id_ref = 0:n_chains-1;
 mcmcInfo.trace_id_ref = reshape(0:n_traces-1,1,1,[]);
 mcmcInfo.row_ref = (1:nStates)';
 mcmcInfo.step_ref = (-nSteps+1:nSteps-1)';
-% mcmcInfo.step_ref_trunc = (0:nSteps-1)';
 
 % generate random sampling orders
 n_reps = mcmcInfo.n_reps;
@@ -76,6 +75,24 @@ for i = 1:seq_length*n_reps
     % combine
     logL_tr = prev_probs_log + post_probs_log;
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % perform MH move
+    
+    % get state indices
+    curr_lin_index_array = prev_lin_index_array + 1;
+    curr_state_array = sample_chains_temp(curr_lin_index_array);  
+    curr_state_lin = curr_state_array + mcmcInfo.chain_id_ref.*nStates + mcmcInfo.trace_id_ref*nStates*n_chains;
+    
+    % get probs
+    state_options = exp(logL_tr);
+    state_options(curr_state_lin) = 0;
+    state_options = state_options./sum(state_options);
+    
+    % draw state proposal
+    option_array_prop = cumsum(state_options);
+    rand_array_prop = repmat(rand(1,n_chains,n_traces),nStates,1);
+    state_proposals = sum(rand_array_prop > option_array_prop) + 1;
+    
     %%% calculate fluorescence probability component
 
     % calculate fluo error term          

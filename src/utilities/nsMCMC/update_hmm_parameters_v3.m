@@ -8,11 +8,11 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     coeff_MS2 = mcmcInfo.coeff_MS2;        
     
     %% %%%%%%%%%% update transition matrix (A) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0;
-    update_index = mcmcInfo.step/mcmcInfo.update_increment + 1;
+    update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0 || mcmcInfo.step == mcmcInfo.n_mcmc_steps;
+    update_index = ceil(mcmcInfo.step/mcmcInfo.update_increment) + 1;
     A_counts = mcmcInfo.transition_count_array;  
     for n = 1:n_chains
-        mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet(mcmcInfo.A_alpha, A_counts(:,:,n));    
+        mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_counts(:,:,n));    
         
         % update pi0    
         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
@@ -74,7 +74,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);
         b = F_diff'*F_diff / 2;
 
-        % fraw sample
+        % draw sample
         mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.sigma;%sqrt(mean(F_diff.^2));%
 
         if update_flag
