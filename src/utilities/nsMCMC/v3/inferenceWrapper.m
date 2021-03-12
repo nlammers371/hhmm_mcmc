@@ -17,8 +17,9 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         if mcmcInfo.MHResampling
             mcmcInfo = resample_chains_MH(mcmcInfo);              
         else
-            mcmcInfo = resample_chains_v3(mcmcInfo);              
+            mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"         
         end
+        
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 
