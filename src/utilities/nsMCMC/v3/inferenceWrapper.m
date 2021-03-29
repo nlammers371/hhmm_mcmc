@@ -20,6 +20,10 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
             mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"         
         end
         
+        % perform additional "cross-talk" MH sampling if we are doing chain
+        % tempering
+        mcmcInfo = temper_chains(mcmcInfo);
+        
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 

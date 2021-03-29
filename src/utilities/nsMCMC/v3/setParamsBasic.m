@@ -11,22 +11,17 @@ trueParams.v = [.05, 2, 4]';
 [V, D] = eig(trueParams.A);
 [~, mi] = max(real(diag(D)));
 trueParams.pi0 = V(:,mi)/sum(V(:,mi));
-
-
+mcmcInfo.trueParams = trueParams;
 
 % add known hyperparameters
 mcmcInfo.nStates = size(trueParams.A,1);
 mcmcInfo.alpha = 1.05;
 mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 mcmcInfo.n_reps = 2;
-mcmcInfo.nSteps = 10;
-mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
-
-% calculate scaled noise
-f_mean = (trueParams.pi0'*trueParams.v)*sum(mcmcInfo.coeff_MS2);
-trueParams.sigma = f_mean/6;
-mcmcInfo.trueParams = trueParams;
+mcmcInfo.nSteps = 7;
 
 % testing flags
+mcmcInfo.ensembleInferenceFlag = 0;
 mcmcInfo.testResampling = 0;
 mcmcInfo.MHResampling = 0;
+mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays

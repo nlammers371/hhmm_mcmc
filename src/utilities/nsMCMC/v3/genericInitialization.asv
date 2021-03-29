@@ -42,6 +42,6 @@ function mcmcInfo = genericInitialization(mcmcInfo)
         max_temp = 1e3;
         mcmcInfo.tempGradVec = logspace(0,log10(max_temp),mcmcInfo.n_chains); 
         mcmcInfo.refChainVec = false(size(mcmcInfo.tempGradVec));
-        mcmcInfo.refChainVec(1) = true;
+        mcmcInfo.refChainVec(1) = truel
     end
     

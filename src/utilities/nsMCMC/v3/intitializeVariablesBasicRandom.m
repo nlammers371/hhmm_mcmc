@@ -23,7 +23,7 @@ function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
 
     % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
     fluo_vec = mcmcInfo.observed_fluo(:);
-    f_factor = 0.1*mean(fluo_vec);
+    f_factor = 0.3*mean(fluo_vec);
     for n = 1:n_chains
         mcmcInfo.sigma_curr(n) = trandn(-1,Inf)*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
         mcmcInfo.sigma_inf_array(1,n) = mcmcInfo.sigma_curr(n);
