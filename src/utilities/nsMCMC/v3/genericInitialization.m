@@ -34,14 +34,5 @@ function mcmcInfo = genericInitialization(mcmcInfo)
         for f = 1:length(fieldNames)
             mcmcInfo.masterSimStruct(n).(fieldNames{f}) = synthetic_data.(fieldNames{f});
         end
-    end
-    
-    %%%%%%%%%%%%%%%%%%%
-    %%% Add parallel tempering info if appropriate
-    if mcmcInfo.temperingFlag
-        max_temp = 1e3;
-        mcmcInfo.tempGradVec = logspace(0,log10(max_temp),mcmcInfo.n_chains); 
-        mcmcInfo.refChainVec = false(size(mcmcInfo.tempGradVec));
-        mcmcInfo.refChainVec(1) = true;
-    end
+    end       
     

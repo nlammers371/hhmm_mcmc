@@ -82,8 +82,8 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         end  
         
         % calculate mean and variance
-        v_mean = M\b;
-        v_cov_mat = mcmcInfo.sigma_curr(c)^2 * inv(M);
+        v_mean = M\b;         
+        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2*inv(mcmcInfo.M0));
 
         % sample
         mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)';             
@@ -100,7 +100,8 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     
     % Update sigma
     for c = 1:n_chains
-        a = numel(mcmcInfo.observed_fluo)/2;
+        % see: https://discdown.org/flexregression/bayesreg.html
+        a = numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0;
         if mcmcInfo.ensembleInferenceFlag
             F_diff = reshape(mean_fluo_est - mcmcInfo.observed_fluo,[],1);     
         elseif mcmcInfo.temperingFlag 
@@ -108,7 +109,8 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         else
             F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);
         end
-        b = F_diff'*F_diff / 2;
+        b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0)*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0)';
+        b = F_diff'*F_diff / 2 + b_prior_piece;
         
 %         beta = 1;
         mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.trueParams.sigma

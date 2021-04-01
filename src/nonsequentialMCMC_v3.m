@@ -8,21 +8,25 @@ addpath(genpath('utilities'))
 % initialize info structure
 mcmcInfo = setParamsBasic;
 
-%%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % characteristics of simulated data
 mcmcInfo.n_traces = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 
+%%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 20; % number of parallel MCMC chains to run
+mcmcInfo.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 1e2; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfo.nSteps = 10; % Number of time steps needed to transcribe full gene
+mcmcInfo.nSteps = 7; % number of time steps needed to transcribe full gene
 
 % inference type
 mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel chains?
+
+% tempering options
 mcmcInfo.temperingFlag = 1; % use parallel tempering?
-mcmcInfo.n_rs_per_trace = 5;
+mcmcInfo.n_rs_per_trace = 5; % number of swap proposals per neighboring trace pair
+
 % initialize arrays and simulate traces
 mcmcInfo = genericInitialization(mcmcInfo);
 

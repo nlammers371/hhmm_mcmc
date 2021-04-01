@@ -21,7 +21,8 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     naive_states = mcmcInfo.sample_chains_dummy(linIndexArrayFull);
     v_lin_indices = (naive_states-1)*n_chains + mcmcInfo.chain_id_ref + 1;
     initiation_fragment_init = mcmcInfo.v_curr(v_lin_indices);
-     
+    
+    tic;
     % zero out dummy placeholder states
     dummyFilter = indexArrayFull-nSteps+1<1 | indexArrayFull-nSteps+1>seq_length;
     initiation_fragment_init(dummyFilter) = 0;
@@ -39,7 +40,6 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     linIndexArrayFluo = indexArrayFull(nSteps:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
     ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);
     dummy_trunc = dummyFilter(nSteps:end,:,:);
-    
     % set leading and trailing observations equal to model fluo. This is
     % the easiest way to remove from likelihood calculation
     ref_fluo(dummy_trunc) = fluo_fragment(dummy_trunc);
@@ -53,4 +53,5 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
    
     % reshape to be consistent with transition prob format    
     logL_fluo = permute(logL_fluo,[4 2 3 1]);
-   
+    toc;
+    error('aw')
