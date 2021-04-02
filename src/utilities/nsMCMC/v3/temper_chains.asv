@@ -13,7 +13,7 @@ seq_length = mcmcInfo.seq_length;
 % set options
 n_rs_per_trace = mcmcInfo.n_rs_per_trace;
 
-for c = mcmcInfo.n_chains-1:-1:1
+for c = 1:mcmcInfo.n_chains-1
     for t = 1:mcmcInfo.n_traces
       
         ref_trace = mcmcInfo.observed_fluo(:,t);            
@@ -22,15 +22,9 @@ for c = mcmcInfo.n_chains-1:-1:1
         t2 = mcmcInfo.sample_chains(:,c+1,t);
         
         % randomly propose swap(s)
-        swap_options = find(t2~=t1);%2:length(t1)-1;
-        swap_options = swap_options(~ismember(swap_options,[1 length(t1)]));
-        n_samp = min([n_rs_per_trace,length(swap_options)]);
-        if n_samp>1
-            prop_points = randsample(swap_options,n_samp);
-        else
-            prop_points = swap_options;
-        end
-            
+        swap_options = 2:length(t1)-1;
+        prop_points = randsample(swap_options,n_rs_per_trace);
+        
         % test each point
         for p = 1:length(prop_points)                    
             % make swap proposals
@@ -77,7 +71,7 @@ for c = mcmcInfo.n_chains-1:-1:1
             sigma_ref = mcmcInfo.sigma_curr([c c+1 c c+1]);    
             
             logL_fluo = -0.5*(((ref_trace-fluo_predicted)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
-                      
+            
             %%%%%%%%%%%%%%%%%%%%%%%%%
             % Combine
             %%%%%%%%%%%%%%%%%%%%%%%%%             
@@ -85,15 +79,12 @@ for c = mcmcInfo.n_chains-1:-1:1
 %             total_log_likelihoods = total_log_likelihoods./ mcmcInfo.tempGradVec([c c+1 c c+1]);
             temp1 = mcmcInfo.tempGradVec(c);
             temp2 = mcmcInfo.tempGradVec(c+1);
-            
             %%%%%%%%%%%%%%%%%%%%%%%%%
             % MH move            
             %%%%%%%%%%%%%%%%%%%%%%%%% 
-            L_factor = exp((total_log_likelihoods(3)-total_log_likelihoods(1))/temp1)*...
-                               exp((total_log_likelihoods(4)-total_log_likelihoods(2))/temp2);
-%             move_flag = min([1,]);
-            if L_factor > rand() 
-                mcmcInfo.move_flag_array(p,c,t,mcmcInfo.step) = 1;
+            move_flag = min([1,exp((total_log_likelihoods(3)-total_log_likelihoods(1))/temp1)*...
+                               exp((total_log_likelihoods(4)-total_log_likelihoods(2))/temp2)]);
+            if move_flag > rand()
                 mcmcInfo.sample_chains(:,c,t) = t1_prop;
                 mcmcInfo.sample_chains(:,c+1,t) = t2_prop;
             end

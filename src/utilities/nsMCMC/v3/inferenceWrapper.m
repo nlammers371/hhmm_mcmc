@@ -8,22 +8,26 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
 
     wb = waitbar(0,'conducting MCMC inference...');
 
-    for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
+    for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps          
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);
 
         mcmcInfo.step = step;
 
-        % resample chains    
-        if mcmcInfo.MHResampling
-            mcmcInfo = resample_chains_MH(mcmcInfo);              
+        if ~mcmcInfo.consistencyTestFlag
+            % resample chains            
+            mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"                 
+
+            % perform additional "cross-talk" MH sampling if we are doing chain
+            % tempering
+            mcmcInfo = temper_chains(mcmcInfo);
         else
-            mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"         
+            % assign true chains
+            sample_chains_true = NaN(size(mcmcInfo.sample_chains));
+            for i = 1:length(mcmcInfo.masterSimStruct)
+                sample_chains_true(:,:,i) = repmat(mcmcInfo.masterSimStruct(i).naive_states',1,mcmcInfo.n_chains);
+            end
+            mcmcInfo.sample_chains = sample_chains_true;
         end
-        
-        % perform additional "cross-talk" MH sampling if we are doing chain
-        % tempering
-        mcmcInfo = temper_chains(mcmcInfo);
-        
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 

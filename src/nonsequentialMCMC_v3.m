@@ -10,13 +10,16 @@ mcmcInfo = setParamsBasic;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % characteristics of simulated data
-mcmcInfo.n_traces = 10;
+mcmcInfo.n_traces = 12;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
+
+%%% Are we doing a consistency test?
+mcmcInfo.consistencyTestFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 1e2; % number of parallel MCMC chains to run
+mcmcInfo.n_mcmc_steps = 1e2; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 5; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfo.nSteps = 7; % number of time steps needed to transcribe full gene
 
@@ -25,11 +28,18 @@ mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel
 
 % tempering options
 mcmcInfo.temperingFlag = 1; % use parallel tempering?
-mcmcInfo.n_rs_per_trace = 5; % number of swap proposals per neighboring trace pair
+mcmcInfo.n_rs_per_trace = 25; % number of swap proposals per neighboring trace pair
+mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains);
+mcmcInfo.refChainVec(1) = 1;
+mcmcInfo.max_temp = 1e5;
+exp_vec = 0:mcmcInfo.n_chains-1;
+mcmcInfo.tempGradVec = 3.5.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);
+% mcmcInfo.tempGradVec(2) = 1;
+
+mcmcInfo.move_flag_array = false(mcmcInfo.n_rs_per_trace,mcmcInfo.n_chains-1,mcmcInfo.n_traces,mcmcInfo.n_mcmc_steps);
 
 % initialize arrays and simulate traces
 mcmcInfo = genericInitialization(mcmcInfo);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize inference variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
