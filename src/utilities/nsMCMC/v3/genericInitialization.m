@@ -21,18 +21,35 @@ function mcmcInfo = genericInitialization(mcmcInfo)
     mcmcInfo.sigma_inf_array = NaN(n_updates,n_chains);
 
     %%%%%%%%%%%%%%%%%%%%%%% simulate traces %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    mcmcInfo.observed_fluo = NaN(mcmcInfo.seq_length,mcmcInfo.n_traces);
+    mcmcInfo.observed_fluo =cell(1,mcmcInfo.n_traces);
     trueParams = mcmcInfo.trueParams;
     mcmcInfo.masterSimStruct = struct;
     for n = 1:mcmcInfo.n_traces
         synthetic_data = synthetic_prob(mcmcInfo.seq_length, mcmcInfo.alpha, mcmcInfo.nStates, ...
                               mcmcInfo.nSteps, trueParams.A, trueParams.v', trueParams.sigma, trueParams.pi0);                                     
 
-        mcmcInfo.observed_fluo(:,n) = synthetic_data.fluo_MS2;
+        mcmcInfo.observed_fluo{n} = synthetic_data.fluo_MS2';
+        mcmcInfo.seq_len_vec(n) = length(mcmcInfo.observed_fluo{n});
         % record full simulation info
         fieldNames = fieldnames(synthetic_data);
         for f = 1:length(fieldNames)
             mcmcInfo.masterSimStruct(n).(fieldNames{f}) = synthetic_data.(fieldNames{f});
         end
     end       
+        
+    % generate reference vector
+    mcmcInfo.chain_id_ref = 0:n_chains-1;
+    mcmcInfo.temp_id_ref = reshape(0:mcmcInfo.n_temps_per_chain-1,1,1,[]);
+    mcmcInfo.row_ref = (1:mcmcInfo.nStates)';
+    mcmcInfo.step_ref = (-mcmcInfo.nSteps+1:mcmcInfo.nSteps-1)';
     
+    % start parallel pool
+    pool = gcp('nocreate');
+    numcores = feature('numcores');
+    targetCoreNum = min([numcores mcmcInfo.n_traces]);
+    if isempty(pool) && targetCoreNum>4 %NL: this does not appear to be worthwhile for fewer than ~5 CPUs 
+      parpool(targetCoreNum);      
+    elseif ~isempty(pool) &&targetCorNum > 4
+      delete(pool);
+      parpool(targetCoreNum);            
+    end

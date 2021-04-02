@@ -22,7 +22,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     mcmcInfo.trace_logL_array = -Inf(seq_length,n_chains,n_traces);
     mcmcInfo.trace_logL_vec = -Inf(n_chains,n_traces);
     
-        
+z        
     %%% record transitions
     
     % get linear indices

@@ -1,4 +1,4 @@
-function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
+function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % A prior--assume strongly diagonal PDF given short timescale
     % take A columns to follow multinomial Dirichlet distribution
@@ -22,8 +22,8 @@ function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
     end
 
     % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
-    mcmcInfo.a0 = numel(mcmcInfo.observed_fluo)/100;
-    fluo_vec = mcmcInfo.observed_fluo(:);
+    mcmcInfo.a0 = max([10 numel(mcmcInfo.observed_fluo)/100]);
+    fluo_vec = vertcat(mcmcInfo.observed_fluo{:});
     mcmcInfo.b0 = 0.3*mean(fluo_vec).^2;
     
     for n = 1:n_chains

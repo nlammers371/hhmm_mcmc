@@ -4,29 +4,31 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
     mcmcInfo = initialize_chains_v4(mcmcInfo);   
     
     % get predicted fluorescence    
-    mcmcInfo = predict_fluo_full_v4(mcmcInfo);    
+    mcmcInfo = predict_fluo_full_v4(mcmcInfo);
+    
     wb = waitbar(0,'conducting MCMC inference...');
 
-    for step = 2:mcmcInfo.n_mcmc_steps  
+    for step = 2:mcmcInfo.n_mcmc_steps %mcmcInfo.n_mcmc_steps    
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);
 
         mcmcInfo.step = step;
 
-        % resample chains       
-        mcmcInfo = resample_chains_v4(mcmcInfo);    % "Expectation Step"            
+        % resample chains    
+        if mcmcInfo.MHResampling
+            mcmcInfo = resample_chains_MH(mcmcInfo);              
+        else
+            mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"         
+        end
         
         % perform additional "cross-talk" MH sampling if we are doing chain
         % tempering
-        mcmcInfo = temper_chains_v4(mcmcInfo);
-        
-        % get updated fluo prediction 
-        mcmcInfo = predict_fluo_full_v4(mcmcInfo);
+        mcmcInfo = temper_chains(mcmcInfo);
         
         % get empirical transition and occupancy counts    
-        mcmcInfo = get_empirical_counts_v4(mcmcInfo);
+        mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 
         % use Gibbs sampling to update hyperparameters      
-        mcmcInfo = update_hmm_parameters_v4(mcmcInfo);    
+        mcmcInfo = update_hmm_parameters_v3(mcmcInfo);    
 
     end
     
