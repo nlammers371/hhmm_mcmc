@@ -2,11 +2,11 @@ function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
     
     % A prior--assume strongly diagonal PDF given short timescale
     % take A columns to follow multinomial Dirichlet distribution
-    mcmcInfo.A_curr = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains);
-    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains,mcmcInfo.nStates);
-    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains);%*n_particles*n_traces;
+    mcmcInfo.A_curr = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain);
+    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
+    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain);%*n_particles*n_traces;
 
-    n_chains = mcmcInfo.n_chains;
+    n_chains = mcmcInfo.n_chains_eff;
     for n = 1:n_chains    
         alpha_temp = mcmcInfo.A_alpha(:,:,n);
         alpha_temp(eye(mcmcInfo.nStates)==1) = alpha_temp(eye(mcmcInfo.nStates)==1) + rand(mcmcInfo.nStates,1)*10; % distribution hyper params
@@ -22,6 +22,7 @@ function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
     end
 
     % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
+    mcmcInfo.sigma_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,1);
     mcmcInfo.a0 = numel(mcmcInfo.observed_fluo)/100;
     fluo_vec = mcmcInfo.observed_fluo(:);
     mcmcInfo.b0 = 0.3*mean(fluo_vec).^2;
@@ -32,7 +33,7 @@ function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
     end
 
     % initialize v
-    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains,mcmcInfo.nStates);
+    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
     v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [0 v2 2*v2];
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    

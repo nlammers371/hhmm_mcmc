@@ -4,7 +4,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
     mcmcInfo = initialize_chains_v3(mcmcInfo);
 
     % get predicted fluorescence
-    mcmcInfo = predict_fluo_full(mcmcInfo);
+    mcmcInfo = predict_fluo_full_v3(mcmcInfo);
 
     wb = waitbar(0,'conducting MCMC inference...');
 
@@ -19,7 +19,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
 
             % perform additional "cross-talk" MH sampling if we are doing chain
             % tempering
-            mcmcInfo = temper_chains(mcmcInfo);
+            mcmcInfo = temper_chains_v3(mcmcInfo);
         else
             % assign true chains
             sample_chains_true = NaN(size(mcmcInfo.sample_chains));
@@ -28,6 +28,9 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
             end
             mcmcInfo.sample_chains = sample_chains_true;
         end
+        % update fluorescence
+        mcmcInfo = predict_fluo_full_v3(mcmcInfo);
+        
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 

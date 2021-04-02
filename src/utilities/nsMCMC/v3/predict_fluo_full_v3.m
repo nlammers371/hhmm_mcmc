@@ -2,7 +2,7 @@ function mcmcInfo = predict_fluo_full_v3(mcmcInfo)
 
 %     n_traces = mcmcInfo.n_traces;    
     coeff_MS2 = mcmcInfo.coeff_MS2;
-    n_chains = mcmcInfo.n_chains;
+    n_chains = mcmcInfo.n_chains_eff;
     
     % convert to emission values
 %     emissions_full = mcmcInfo.v_curr(mcmcInfo.sample_chains);

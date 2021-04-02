@@ -7,7 +7,7 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     nSteps = mcmcInfo.nSteps;
     nStates = mcmcInfo.nStates;
     n_traces = mcmcInfo.n_traces;
-    n_chains = mcmcInfo.n_chains;
+    n_chains = mcmcInfo.n_chains_eff;
     sigma_curr = mcmcInfo.sigma_curr;    
     coeff_MS2 = mcmcInfo.coeff_MS2;
     
@@ -45,7 +45,7 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     ref_fluo(dummy_trunc) = fluo_fragment(dummy_trunc);
        
     % generate sigma array
-    sigma_ref = repmat(sigma_curr,nSteps,1,n_traces,nStates);
+    sigma_ref = repmat(sigma_curr',nSteps,1,n_traces,nStates);
     logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
  
     % take average    

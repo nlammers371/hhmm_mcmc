@@ -10,7 +10,7 @@ A_log = log(mcmcInfo.A_curr);
 pi0 = mcmcInfo.pi0_curr;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
-n_chains = mcmcInfo.n_chains;
+n_chains = mcmcInfo.n_chains_eff;
 nSteps = mcmcInfo.nSteps;
 seq_length = mcmcInfo.seq_length;
 
