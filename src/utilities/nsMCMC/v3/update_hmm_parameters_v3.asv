@@ -13,7 +13,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     A_counts = mcmcInfo.transition_count_array;  
     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
-        T = 1;%mcmcInfo.tempGradVec(n);        
+        T = mcmcInfo.tempGradVec(n);        
         A_chain = A_counts(:,:,ref_chain_ids(n)).^(1/T);        
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
         
@@ -69,7 +69,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
                  
         % calculate mean and variance
         v_mean = M\b;                 
-        v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
+        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 / T *inv(mcmcInfo.M0));
         % sample
         mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
                       

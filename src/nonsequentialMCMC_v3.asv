@@ -20,7 +20,8 @@ mcmcInfo.consistencyTestFlag = 0;
 % basic inference params 
 mcmcInfo.n_mcmc_steps = 1e2; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.n_chains = 5; % number of parallel MCMC chains to run
-mcmcInfo.n_temps_per_chain = 5; % number of rungs in the temperature ladder for each chain
+mcmcInfo.n_temps_per_chain = 6; % number of rungs in the temperature ladder for each chain
+mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfo.nSteps = 7; % number of time steps needed to transcribe full gene
 
@@ -29,18 +30,19 @@ mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel
 
 % tempering options
 mcmcInfo.temperingFlag = 1; % use parallel tempering?
-mcmcInfo.n_rs_per_trace = 25; % number of swap proposals per neighboring trace pair
-mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains);
-mcmcInfo.refChainVec(1) = 1;
-mcmcInfo.max_temp = 1e5;
-exp_vec = 0:mcmcInfo.n_chains-1;
-mcmcInfo.tempGradVec = 3.5.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);
-% mcmcInfo.tempGradVec(2) = 1;
+mcmcInfo.n_rs_per_trace = 1; % number of swap proposals per neighboring trace pair
+mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains_eff);
+mcmcInfo.refChainVec(1:mcmcInfo.n_temps_per_chain:end) = true; % designate T=1 chains that will actually be used for inference
+mcmcInfo.temp_incrememt = 2;
+exp_vec = repmat(0:mcmcInfo.n_temps_per_chain-1,1,mcmcInfo.n_chains);
+mcmcInfo.tempGradVec = mcmcInfo.temp_incrememt.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);
 
+% mcmcInfo.tempGradVec(2) = 1;
 mcmcInfo.move_flag_array = false(mcmcInfo.n_rs_per_trace,mcmcInfo.n_chains-1,mcmcInfo.n_traces,mcmcInfo.n_mcmc_steps);
 
 % initialize arrays and simulate traces
 mcmcInfo = genericInitialization(mcmcInfo);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize inference variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -56,12 +58,20 @@ toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % plot results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
+cmap = brewermap(mcmcINfo.n_chains,'Spectral');
+
 close all
 n_points = size(mcmcInfo.v_inf_array(:,2,:),1);
 x_axis = 10*(1:n_points);
+
 v3_fig = figure;
 hold on
-plot(x_axis,permute(mcmcInfo.v_inf_array(:,3,:),[1 3 2]),'-o')
+for i = 1:mcmcInfo.n_chains_eff
+    if mcmcInfo.refChainVec(i)
+        plot(x_axis,mcmcInfo.v_inf_array(:,3,i),'-o','Color',cmap(ref_chain_ids(i),:),'LineWidth',2);
+    else
+        plot(x_axis,mcmcInfo.v_inf_array(:,3,i),'-o','Color',cmap(ref_chain_ids(i),:),'LineWidth',2);
 plot(x_axis,repelem(mcmcInfo.trueParams.v(3),n_points),'k--','LineWidth',2)
 ylabel('state 3 emission rate')
 xlabel('MCMC steps')
@@ -81,7 +91,7 @@ ylabel('fluorescence noise')
 xlabel('MCMC steps')
 
 a21 = NaN(n_points,mcmcInfo.n_chains);
-for n = 1:mcmcInfo.n_chains
+for n = 1:mcmcInfo.n_chains_eff
     a21(:,n) = mcmcInfo.A_inf_array(2,1,:,n);
 end
 A21_fig = figure;
@@ -93,7 +103,7 @@ ylabel('pON')
 xlabel('MCMC steps')
 
 a12 = NaN(n_points,mcmcInfo.n_chains);
-for n = 1:mcmcInfo.n_chains
+for n = 1:mcmcInfo.n_chains_eff
     a12(:,n) = mcmcInfo.A_inf_array(1,2,:,n);
 end
 

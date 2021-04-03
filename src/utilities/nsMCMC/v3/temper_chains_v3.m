@@ -15,6 +15,7 @@ n_temps_per_chain = mcmcInfo.n_temps_per_chain;
 n_rs_per_trace = mcmcInfo.n_rs_per_trace;
 n_chains_eff = mcmcInfo.n_chains_eff; 
 chain_id_eff_ref = 0:n_chains_eff-1;
+
 %% generate reference arrays
 
 id_vec = 1:n_temps_per_chain*n_chains;
@@ -25,12 +26,12 @@ index_vec = 1:seq_length;
 
 % iterate through traces
 for m = 1:n_traces
+  
     % extract relevant slice
     chain_slice = mcmcInfo.sample_chains(:,:,m);
-    
+
     % extract trace
     ref_trace = mcmcInfo.observed_fluo(:,m);   
-    tic
     % iterate through swaps
     for rs = 1:n_rs_per_trace
         %%%%%%%%%%%%%%%
@@ -45,7 +46,8 @@ for m = 1:n_traces
         used_id_flags = false(size(id_vec));
         
         % randomly assign partners
-        for n = 1:n_swaps            
+        for n = 1:n_swaps          
+          
             % pick first
             id1 = randsample(find(~used_id_flags),1);
             used_id_flags(id1) = 1;
@@ -83,6 +85,7 @@ for m = 1:n_traces
         for i = 1:size(mismatch_flags,2)
             swap_points(i) = randsample(index_vec,1,true,mismatch_flags(:,i));
         end
+        
         %%%%%%%%%%%%%%%%%
         % perform MH swap move 
         
@@ -105,7 +108,7 @@ for m = 1:n_traces
         % calculate linear indices 
         prev_state_array = trace_array_full(swap_ind_array-1);
         curr_state_array = trace_array_full(swap_ind_array);
-        row_col_array_from =  chain_id_array_full.*nStates^2 + (prev_state_array-1)*nStates + curr_state_array;    
+        row_col_array_from = chain_id_array_full.*nStates^2 + (prev_state_array-1)*nStates + curr_state_array;    
 
         % extract probabilities
         prev_probs_log = A_log(row_col_array_from);
@@ -113,7 +116,7 @@ for m = 1:n_traces
         %%% following state %%%
         % calculate linear indices 
         post_state_array = trace_array_full(swap_ind_array+1);
-        row_col_array_to = chain_id_array_full.*nStates^2 + (curr_state_array-1)*nStates+post_state_array;
+        row_col_array_to = chain_id_array_full.*nStates^2 + (curr_state_array-1)*nStates + post_state_array;
 
         % extract probabilities
         post_probs_log = A_log(row_col_array_to);
@@ -124,7 +127,7 @@ for m = 1:n_traces
         %%%%%%%%%%%%%%%%%%%%%%%%%
         % Emission component 
         %%%%%%%%%%%%%%%%%%%%%%%%%                        
-        linear_indices = (curr_state_array-1)*n_chains_eff + chain_id_array_full+1;
+        linear_indices = (trace_array_full-1)*n_chains_eff + chain_id_array_full+1;
         initiation_rates = mcmcInfo.v_curr(linear_indices);    
 
         fluo_predicted = convn(coeff_MS2,initiation_rates,'full');             

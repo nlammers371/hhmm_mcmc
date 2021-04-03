@@ -13,7 +13,7 @@ function mcmcInfo = genericInitialization(mcmcInfo)
 
     % initialize arrays to store inference results
     n_updates = ceil(mcmcInfo.n_mcmc_steps/mcmcInfo.update_increment);
-    n_chains = mcmcInfo.n_chains;
+    n_chains = mcmcInfo.n_chains_eff;
     mcmcInfo.logL_vec = NaN(n_updates,n_chains);
     mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,n_updates,n_chains);
     mcmcInfo.v_inf_array = NaN(n_updates,mcmcInfo.nStates,n_chains);
