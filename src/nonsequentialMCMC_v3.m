@@ -18,9 +18,9 @@ mcmcInfo.consistencyTestFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 5; % number of parallel MCMC chains to run
-mcmcInfo.n_temps_per_chain = 6; % number of rungs in the temperature ladder for each chain
+mcmcInfo.n_mcmc_steps = 1e4; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 8; % number of parallel MCMC chains to run
+mcmcInfo.n_temps_per_chain = 5; % number of rungs in the temperature ladder for each chain
 mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfo.nSteps = 10; % number of time steps needed to transcribe full gene
@@ -30,10 +30,10 @@ mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel
 
 % tempering options
 mcmcInfo.temperingFlag = 1; % use parallel tempering?
-mcmcInfo.n_rs_per_trace = 0; % number of swap proposals per neighboring trace pair
+mcmcInfo.n_rs_per_trace = 7; % number of swap proposals per neighboring trace pair
 mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains_eff);
 mcmcInfo.refChainVec(1:mcmcInfo.n_temps_per_chain:end) = true; % designate T=1 chains that will actually be used for inference
-mcmcInfo.temp_incrememt = 2;
+mcmcInfo.temp_incrememt = 3.5;
 exp_vec = repmat(0:mcmcInfo.n_temps_per_chain-1,1,mcmcInfo.n_chains);
 mcmcInfo.tempGradVec = mcmcInfo.temp_incrememt.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);
 
