@@ -20,7 +20,7 @@ chain_id_eff_ref = 0:n_chains_eff-1;
 
 id_vec = 1:n_temps_per_chain*n_chains;
 temp_id_vec = repmat(1:n_temps_per_chain,1,n_chains);
-chain_id_vec = repmat(1:n_chains,1,n_temps_per_chain);
+chain_id_vec = repelem(1:n_chains,1,n_temps_per_chain);
 n_swaps = floor(n_chains*n_temps_per_chain/2);
 index_vec = 1:seq_length;
 
