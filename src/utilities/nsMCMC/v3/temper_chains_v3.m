@@ -32,38 +32,45 @@ for m = 1:n_traces
 
     % extract trace
     ref_trace = mcmcInfo.observed_fluo(:,m);   
-    
     % iterate through swaps
-    for rs = 1:n_rs_per_trace*n_temps_per_chain
+    for rs = 1:n_rs_per_trace
         %%%%%%%%%%%%%%%
         % randomly assign non-ovoerlaping swap pairs
         %%%%%%%%%%%%%%%
         
         % initialize arrays
-        trace_array = NaN(seq_length,n_chains,2);
-        temperature_array = NaN(2,n_chains);
-        id_array = NaN(2,n_chains);  
-        chain_id_array = NaN(1,n_chains,2);          
-        
-        % randomly select temp to swap
-        swap_ids = randsample(1:mcmcInfo.n_temps_per_chain,mcmcInfo.n_chains,true);
-        swap_ids = swap_ids + (0:n_chains-1)*mcmcInfo.n_temps_per_chain;        
+        trace_array = NaN(seq_length,n_swaps,2);
+        temperature_array = NaN(2,n_swaps);
+        id_array = NaN(2,n_swaps);  
+        chain_id_array = NaN(1,n_swaps,2);  
+        used_id_flags = false(size(id_vec));
         
         % randomly assign partners
-        for n = 1:length(swap_ids)
+        for n = 1:n_swaps          
           
+            % pick first
+            id1 = randsample(find(~used_id_flags),1);
+            used_id_flags(id1) = 1;
+
             % find permitted partners
-%             partner_ids = repelem(find(chain_id_vec == chain_id_vec(swap_ids(n)) & abs(temp_id_vec-temp_id_vec(swap_ids(n)))==1),2);                                                                     
-            partner_ids = repelem(find(temp_id_vec == temp_id_vec(swap_ids(n)) & chain_id_vec ~= chain_id_vec(swap_ids(n))),2);   
+            chain_neighbor_options = chain_id_vec == chain_id_vec(id1) & abs(temp_id_vec-temp_id_vec(id1))==1; 
+            temp_neighbor_options = temp_id_vec == temp_id_vec(id1) & abs(chain_id_vec-chain_id_vec(id1))==1; 
+            partner_options = (temp_neighbor_options | chain_neighbor_options) & ~used_id_flags; 
+            if any(partner_options) 
+                partner_ids = repelem(find(partner_options),2);% keep ransample from being stupid            
+            else
+                partner_ids = repelem(find(~used_id_flags),2);
+            end
 
             % select second id
             id2 = randsample(partner_ids,1);
-           
+            used_id_flags(id2) = 1;
+
             % assign
-            id_array(:,n) = [swap_ids(n) id2];
-            trace_array(:,n,:) = chain_slice(:,[swap_ids(n) id2]);
-            temperature_array(:,n) = mcmcInfo.tempGradVec([swap_ids(n) id2]);
-            chain_id_array(1,n,:) = chain_id_eff_ref([swap_ids(n) id2]);
+            id_array(:,n) = [id1 id2];
+            trace_array(:,n,:) = chain_slice(:,[id1 id2]);
+            temperature_array(:,n) = mcmcInfo.tempGradVec([id1 id2]);
+            chain_id_array(1,n,:) = chain_id_eff_ref([id1 id2]);
         end
         
         % propose time points to swap
@@ -83,13 +90,13 @@ for m = 1:n_traces
         % perform MH swap move 
         
         % linearize
-        swap_lin_indices = (0:n_chains-1)*seq_length + swap_points;
-        swap_ind_array = swap_lin_indices + reshape((0:3)*seq_length*n_chains,1,1,[]);
+        swap_lin_indices = (0:n_swaps-1)*seq_length + swap_points;
+        swap_ind_array = swap_lin_indices + reshape((0:3)*seq_length*n_swaps,1,1,[]);
         
         % create temp array
         trace_array_prop = trace_array;
-        trace_array_prop(swap_lin_indices) = trace_array(swap_lin_indices+seq_length*n_chains);
-        trace_array_prop(swap_lin_indices+seq_length*n_chains) = trace_array(swap_lin_indices);
+        trace_array_prop(swap_lin_indices) = trace_array(swap_lin_indices+seq_length*n_swaps);
+        trace_array_prop(swap_lin_indices+seq_length*n_swaps) = trace_array(swap_lin_indices);
         
         trace_array_full = cat(3,trace_array,trace_array_prop);
         chain_id_array_full = repmat(chain_id_array,1,1,2);
@@ -140,11 +147,10 @@ for m = 1:n_traces
                       
         % perform MH move
         mh_flags = L_factor >= rand(size(L_factor));
-        mcmcInfo.mh_moves_record(rs,:,m,mcmcInfo.step) = mh_flags;
         
         % update
         trace_array(swap_lin_indices(mh_flags)) = trace_array_prop(swap_lin_indices(mh_flags));
-        trace_array(swap_lin_indices(mh_flags)+seq_length*n_chains) = trace_array_prop(swap_lin_indices(mh_flags)+seq_length*n_chains);
+        trace_array(swap_lin_indices(mh_flags)+seq_length*n_swaps) = trace_array_prop(swap_lin_indices(mh_flags)+seq_length*n_swaps);
         
         % map back to main array
         swap_ids = find(mh_flags);
