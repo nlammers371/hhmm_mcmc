@@ -62,18 +62,20 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
 %         end
 %     end
     for c = 1:n_chains
-        T = 1;%mcmcInfo.tempGradVec(n); 
+        T = mcmcInfo.tempGradVec(n); 
         
-        M = ((F_array(:,:,c)'*F_array(:,:,ref_chain_ids(c))))  + 1e-4;    
-        b = ((F_array(:,:,c)'*y_array(:,ref_chain_ids(c))));
+        M = ((F_array(:,:,c)'*F_array(:,:,ref_chain_ids(c)))) + 1e-4;    
+        b = ((F_array(:,:,c)'*y_array(:,ref_chain_ids(c)))) + 1e-4;
                  
         % calculate mean and variance
         v_mean = M\b;                 
-        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 / T *inv(mcmcInfo.M0));
+        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
         % sample
-        mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
-                      
-
+        try
+          mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, T * v_cov_mat)'; 
+        catch
+          error('asfa')
+        end
         if update_flag
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_curr(c,:);   
         end
@@ -87,7 +89,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     % Update sigma
     for c = 1:n_chains
       
-        T = 1;%mcmcInfo.tempGradVec(n); 
+        T = mcmcInfo.tempGradVec(n); 
         % see: https://discdown.org/flexregression/bayesreg.html
         a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0).^1/T;    
         

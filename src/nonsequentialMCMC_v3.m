@@ -18,12 +18,12 @@ mcmcInfo.consistencyTestFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 1e4; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.n_chains = 8; % number of parallel MCMC chains to run
+mcmcInfo.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_chains = 5; % number of parallel MCMC chains to run
 mcmcInfo.n_temps_per_chain = 5; % number of rungs in the temperature ladder for each chain
 mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfo.nSteps = 10; % number of time steps needed to transcribe full gene
+mcmcInfo.nSteps = 5; % number of time steps needed to transcribe full gene
 
 % inference type
 mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel chains?
