@@ -23,7 +23,14 @@ mcmcInfo.n_chains = 5; % number of parallel MCMC chains to run
 mcmcInfo.n_temps_per_chain = 5; % number of rungs in the temperature ladder for each chain
 mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfo.nSteps = 5; % number of time steps needed to transcribe full gene
+
+% memory parameter
+mcmcInfo.trueParams.nSteps = 6; % True parameters
+mcmcInfo.nStepsMax = 10; % number of time steps needed to transcribe full gene
+mcmcInfo.nStepsCurr = mcmcInfo.trueParams.nSteps; % current guess (can be fractional)
+mcmcInfo.alpha = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+
+
 
 % inference type
 mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel chains?
@@ -46,7 +53,7 @@ mcmcInfo = genericInitialization(mcmcInfo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize inference variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo);
+mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference

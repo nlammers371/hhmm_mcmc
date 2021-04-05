@@ -1,4 +1,4 @@
-function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
+function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % A prior--assume strongly diagonal PDF given short timescale
     % take A columns to follow multinomial Dirichlet distribution
@@ -34,7 +34,7 @@ function mcmcInfo = intitializeVariablesBasicRandom(mcmcInfo)
 
     % initialize v
     mcmcInfo.v_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
-    v2 = prctile(fluo_vec,99) / mcmcInfo.nSteps;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+    v2 = prctile(fluo_vec,99) / mcmcInfo.nStepsCurr;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [0 v2 2*v2];
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    
     mcmcInfo.M0(1,1) = 1e5;

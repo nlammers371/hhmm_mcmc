@@ -3,11 +3,11 @@ function mcmcInfo = temper_chains_v3(mcmcInfo)
 % extract parameters
 A_log = log(mcmcInfo.A_curr);
 coeff_MS2 = mcmcInfo.coeff_MS2;
-pi0 = mcmcInfo.pi0_curr;
+% pi0 = mcmcInfo.pi0_curr;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains;
-nSteps = mcmcInfo.nSteps;
+% nSteps = mcmcInfo.nSteps;
 seq_length = mcmcInfo.seq_length;
 n_temps_per_chain = mcmcInfo.n_temps_per_chain; 
 

@@ -1,7 +1,7 @@
 function mcmcInfo = genericInitialization(mcmcInfo)
     
     % calculate MS2 convolution kernel
-    mcmcInfo.coeff_MS2 = ms2_loading_coeff(mcmcInfo.alpha, mcmcInfo.nSteps)';
+    mcmcInfo.coeff_MS2 = ms2_loading_coeff_frac(mcmcInfo.alpha, mcmcInfo.nStepsCurr, mcmcInfo.nStepsMax)';
     
     % calculate scaled noise
     f_mean = (mcmcInfo.trueParams.pi0'*mcmcInfo.trueParams.v)*sum(mcmcInfo.coeff_MS2);   
@@ -26,7 +26,8 @@ function mcmcInfo = genericInitialization(mcmcInfo)
     mcmcInfo.masterSimStruct = struct;
     for n = 1:mcmcInfo.n_traces
         synthetic_data = synthetic_prob(mcmcInfo.seq_length, mcmcInfo.alpha, mcmcInfo.nStates, ...
-                              mcmcInfo.nSteps, trueParams.A, trueParams.v', trueParams.sigma, trueParams.pi0);                                     
+                              trueParams.nSteps, trueParams.A, trueParams.v', trueParams.sigma, ...
+                              trueParams.pi0);                                     
 
         mcmcInfo.observed_fluo(:,n) = synthetic_data.fluo_MS2;
         % record full simulation info

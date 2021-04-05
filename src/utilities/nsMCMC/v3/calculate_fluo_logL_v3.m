@@ -4,7 +4,7 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     seq_length_dummy = size(mcmcInfo.sample_chains_dummy,1);%mcmcInfo.seq_length;
     seq_length = mcmcInfo.seq_length;
     indexArray = mcmcInfo.indArray;
-    nSteps = mcmcInfo.nSteps;
+    nStepsMax = mcmcInfo.nStepsMax;
     nStates = mcmcInfo.nStates;
     n_traces = mcmcInfo.n_traces;
     n_chains = mcmcInfo.n_chains_eff;
@@ -14,7 +14,7 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
 %     v_ref = permute(repmat(mcmcInfo.v_curr',1,n_chains,n_traces,1),[4,2,3,1]);
     
     % get start and stop indices    
-    indexArrayFull = indexArray + mcmcInfo.step_ref + nSteps - 1;
+    indexArrayFull = indexArray + mcmcInfo.step_ref + nStepsMax - 1;
     linIndexArrayFull = indexArrayFull + mcmcInfo.chain_id_ref*seq_length_dummy + mcmcInfo.trace_id_ref*seq_length_dummy*n_chains;  
     
     % extract states
@@ -23,29 +23,29 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     initiation_fragment_init = mcmcInfo.v_curr(v_lin_indices);
      
     % zero out dummy placeholder states
-    dummyFilter = indexArrayFull-nSteps+1<1 | indexArrayFull-nSteps+1>seq_length;
+    dummyFilter = indexArrayFull-nStepsMax+1<1 | indexArrayFull-nStepsMax+1>seq_length;
     initiation_fragment_init(dummyFilter) = 0;
     
     % add proposed states    
     initiation_fragment = repmat(initiation_fragment_init,1,1,1,nStates);
     v_perm = permute(mcmcInfo.v_curr,[4,1,3,2]);
-    initiation_fragment(nSteps,:,:,:) = repmat(v_perm,1,1,n_traces);%repmat(mcmcInfo.sample_chains_slice(prevInd:postInd,:),1,1,nStates);           
+    initiation_fragment(nStepsMax,:,:,:) = repmat(v_perm,1,1,n_traces);%repmat(mcmcInfo.sample_chains_slice(prevInd:postInd,:),1,1,nStates);           
                                         
     % calculate predicted fluorescence
     fluo_fragment = convn(coeff_MS2,initiation_fragment,'full');             
-    fluo_fragment = fluo_fragment(nSteps:2*nSteps-1,:,:,:);
+    fluo_fragment = fluo_fragment(nStepsMax:2*nStepsMax-1,:,:,:);
     
     % get differences   
-    linIndexArrayFluo = indexArrayFull(nSteps:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
+    linIndexArrayFluo = indexArrayFull(nStepsMax:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
     ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);
-    dummy_trunc = dummyFilter(nSteps:end,:,:);
+    dummy_trunc = dummyFilter(nStepsMax:end,:,:);
     
     % set leading and trailing observations equal to model fluo. This is
     % the easiest way to remove from likelihood calculation
     ref_fluo(dummy_trunc) = fluo_fragment(dummy_trunc);
        
     % generate sigma array
-    sigma_ref = repmat(sigma_curr',nSteps,1,n_traces,nStates);
+    sigma_ref = repmat(sigma_curr',nStepsMax,1,n_traces,nStates);
     logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
  
     % take average    
