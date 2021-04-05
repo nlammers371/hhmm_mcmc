@@ -35,6 +35,7 @@ function [coeff] = ms2_loading_coeff_frac(alpha, w_curr, w_max)
         error('The condition w_curr <= w_max is not met');
     end
     coeff(ceil(w_curr)+1:end) = 0;
-    coeff(ceil(w_curr)) = w_curr-floor(w_curr);
-    
+    if w_curr < ceil(w_curr)
+        coeff(ceil(w_curr)) = w_curr-floor(w_curr);
+    end
     

@@ -25,4 +25,4 @@ mcmcInfo.n_reps = 2;
 mcmcInfo.ensembleInferenceFlag = 0;
 mcmcInfo.testResampling = 0;
 mcmcInfo.MHResampling = 0;
-mcmcInfo.update_increment = 10; % sets how often parameter values are recorded in inference arrays
+mcmcInfo.update_increment = 1; % sets how often parameter values are recorded in inference arrays
