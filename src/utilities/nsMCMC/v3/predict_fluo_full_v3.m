@@ -19,6 +19,8 @@ function mcmcInfo = predict_fluo_full_v3(mcmcInfo)
 %         mcmcInfo.sample_fluo(:,:,n) = fluo_new(1:end-length(coeff_MS2)+1,:);
 %         
 %     end
-    
-    fluo_fragment = convn(coeff_MS2,initiation_rates,'full');             
+    fluo_fragment = NaN(size(initiation_rates,1)+size(coeff_MS2,2),n_chains);
+    for n = 1:n_chains
+        fluo_fragment(:,n,:) = convn(coeff_MS2(:,n),initiation_rates(:,n,:),'full');             
+    end
     mcmcInfo.sample_fluo = fluo_fragment(1:end-length(coeff_MS2)+1,:,:);

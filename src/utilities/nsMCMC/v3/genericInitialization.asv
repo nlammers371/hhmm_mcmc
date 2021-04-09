@@ -1,10 +1,10 @@
 function mcmcInfo = genericInitialization(mcmcInfo)
     
     % calculate MS2 convolution kernel
-    coeff_MS2 = ms2_loading_coeff_frac(mcmcInfo.trueParams.alpha, mcmcInfo.trueParams.nSteps, mcmcInfo.nStepsMax)';
+    mcmcInfo.coeff_MS2 = ms2_loading_coeff_frac(mcmcInfo.alpha, mcmcInfo.nStepsCurr, mcmcInfo.nStepsMax)';
     
     % calculate scaled noise
-    f_mean = (mcmcInfo.trueParams.pi0'*mcmcInfo.trueParams.v)*sum(coeff_MS2);   
+    f_mean = (mcmcInfo.trueParams.pi0'*mcmcInfo.trueParams.v)*sum(mcmcInfo.coeff_MS2);   
     mcmcInfo.trueParams.sigma = f_mean/10;
     
     %%%%%%%%%%%%%%%%%%%%%%% Generate helper arrays %%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -19,16 +19,15 @@ function mcmcInfo = genericInitialization(mcmcInfo)
     mcmcInfo.v_inf_array = NaN(n_updates,mcmcInfo.nStates,n_chains);
     mcmcInfo.pi0_inf_array = NaN(n_updates,mcmcInfo.nStates,n_chains);
     mcmcInfo.sigma_inf_array = NaN(n_updates,n_chains);
-    if mcmcInfo.inferNStepsFlag
-        mcmcInfo.n_steps_inf_array = NaN(n_updates,n_chains);
-    end
-    
+    if inferNStepsFlag
+    mcmcInfo.n_steps_inf_array = NaN(n_updates,n_chains);
+
     %%%%%%%%%%%%%%%%%%%%%%% simulate traces %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     mcmcInfo.observed_fluo = NaN(mcmcInfo.seq_length,mcmcInfo.n_traces);
     trueParams = mcmcInfo.trueParams;
     mcmcInfo.masterSimStruct = struct;
     for n = 1:mcmcInfo.n_traces
-        synthetic_data = synthetic_prob_frac(mcmcInfo.seq_length, trueParams.alpha, mcmcInfo.nStates, ...
+        synthetic_data = synthetic_prob_frac(mcmcInfo.seq_length, mcmcInfo.alpha, mcmcInfo.nStates, ...
                               trueParams.nSteps, trueParams.A, trueParams.v', trueParams.sigma, ...
                               trueParams.pi0);                                     
 

@@ -32,15 +32,33 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.sigma_inf_array(1,n) = mcmcInfo.sigma_curr(n);
     end
 
+    % initialize nSteps
+    if ~mcmcInfo.inferNStepsFlag
+        mcmcInfo.nStepsCurr = mcmcInfo.trueParams.nSteps; % current guess (can be fractional)
+        mcmcInfo.alpha = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+    else
+        mcmcInfo.nStepsCurr = trandn(repelem(mcmcInfo.nStepsMin-5,mcmcInfo.n_chains_eff),repelem(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff)-5)+5;
+        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+        mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
+    end
+    
+    % calculate MS2 convolution kernel
+    mcmcInfo.coeff_MS2  = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff);
+    for n = 1:mcmcInfo.n_chains_eff
+        mcmcInfo.coeff_MS2(:,n) = ms2_loading_coeff_frac(mcmcInfo.alphaCurr(n), mcmcInfo.nStepsCurr(n), mcmcInfo.nStepsMax)';
+    end
+    
     % initialize v
     mcmcInfo.v_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
-    v2 = prctile(fluo_vec,99) / mcmcInfo.nStepsCurr;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
-    mcmcInfo.v0 = [0 v2 2*v2];
+    v2 = prctile(fluo_vec,99) ./ mcmcInfo.nStepsCurr;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+    mcmcInfo.v0 = [zeros(n_chains,1) v2 2*v2];
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    
     mcmcInfo.M0(1,1) = 1e5;
     
     for n = 1:n_chains
         v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
-        mcmcInfo.v_curr(n,:) = mvnrnd(mcmcInfo.v0, v_cov_mat)';
+        mcmcInfo.v_curr(n,:) = mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)';
         mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
     end  
+    
+    

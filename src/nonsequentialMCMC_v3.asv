@@ -33,7 +33,13 @@ mcmcInfo.nStepsMin = 2.5; % lower limit
 % "nSteps" inference parameters
 mcmcInfo.inferNStepsFlag = 1;
 mcmcInfo.nStepsPropSize = 0.1;
-
+if ~mcmcInfo.inferNStepsFlag
+    mcmcInfo.nStepsCurr = mcmcInfo.trueParams.nSteps; % current guess (can be fractional)
+    mcmcInfo.alpha = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+else
+    mcmcInfo.nStepsCurr = trandn(repelem(mcmcInfo.nStepsMin-5,mcmcInfo.n_chains_eff),repelem(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff)-5)+5;
+    mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+end
 % % inference type
 % mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel chains?
 
