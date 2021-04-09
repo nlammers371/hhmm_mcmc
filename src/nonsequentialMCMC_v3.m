@@ -18,16 +18,16 @@ mcmcInfo.consistencyTestFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.burn_in = 2500;
+mcmcInfo.n_mcmc_steps = 500; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.burn_in = 250;
 mcmcInfo.n_chains = 10; % number of parallel MCMC chains to run
-mcmcInfo.n_temps_per_chain = 7; % number of rungs in the temperature ladder for each chain
+mcmcInfo.n_temps_per_chain = 10; % number of rungs in the temperature ladder for each chain
 mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 
 % memory parameter
-mcmcInfo.trueParams.nSteps = 7; % True parameters
-mcmcInfo.nStepsMax = 10; % number of time steps needed to transcribe full gene
+mcmcInfo.trueParams.nSteps = 4.28; % True parameters
+mcmcInfo.nStepsMax = 7; % number of time steps needed to transcribe full gene
 mcmcInfo.nStepsCurr = mcmcInfo.trueParams.nSteps; % current guess (can be fractional)
 mcmcInfo.alpha = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
 

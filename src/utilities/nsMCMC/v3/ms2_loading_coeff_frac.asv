@@ -1,4 +1,4 @@
-function [coeff_MS2, coeff_full] = ms2_loading_coeff_frac(alpha, w_curr, w_max)
+function [coeff_ms2, coeff_full] = ms2_loading_coeff_frac(alpha, w_curr, w_max)
 
     % Returns the mean fractions of the full MS2 loop transcribed at each
     % step of the elongation window
@@ -20,7 +20,7 @@ function [coeff_MS2, coeff_full] = ms2_loading_coeff_frac(alpha, w_curr, w_max)
     end
     
     coeff_MS2 = ones(1,w_max);
-    coeff_full = ones(1,w_max);
+    coeff_MS2_full = ones(1,w_max);
     
     % deal with MS2 rise time
     if alpha > 0
@@ -37,9 +37,8 @@ function [coeff_MS2, coeff_full] = ms2_loading_coeff_frac(alpha, w_curr, w_max)
         error('The condition w_curr <= w_max is not met');
     end
     coeff_MS2(ceil(w_curr)+1:end) = 0;
-    coeff_full(ceil(w_curr)+1:end) = 0;
+    coeff_MS2_full
     if w_curr < ceil(w_curr)
         coeff_MS2(ceil(w_curr)) = coeff_MS2(ceil(w_curr))*(w_curr-floor(w_curr));
-        coeff_full(ceil(w_curr)) = coeff_full(ceil(w_curr))*(w_curr-floor(w_curr));
     end
     
