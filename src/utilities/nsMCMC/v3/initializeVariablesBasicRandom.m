@@ -34,10 +34,12 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
 
     % initialize nSteps
     if ~mcmcInfo.inferNStepsFlag
-        mcmcInfo.nStepsCurr = mcmcInfo.trueParams.nSteps; % current guess (can be fractional)
-        mcmcInfo.alpha = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+        mcmcInfo.nStepsCurr = repelem(mcmcInfo.trueParams.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
+        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
     else
-        mcmcInfo.nStepsCurr = trandn(repelem(mcmcInfo.nStepsMin-5,mcmcInfo.n_chains_eff),repelem(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff)-5)+5;
+        % generate prior distribution and draw samples        
+        mcmcInfo.nStepsCurr = trandn(repelem(mcmcInfo.nStepsMin-5,mcmcInfo.n_chains_eff),...
+                    repelem(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff)-5)+5;
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
         mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
     end
@@ -49,7 +51,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     end
     
     % initialize v
-    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
+    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
     v2 = prctile(fluo_vec,99) ./ mcmcInfo.nStepsCurr;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [zeros(n_chains,1) v2 2*v2];
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    

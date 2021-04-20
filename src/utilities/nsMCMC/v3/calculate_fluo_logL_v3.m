@@ -33,9 +33,9 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
                                         
     % calculate predicted fluorescence
 %     fluo_fragment = convn(coeff_MS2,initiation_fragment,'full');   
-    fluo_fragment = NaN(size(initiation_fragment,1) + length(coeff_MS2)-1,n_chains,n_traces,nStates);
+    fluo_fragment = NaN(size(initiation_fragment,1) + size(coeff_MS2,1)-1,n_chains,n_traces,nStates);
     for i = 1:n_chains
-        fluo_fragment(:,i,:,:) = convn(coeff_MS2,initiation_fragment(:,i,:,:),'full');
+        fluo_fragment(:,i,:,:) = convn(coeff_MS2(:,i),initiation_fragment(:,i,:,:),'full');
     end
     fluo_fragment = fluo_fragment(nStepsMax:2*nStepsMax-1,:,:,:);
     

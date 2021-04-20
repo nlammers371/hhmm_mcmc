@@ -8,6 +8,7 @@ coeff_MS2 = mcmcInfo.coeff_MS2;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains;
+% n_chains_eff = mcmcInfo.n_chains_eff;
 
 % nSteps = mcmcInfo.nSteps;
 seq_length = mcmcInfo.seq_length;
@@ -133,8 +134,11 @@ for m = 1:n_traces
         linear_indices = (trace_array_full-1)*n_chains_eff + chain_id_array_full+1;
         initiation_rates = mcmcInfo.v_curr(linear_indices);    
 
-        fluo_predicted = convn(coeff_MS2,initiation_rates,'full');             
-        fluo_predicted = fluo_predicted(1:end-length(coeff_MS2)+1,:,:);
+        fluo_predicted = NaN(size(initiation_rates,1)+size(coeff_MS2,1)-1,n_swaps,4);
+        for i = 1:n_swaps
+            fluo_predicted(:,i,:) = convn(coeff_MS2(:,i),initiation_rates(:,i,:),'full');             
+        end
+        fluo_predicted = fluo_predicted(1:end-size(coeff_MS2,1)+1,:,:);
 
         sigma_ref = mcmcInfo.sigma_curr(chain_id_array_full+1);    
 

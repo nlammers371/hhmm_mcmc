@@ -18,28 +18,33 @@ mcmcInfo.consistencyTestFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 500; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.burn_in = 250;
-mcmcInfo.n_chains = 10; % number of parallel MCMC chains to run
-mcmcInfo.n_temps_per_chain = 10; % number of rungs in the temperature ladder for each chain
-mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
+mcmcInfo.n_mcmc_steps = 250; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.burn_in = 100;
+mcmcInfo.n_chains = 5; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
+
+% tempering options
+mcmcInfo.temperingFlag = 1; % use parallel tempering?
+mcmcInfo.n_rs_per_trace = 7; % number of swap proposals per neighboring trace pair
+mcmcInfo.n_temps_per_chain = 4; % number of rungs in the temperature ladder for each chain
+mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 
 % memory parameter
 mcmcInfo.trueParams.nSteps = 4; % True parameters
+mcmcInfo.nStepsGuess = 5.7;
 mcmcInfo.nStepsMax = 7; % set upper limit
 mcmcInfo.nStepsMin = 2.5; % lower limit
+% generate prior
+pd = makedist('Normal',mcmcInfo.nStepsGuess,2);
+t = truncate(pd,mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
 
 % "nSteps" inference parameters
-mcmcInfo.inferNStepsFlag = 1;
+mcmcInfo.inferNStepsFlag = 0;
 mcmcInfo.nStepsPropSize = 0.1;
 
 % % inference type
 % mcmcInfo.ensembleInferenceFlag = 0; % perform ensemble inference across parallel chains?
 
-% tempering options
-mcmcInfo.temperingFlag = 1; % use parallel tempering?
-mcmcInfo.n_rs_per_trace = 7; % number of swap proposals per neighboring trace pair
 mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains_eff);
 mcmcInfo.refChainVec(1:mcmcInfo.n_temps_per_chain:end) = true; % designate T=1 chains that will actually be used for inference
 mcmcInfo.temp_incrememt = 3.5;

@@ -85,10 +85,8 @@ for i = 1:seq_length*n_reps
     logL_tr = prev_probs_log + post_probs_log;
     
     %%% calculate fluorescence probability component
-    % calculate fluo error term       
-    tic;
-    logL_fluo = calculate_fluo_logL_v3(mcmcInfo);           
-    toc;
+    % calculate fluo error term           
+    logL_fluo = calculate_fluo_logL_v3(mcmcInfo);              
     
     %%% put everything together
     total_log_likelihoods = logL_tr + logL_fluo;    

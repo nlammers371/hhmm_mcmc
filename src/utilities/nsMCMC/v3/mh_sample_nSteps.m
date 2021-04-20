@@ -1,5 +1,7 @@
-function mh_sample_nSteps(mcmcInfo)
+function mcmcInfo = mh_sample_nSteps(mcmcInfo)
 
+% pull out parameters for conveneice
+n_chains = mcmcInfo.n_chains;
 
 % iterate through traces
 for m = 1:n_traces
@@ -10,33 +12,12 @@ for m = 1:n_traces
     % extract trace
     ref_trace = mcmcInfo.observed_fluo(:,m);          
 
-%     %%%%%%%%%%%%%%%%%%%%%%%%%
-%     % Transition component 
-% 
-%     %%% previous state %%%
-%     % calculate linear indices 
-%     prev_state_array = trace_array_full(swap_ind_array-1);
-%     curr_state_array = trace_array_full(swap_ind_array);
-%     row_col_array_from = chain_id_array_full.*nStates^2 + (prev_state_array-1)*nStates + curr_state_array;    
-% 
-%     % extract probabilities
-%     prev_probs_log = A_log(row_col_array_from);
-% 
-%     %%% following state %%%
-%     % calculate linear indices 
-%     post_state_array = trace_array_full(swap_ind_array+1);
-%     row_col_array_to = chain_id_array_full.*nStates^2 + (curr_state_array-1)*nStates + post_state_array;
-% 
-%     % extract probabilities
-%     post_probs_log = A_log(row_col_array_to);
-% 
-%     % combine
-%     logL_tr = prev_probs_log + post_probs_log;
-
     %%%%%%%%%%%%%%%%%%%%%%%%%
-    % Emission component 
+    % Propose new W values 
     %%%%%%%%%%%%%%%%%%%%%%%%%                               
-
+    linear_indices = (trace_array_full-1)*n_chains_eff + chain_id_array_full+1;
+    initiation_rates = mcmcInfo.v_curr(linear_indices);    
+    
     fluo_predicted = convn(coeff_MS2,initiation_rates,'full');             
     fluo_predicted = fluo_predicted(1:end-length(coeff_MS2)+1,:,:);
 
