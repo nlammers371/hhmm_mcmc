@@ -35,12 +35,12 @@ mcmcInfo.nStepsGuess = 4;
 mcmcInfo.nStepsMax = 7; % set upper limit
 mcmcInfo.nStepsMin = 2.5; % lower limit
 
-% generate prior
-pd = makedist('Normal',mcmcInfo.nStepsGuess,2);
-t = truncate(pd,mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
+% % generate prior
+% pd = makedist('Normal',mcmcInfo.nStepsGuess,2);
+% t = truncate(pd,mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
 
 % "nSteps" inference parameters
-mcmcInfo.inferNStepsFlag = 0;
+mcmcInfo.inferNStepsFlag = 1;
 mcmcInfo.nStepsPropSize = 0.1;
 
 % % inference type

@@ -9,6 +9,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     
     %% %%%%%%%%%% update transition matrix (A) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0 || mcmcInfo.step == mcmcInfo.n_mcmc_steps;
+    mcmcInfo.update_flag = update_flag;
     update_index = ceil(mcmcInfo.step/mcmcInfo.update_increment) + 1;
     A_counts = mcmcInfo.transition_count_array;  
     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);

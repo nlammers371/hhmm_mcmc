@@ -56,19 +56,13 @@ for m = 1:n_traces
     trace_temp_array(:,:,m) = fluo_prop;
 end
 
-% calculate MH metric
+ % calculate MH metric
 L_factor = exp(sum(trace_logL_array));
 
 % perform MH move
 mh_flags = L_factor >= rand(size(L_factor));
 
 % update    
-mcmcInfo.coeff_MS2(:,mh_flags) = coeff_MS2_prop(:,mh_flags);
-mcmcInfo.nStepsCurr(mh_flags) = nStepsProp(mh_flags);
-mcmcInfo.sample_fluo(:,mh_flags,:) = trace_temp_array(:,mh_flags,:);
-
-% store result if appropriate
-if mcmcInfo.update_flag
-    update_index = ceil(mcmcInfo.step/mcmcInfo.update_increment) + 1;
-    mcmcInfo.n_steps_inf_array(update_index,:) = mcmcInfo.nStepsCurr;
-end
+mcmcInfo.coeff_MS2 = coeff_MS2_prop(:,mh_flags);
+mcmcInfo.nStepsCurr = nStepsProp(mh_flags);
+mcmcInfo.sample_fluo(:,mh_flags,:) = trace_temp_array(mh_flags);
