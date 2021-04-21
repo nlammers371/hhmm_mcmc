@@ -2,14 +2,14 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     
     % extract parameters
     A_curr = mcmcInfo.A_curr;
-    A_log = log(mcmcInfo.A_curr);
-    pi0_log = log(mcmcInfo.pi0_curr);
-    sigma_curr = mcmcInfo.sigma_curr;
+%     A_log = log(mcmcInfo.A_curr);
+%     pi0_log = log(mcmcInfo.pi0_curr);
+%     sigma_curr = mcmcInfo.sigma_curr;
     nStates = size(A_curr,1);
 %     nSteps = mcmcInfo.nSteps;
-    n_traces = mcmcInfo.n_traces;
+%     n_traces = mcmcInfo.n_traces;
     n_chains = mcmcInfo.n_chains_eff;
-    seq_length = mcmcInfo.seq_length;
+%     seq_length = mcmcInfo.seq_length;
     
     % generate reference vector
 %     chain_id_ref = 0:n_chains-1;
@@ -18,9 +18,9 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     mcmcInfo.transition_count_array = zeros(size(A_curr,1),size(A_curr,2),n_chains);    
     mcmcInfo.initial_state_array = zeros(nStates,n_chains);   
     
-    % initialize likelihood array
-    mcmcInfo.trace_logL_array = -Inf(seq_length,n_chains,n_traces);
-    mcmcInfo.trace_logL_vec = -Inf(n_chains,n_traces);
+%     % initialize likelihood array
+%     mcmcInfo.trace_logL_array = -Inf(seq_length,n_chains,n_traces);
+%     mcmcInfo.trace_logL_vec = -Inf(n_chains,n_traces);
     
         
     %%% record transitions

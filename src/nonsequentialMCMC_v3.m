@@ -31,9 +31,10 @@ mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 
 % memory parameter
 mcmcInfo.trueParams.nSteps = 4; % True parameters
-mcmcInfo.nStepsGuess = 5.7;
+mcmcInfo.nStepsGuess = 4;
 mcmcInfo.nStepsMax = 7; % set upper limit
 mcmcInfo.nStepsMin = 2.5; % lower limit
+
 % generate prior
 pd = makedist('Normal',mcmcInfo.nStepsGuess,2);
 t = truncate(pd,mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
@@ -47,6 +48,7 @@ mcmcInfo.nStepsPropSize = 0.1;
 
 mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains_eff);
 mcmcInfo.refChainVec(1:mcmcInfo.n_temps_per_chain:end) = true; % designate T=1 chains that will actually be used for inference
+mcmcInfo.chainIDVec = repelem(1:mcmcInfo.n_chains,mcmcInfo.n_temps_per_chain);
 mcmcInfo.temp_incrememt = 3.5;
 exp_vec = repmat(0:mcmcInfo.n_temps_per_chain-1,1,mcmcInfo.n_chains);
 mcmcInfo.tempGradVec = mcmcInfo.temp_incrememt.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);

@@ -30,7 +30,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
             % assign true chains
             sample_chains_true = NaN(size(mcmcInfo.sample_chains));
             for i = 1:length(mcmcInfo.masterSimStruct)
-                sample_chains_true(:,:,i) = repmat(mcmcInfo.masterSimStruct(i).naive_states',1,mcmcInfo.n_chains);
+                sample_chains_true(:,:,i) = repmat(mcmcInfo.masterSimStruct(i).naive_states',1,mcmcInfo.n_chains_eff);
             end
             mcmcInfo.sample_chains = sample_chains_true;
         end                
