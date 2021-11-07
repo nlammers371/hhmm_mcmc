@@ -58,12 +58,13 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         b = ((F_array(:,:,c)'*y_array(:,c)));
                  
         % calculate mean and variance
-        v_mean = M\b;                 
+        v_lsq = M\b;
+        v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
         v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
         
         % sample
         mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
-        
+
         if update_flag
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_curr(c,:);   
         end

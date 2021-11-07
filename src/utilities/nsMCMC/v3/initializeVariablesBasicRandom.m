@@ -53,9 +53,12 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     % initialize v
     mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
     v2 = prctile(fluo_vec,99) ./ mcmcInfo.nStepsCurr;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
-    mcmcInfo.v0 = [zeros(n_chains,1) v2 2*v2];
+    mcmcInfo.v0 = [zeros(n_chains,1) v2];
+    if mcmcInfo.nStates==3
+         mcmcInfo.v0(:,end+1) = 2*v2;
+    end
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    
-    mcmcInfo.M0(1,1) = 1e5;
+    mcmcInfo.M0(1,1) = 1e5; % add extra weight to "OFF" state
     
     for n = 1:n_chains
         v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
