@@ -1,11 +1,6 @@
 function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
-    % A prior--assume strongly diagonal PDF given short timescale
-    % take A columns to follow multinomial Dirichlet distribution
-    mcmcInfo.A_curr = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain);
-    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
-    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain);%*n_particles*n_traces;
-
+    % initialize transition probabilities
     n_chains = mcmcInfo.n_chains_eff;
     for n = 1:n_chains    
         alpha_temp = mcmcInfo.A_alpha(:,:,n);
@@ -52,7 +47,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % initialize v
     mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
-    v2 = prctile(fluo_vec,99) ./ mcmcInfo.nStepsCurr;%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+    v2 = nanmax(fluo_vec) ./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [zeros(n_chains,1) v2];
     if mcmcInfo.nStates==3
          mcmcInfo.v0(:,end+1) = 2*v2;

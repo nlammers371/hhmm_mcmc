@@ -22,7 +22,6 @@ mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 %%% Are we doing a consistency test?
 mcmcInfo.consistencyTestFlag = 0;
 
-
 mcmcInfo = genericInitialization(mcmcInfo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
@@ -36,9 +35,9 @@ mcmcInfo = initializeInferenceArrays(mcmcInfo);
 mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Other inference parameters
+%% Other inference parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo.enforceRateConsistency = 1;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference
@@ -48,7 +47,7 @@ mcmcInfo = inferenceWrapper(mcmcInfo);
 toc
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% plot results
+%% plot results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ref_chain_ids = repelem(1:mcmcInfo.n_chains,mcmcInfo.n_temps_per_chain);
 cmap = brewermap(mcmcInfo.n_chains,'Spectral');
@@ -173,7 +172,7 @@ end
 histogram(v2_data);
 % plot(x_axis,repelem(mcmcInfo.trueParams.v(3),n_points),'k--','LineWidth',2)
 xlabel('state  emission rate')
-ylabel('probability')
+xlabel('probability')
 
 pon_fig_hist = figure;
 hold on
@@ -183,7 +182,7 @@ for i = find(mcmcInfo.refChainVec)
 end
 h = histogram(a21_data,'Normalization','probability');
 plot(repelem(mcmcInfo.trueParams.A(2,1),n_points),linspace(0,max(h.Values),n_points),'k--','LineWidth',2)
-xlabel('pON')
+xlabel('pON emission rate')
 ylabel('marginal posterior probability')
 
 poff_fig_hist = figure;
@@ -194,7 +193,7 @@ for i = find(mcmcInfo.refChainVec)
 end
 h = histogram(a12_data,'Normalization','probability');
 plot(repelem(mcmcInfo.trueParams.A(1,2),n_points),linspace(0,max(h.Values),n_points),'k--','LineWidth',2)
-xlabel('pOff')
+xlabel('pOGG emission rate')
 ylabel('marginal posterior probability')
 
 %%

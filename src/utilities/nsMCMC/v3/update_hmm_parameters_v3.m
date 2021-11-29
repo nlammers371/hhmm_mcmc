@@ -14,9 +14,16 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     A_counts = mcmcInfo.transition_count_array;  
     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
-        T = 1;%mcmcInfo.tempGradVec(n);        
-        A_chain = A_counts(:,:,ref_chain_ids(n)).^(1/T);        
-        mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
+        A_chain = A_counts(:,:,ref_chain_ids(n));        
+        A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
+%         R_samp = logm(A_samp);
+%         valid_flag = all(isreal(R_samp(:))) && sum(R_samp(:)<0)<=mcmcInfo.nStates;
+%         while mcmcInfo.enforceRateConsistency && ~valid_flag
+%             A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
+%             R_samp = logm(A_samp);
+%             valid_flag = all(isreal(R_samp(:))) && sum(R_samp(:)<0)<=mcmcInfo.nStates;
+%         end
+        mcmcInfo.A_curr(:,:,n) = A_samp;
         
         % update pi0    
         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
@@ -51,8 +58,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         end
     end  
 
-    for c = 1:n_chains
-        T = 1;%mcmcInfo.tempGradVec(n); 
+    for c = 1:n_chains        
         
         M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-4;    
         b = ((F_array(:,:,c)'*y_array(:,c)));
@@ -60,7 +66,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         % calculate mean and variance
         v_lsq = M\b;
         v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
-        v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
+        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
         
         % sample
         mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
@@ -76,16 +82,14 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     
     % Update sigma
     for c = 1:n_chains
-      
-        T = 1;%mcmcInfo.tempGradVec(n); 
+              
         % see: https://discdown.org/flexregression/bayesreg.html
-        a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0).^1/T;    
+        a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0);    
         
         F_diff = reshape(permute(mcmcInfo.sample_fluo(:,ref_chain_ids(c),:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
         b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
-        b = (F_diff'*F_diff / 2 + b_prior_piece)*T;
+        b = (F_diff'*F_diff / 2 + b_prior_piece);
         
-%         beta = 1;
         mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.trueParams.sigma
         if update_flag
             mcmcInfo.sigma_inf_array(update_index,c) = mcmcInfo.sigma_curr(c);
