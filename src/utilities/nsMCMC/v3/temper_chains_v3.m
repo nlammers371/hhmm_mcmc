@@ -142,8 +142,11 @@ for m = 1:n_traces
 
         sigma_ref = mcmcInfo.sigma_curr(chain_id_array_full+1);    
 
-        logL_fluo = -0.5*(((ref_trace-fluo_predicted)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
-        
+        try
+            logL_fluo = -0.5*(((ref_trace-fluo_predicted)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
+        catch
+            error('wtf')
+        end
         
         % combine
         total_log_likelihoods = logL_tr + sum(logL_fluo);  

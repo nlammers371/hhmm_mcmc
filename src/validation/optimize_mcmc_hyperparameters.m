@@ -17,7 +17,7 @@ n_reps = 10;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 
@@ -47,13 +47,20 @@ combArray = [combCell{:}];
 keepFlags = combArray(:,3)>1 | combArray(:,4)==1;
 combArray = combArray(keepFlags,:); 
 
+% try 
+%     parpool(24);
+% catch
+%     % do nothing
+% end  
+
 for iter = 1:size(combArray,1)
   
     inferMemory = combArray(iter,1)==1;
     n_chains = combArray(iter,2);
     n_temps = combArray(iter,3);
     temperingFlag = n_temps>1;
-    n_swaps = combArray(iter,end);
+    n_swaps = combArray(iter,end-1);
+    step_num = combArray(iter,end);
     
     % start timer
     tic
@@ -75,7 +82,8 @@ for iter = 1:size(combArray,1)
     mcmcInfo.duration = toc;
     
     % save results
-    saveString = ['nc' num2str(n_chains) '_ntm' num2str(n_temps) '_nsw' num2str(n_swaps) '_mem' num2str(inferMemory)];
-    save([outPath 'mcmcInfo_' saveString '.mat'], 'mcmcInfo')
+    saveString = ['nc' num2str(n_chains) '_ntm' num2str(n_temps) '_nsw' num2str(n_swaps) '_mem' num2str(inferMemory) '_rep' num2str(step_num)];
+    saveFun(mcmcInfo, outPath, saveString)
+        
 end    
 

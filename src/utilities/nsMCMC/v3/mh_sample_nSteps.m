@@ -37,13 +37,14 @@ for m = 1:n_traces
     %%%%%%%%%%%%%%%%%%%%%%%%%                               
     linear_indices = (chain_slice-1)*n_chains_eff + chain_id_eff_ref + 1;
     initiation_rates = mcmcInfo.v_curr(linear_indices);    
-    
+    if n_chains_eff==1
+        initiation_rates = initiation_rates';
+    end
     % extract current predicted fluo
     fluo_curr = mcmcInfo.sample_fluo(:,:,m);        
     
-    % get predicted fluo
+    % get predicted fluo    
     fluo_prop = fluo_conv_fun(initiation_rates,coeff_MS2_prop);
-    
     sigma_ref = mcmcInfo.sigma_curr';    
 
     logL_fluo = -0.5*(((ref_trace-cat(3,fluo_prop,fluo_curr))./sigma_ref).^2 + log(2*pi*sigma_ref.^2));

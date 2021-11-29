@@ -2,7 +2,7 @@ function mcmcInfo = genericInitialization(mcmcInfo)
     
     % calculate MS2 convolution kernel
     mcmcInfo.trueParams.alpha = mcmcInfo.alpha_frac*mcmcInfo.trueParams.nSteps;
-    coeff_MS2 = ms2_loading_coeff_frac(mcmcInfo.trueParams.alpha, mcmcInfo.trueParams.nSteps, 2*mcmcInfo.trueParams.nSteps)';
+    coeff_MS2 = ms2_loading_coeff_frac(mcmcInfo.trueParams.alpha, mcmcInfo.trueParams.nSteps, 12)';
     
     % calculate scaled noise
     f_mean = (mcmcInfo.trueParams.pi0'*mcmcInfo.trueParams.v)*sum(coeff_MS2);   
