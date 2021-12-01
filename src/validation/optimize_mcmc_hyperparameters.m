@@ -13,11 +13,11 @@ mkdir(outPath);
 mcmcInfoInit = setParamsBasic3state;
 
 % indicate how many replicates of each we want
-n_reps = 10;
+n_reps = 1;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 2; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 
@@ -63,10 +63,10 @@ for iter = 1:size(combArray,1)
     step_num = combArray(iter,end);
     
     % start timer
-    tic
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Set MCMC options
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
     mcmcInfo = setMCMCOptions(mcmcInfoInit, n_chains, temperingFlag, n_temps, n_swaps, inferMemory);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,16 +74,19 @@ for iter = 1:size(combArray,1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     mcmcInfo = initializeInferenceArrays(mcmcInfo);
     mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
-   
+    tic
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % conduct inference
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     mcmcInfo = inferenceWrapper(mcmcInfo);
+    toc
     mcmcInfo.duration = toc;
     
     % save results
     saveString = ['nc' num2str(n_chains) '_ntm' num2str(n_temps) '_nsw' num2str(n_swaps) '_mem' num2str(inferMemory) '_rep' num2str(step_num)];
+%     disp('saving...')
+    
     saveFun(mcmcInfo, outPath, saveString)
-        
+    
 end    
 
