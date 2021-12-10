@@ -14,7 +14,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     A_counts = mcmcInfo.transition_count_array;  
     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
-        T = mcmcInfo.tempGradVec(c);
+        T = mcmcInfo.tempGradVec(n);
         A_chain = A_counts(:,:,ref_chain_ids(n)).^(1/T);        
         A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
         mcmcInfo.A_curr(:,:,n) = A_samp;
@@ -71,7 +71,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     end
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
 
-    % get predicted fluorescence
+    % get predicted fluorescence (using new v values)
     mcmcInfo = predict_fluo_full_v3(mcmcInfo);
     
     % Update sigma
