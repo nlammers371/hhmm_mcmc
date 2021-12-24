@@ -38,8 +38,9 @@ for m = 1:n_traces
     
     % iterate through swaps
     for rs = 1:n_rs_per_trace
+      
         %%%%%%%%%%%%%%%
-        % randomly assign non-ovoerlaping swap pairs
+        % randomly assign non-overlaping swap pairs
         %%%%%%%%%%%%%%%
         
         % initialize arrays
