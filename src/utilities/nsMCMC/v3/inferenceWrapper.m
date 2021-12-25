@@ -20,6 +20,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         mcmcInfo.step = step;
 
         if ~mcmcInfo.consistencyTestFlag
+          
             % resample chains            
             mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"                 
 

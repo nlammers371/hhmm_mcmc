@@ -6,7 +6,7 @@ close all force
 addpath(genpath('utilities'))
 
 % initialize info structure
-mcmcInfo = setParamsBasic2state;
+mcmcInfo = setParamsBasic3state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
