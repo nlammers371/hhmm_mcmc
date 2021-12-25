@@ -6,7 +6,7 @@ close all force
 addpath(genpath('utilities'))
 
 % initialize info structure
-mcmcInfo = setParamsBasic2state;
+mcmcInfo = setParamsBasic3state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
@@ -28,7 +28,7 @@ mcmcInfo = genericInitialization(mcmcInfo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 temperingFlag = 1;
 n_temps = 3;
-n_swaps = 10;
+n_swaps = 25;
 inferMemory = 1;
 mcmcInfo = setMCMCOptions(mcmcInfo, mcmcInfo.n_chains, temperingFlag, n_temps, n_swaps, inferMemory);
 
