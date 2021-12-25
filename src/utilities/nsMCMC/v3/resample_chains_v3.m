@@ -95,7 +95,7 @@ for i = 1:seq_length*n_reps
     if mcmcInfo.temperingFlag 
         total_log_likelihoods = total_log_likelihoods ./ mcmcInfo.tempGradVec;
     end
-    total_log_likelihoods = total_log_likelihoods - logsumexp(total_log_likelihoods,1);
+    total_log_likelihoods = (total_log_likelihoods - logsumexp(total_log_likelihoods,1))./mcmcInfo.tempGradVec;
     total_likelihoods = exp(total_log_likelihoods);    
 
     %%% draw new samples
