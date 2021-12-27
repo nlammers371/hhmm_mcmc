@@ -6,8 +6,8 @@ close all force
 addpath(genpath('../utilities'))
 
 % make save diractor
-DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
-outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization\'];
+DropboxFolder = 'S:\Nick\Dropbox (Personal)\'
+outPath = '../../hhmm_MCMC_data/hyperParameterOptimization/';
 mkdir(outPath);
 
 % initialize 3 state system 
@@ -54,7 +54,7 @@ catch
     % do nothing
 end  
 
-parfor iter = 1:size(combArray,1)
+for iter = 1:size(combArray,1)
   
     inferMemory = combArray(iter,1)==1;
     n_chains = combArray(iter,2);
