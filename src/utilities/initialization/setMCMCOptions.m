@@ -18,7 +18,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     
     % tempering options
     mcmcInfo.temperingFlag = temperingFlag; % use parallel tempering?
-    mcmcInfo.n_rs_per_trace = n_swaps; % number of swap proposals per neighboring trace pair
+    mcmcInfo.n_rs_per_trace = n_swaps*mcmcInfo.temperingFlag; % number of swap proposals per neighboring trace pair
     mcmcInfo.n_temps_per_chain = n_temps; % number of rungs in the temperature ladder for each chain
     mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
     mcmcInfo.enforceRateConsistency = 0;

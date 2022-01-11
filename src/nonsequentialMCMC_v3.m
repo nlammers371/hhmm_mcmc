@@ -27,7 +27,7 @@ mcmcInfo.consistencyTestFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-temperingFlag = 1;
+temperingFlag = 0;
 n_temps = 3;
 n_swaps = 25;
 inferMemory = 0;
