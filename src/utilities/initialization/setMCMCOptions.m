@@ -2,7 +2,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
 
     mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
    
-    
+    mcmcInfo.update_increment = 2;
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
     if ~temperingFlag
         n_temps = 1;

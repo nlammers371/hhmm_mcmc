@@ -14,11 +14,11 @@ mkdir(outPath);
 mcmcInfoInit = setParamsBasic2state;
 
 % indicate how many replicates of each we want
-n_reps = 3;
+n_reps = 5;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 2500; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 1000; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 
@@ -35,7 +35,7 @@ mcmcInfoInit = genericInitialization(mcmcInfoInit);
 repVec = 1:n_reps;
 inferMemoryVec = 0:1;
 temperVec = 0:1;
-nChainsVec = [10];
+nChainsVec = [5];
 nTempsVec = [1 3 5];
 nSwaps = [7 14 28];
 infoSharing = 0:1;
