@@ -12,10 +12,10 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     mcmcInfo.update_flag = update_flag;
     update_index = ceil(mcmcInfo.step/mcmcInfo.update_increment) + 1;
     A_counts = mcmcInfo.transition_count_array;  
-    ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
+%     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
         T = mcmcInfo.tempGradVec(n);
-        A_chain = A_counts(:,:,ref_chain_ids(n)).^(1/T);        
+        A_chain = A_counts(:,:,n).^(1/T);        
         A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
         mcmcInfo.A_curr(:,:,n) = A_samp;
         
@@ -46,7 +46,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
             y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
             for m = 1:nStates
                 % record counts
-                state_counts = convn(coeff_MS2(:,c),mcmcInfo.sample_chains(:,ref_chain_ids(c),n)==m,'full');            
+                state_counts = convn(coeff_MS2(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full');            
                 F_array(ind1:ind2,m,c) = state_counts(1:end-size(coeff_MS2,1)+1,:);                        
             end
         end
@@ -80,7 +80,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         % see: https://discdown.org/flexregression/bayesreg.html
         a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
         
-        F_diff = reshape(permute(mcmcInfo.sample_fluo(:,ref_chain_ids(c),:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+        F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
         b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
         b = (F_diff'*F_diff / 2 + b_prior_piece);
         

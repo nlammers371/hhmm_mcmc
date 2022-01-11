@@ -13,12 +13,12 @@ mcmcInfo = setParamsBasic3state;
 n_mcmc_steps = 500;
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 250;
-n_chains = 1;
+n_chains = 3;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 
 % characteristics of simulated data
-mcmcInfo.n_traces = 12;
+mcmcInfo.n_traces = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 
 %%% Are we doing a consistency test?
@@ -27,7 +27,7 @@ mcmcInfo.consistencyTestFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-temperingFlag = 0;
+temperingFlag = 1;
 n_temps = 3;
 n_swaps = 25;
 inferMemory = 0;
