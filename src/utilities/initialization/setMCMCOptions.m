@@ -1,4 +1,4 @@
-function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, MCMCInitFlag)
+function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, MCMCInitFlag, temp_increment, info_sharing)
 
     mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
    
@@ -35,7 +35,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains_eff);
     mcmcInfo.refChainVec(1:mcmcInfo.n_temps_per_chain:end) = true; % designate T=1 chains that will actually be used for inference
     mcmcInfo.chainIDVec = repelem(1:mcmcInfo.n_chains,mcmcInfo.n_temps_per_chain);
-    mcmcInfo.temp_incrememt = 2;%sqrt(2); % from: https://emcee.readthedocs.io/en/v2.2.1/user/pt/
+    mcmcInfo.infoSharingFlag = info_sharing;
+    mcmcInfo.temp_incrememt = temp_increment;%sqrt(2); % from: https://emcee.readthedocs.io/en/v2.2.1/user/pt/
     exp_vec = repmat(0:mcmcInfo.n_temps_per_chain-1,1,mcmcInfo.n_chains);
     mcmcInfo.tempGradVec = mcmcInfo.temp_incrememt.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);
 

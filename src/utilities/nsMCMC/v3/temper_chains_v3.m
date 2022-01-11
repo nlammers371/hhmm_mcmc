@@ -26,7 +26,7 @@ temp_id_vec = repmat(1:n_temps_per_chain,1,n_chains);
 chain_id_vec = repelem(1:n_chains,1,n_temps_per_chain);
 n_swaps = floor(n_chains*n_temps_per_chain/2);
 index_vec = 1:seq_length;
-
+infoSharingFlag = mcmcInfo.infoSharingFlag;
 % iterate through traces
 for m = 1:n_traces
   
@@ -59,7 +59,7 @@ for m = 1:n_traces
 
             % find permitted partners
             chain_neighbor_options = chain_id_vec == chain_id_vec(id1) & abs(temp_id_vec-temp_id_vec(id1))==1; 
-            temp_neighbor_options = temp_id_vec == temp_id_vec(id1) & chain_id_vec~=chain_id_vec(id1);%abs(chain_id_vec-chain_id_vec(id1))==1; 
+            temp_neighbor_options = (temp_id_vec == temp_id_vec(id1) & chain_id_vec~=chain_id_vec(id1)) & infoSharingFlag;%abs(chain_id_vec-chain_id_vec(id1))==1; 
             partner_options = (temp_neighbor_options | chain_neighbor_options) & ~used_id_flags; 
             if any(partner_options) 
                 partner_ids = repelem(find(partner_options),2);% keep ransample from being stupid            
