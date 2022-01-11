@@ -1,10 +1,21 @@
-function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n_swaps, inferMemory)
+function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, MCMCInitFlag)
 
     mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
    
     
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
-
+    if ~temperingFlag
+        n_temps = 1;
+    end
+    mcmcInfo.MCMCInitFlag = 0;
+    if MCMCInitFlag
+        mcmcInfo.MCMCInitFlag = 1;
+        mcmcInfo.MCMCInitFactor = 10;
+        mcmcInfo.n_chains = mcmcInfo.MCMCInitFactor*mcmcInfo.n_chains;
+        mcmcInfo.n_mcmc_steps = 25;
+        mcmcInfo.n_reps = 1;
+    end
+    
     % tempering options
     mcmcInfo.temperingFlag = temperingFlag; % use parallel tempering?
     mcmcInfo.n_rs_per_trace = n_swaps; % number of swap proposals per neighboring trace pair
@@ -30,3 +41,6 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
 
     % mcmcInfo.tempGradVec(2) = 1;
     mcmcInfo.move_flag_array = false(mcmcInfo.n_rs_per_trace,mcmcInfo.n_chains-1,mcmcInfo.n_traces,mcmcInfo.n_mcmc_steps);
+
+    
+        

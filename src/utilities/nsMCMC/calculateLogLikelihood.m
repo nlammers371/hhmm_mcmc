@@ -4,8 +4,7 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     A_log = log(mcmcInfo.A_curr);
     pi0_log = log(mcmcInfo.pi0_curr);
     sigma_curr = mcmcInfo.sigma_curr;
-    nStates = size(A_curr,1);
-  %     nSteps = mcmcInfo.nSteps;
+    nStates = size(A_curr,1);  
     n_traces = mcmcInfo.n_traces;
     n_chains = mcmcInfo.n_chains_eff;
 
