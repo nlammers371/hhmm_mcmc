@@ -7,18 +7,18 @@ addpath(genpath('../utilities'))
 
 % make save diractor
 DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
-outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization_v4\'];
 mkdir(outPath);
 
 % initialize 3 state system 
 mcmcInfoInit = setParamsBasic3state;
 
 % indicate how many replicates of each we want
-n_reps = 10;
+n_reps = 5;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 2e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 
@@ -34,9 +34,9 @@ mcmcInfoInit = genericInitialization(mcmcInfoInit);
 % Set the parameter options to explore
 repVec = 1:n_reps;
 inferMemoryVec = 0:1;
-nChainsVec = [5];
-nTempsVec = [1 3 5 7];
-nSwaps = [1 7 14 28];
+nChainsVec = [10];
+nTempsVec = [1 3 5];
+nSwaps = [7 14 28];
 % get all possible combinations
 elements = {inferMemoryVec nChainsVec nTempsVec nSwaps repVec};
 combCell = cell(1, numel(elements));
@@ -48,13 +48,13 @@ combArray = [combCell{:}];
 keepFlags = combArray(:,3)>1 | combArray(:,4)==1;
 combArray = combArray(keepFlags,:); 
 
-try 
-    parpool(24);
-catch
-    % do nothing
-end  
+% try 
+%     parpool(24);
+% catch
+%     % do nothing
+% end  
 
-parfor iter = 1:size(combArray,1)
+for iter = 1%:size(combArray,1)
   
     inferMemory = combArray(iter,1)==1;
     n_chains = combArray(iter,2);
