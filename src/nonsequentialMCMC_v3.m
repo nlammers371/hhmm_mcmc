@@ -10,39 +10,61 @@ mcmcInfo = setParamsBasic3state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfo.n_mcmc_steps = 500; % number of MCMC steps (need to add convergence criteria)
+n_mcmc_steps = 500;
+mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 250;
-mcmcInfo.n_chains = 3; % number of parallel MCMC chains to run
+n_chains = 3;
+mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 
 % characteristics of simulated data
-mcmcInfo.n_traces = 12;
+mcmcInfo.n_traces = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 
 %%% Are we doing a consistency test?
 mcmcInfo.consistencyTestFlag = 0;
 
-mcmcInfo = genericInitialization(mcmcInfo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 temperingFlag = 1;
 n_temps = 3;
 n_swaps = 25;
-inferMemory = 1;
-mcmcInfo = setMCMCOptions(mcmcInfo, mcmcInfo.n_chains, temperingFlag, n_temps, n_swaps, inferMemory);
+inferMemory = 0;
+MCMCInitFlag = 0;
+mcmcInfo = setMCMCOptions(mcmcInfo, mcmcInfo.n_chains, temperingFlag, n_temps, n_swaps, inferMemory, MCMCInitFlag);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize inference arrays and variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mcmcInfo = genericInitialization(mcmcInfo);
 mcmcInfo = initializeInferenceArrays(mcmcInfo);
 mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Other inference parameters
+% conduct MCMC initialization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo.enforceRateConsistency = 1;
-
+if mcmcInfo.MCMCInitFlag
+    mcmcInfoTemp = mcmcInfo;
+    disp('Initializing chains...')    
+    mcmcInfoInit = inferenceWrapper(mcmcInfo);
+    disp('Done.')
+    
+    % sample chains to use for main inference
+    weight_vec = mcmcInfoInit.logL_vec(end,:)-min(mcmcInfoInit.logL_vec(end,:));
+    [~,si] = sort(weight_vec,'descend');
+    ids_to_use = si(1:n_chains);
+     
+    % re-initialize    
+    mcmcInfo = mcmcInfoTemp;
+    mcmcInfo.n_chains = n_chains;
+    mcmcInfo.n_chains_eff = n_chains*mcmcInfo.n_temps_per_chain;
+    mcmcInfo.n_mcmc_steps = n_mcmc_steps;
+    mcmcInfo.tempGradVec = mcmcInfo.tempGradVec(1:n_chains);
+    mcmcInfo = initializeInferenceArrays(mcmcInfo);
+    mcmcInfo = initializeVariablesWithPriors(mcmcInfo,mcmcInfoInit,ids_to_use);
+   
+end    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
