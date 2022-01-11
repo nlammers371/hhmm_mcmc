@@ -33,15 +33,13 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
     else
         % generate prior distribution and draw samples        
-        mcmcInfo.nStepsCurr = trandn(repelem(0,mcmcInfo.n_chains_eff),...
-                    repelem((mcmcInfo.nStepsMax-mcmcInfo.nStepsMin)/3,mcmcInfo.n_chains_eff)).*3 ...
-                    + mcmcInfo.nStepsMin;
+        mcmcInfo.nStepsCurr = mcmcInfo.nStepsGuess + 2*trandn(-ones(1,mcmcInfo.n_chains_eff),ones(1,mcmcInfo.n_chains_eff));
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
         mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
     end
     
     % calculate MS2 convolution kernel
-    mcmcInfo.coeff_MS2  = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff);
+    mcmcInfo.coeff_MS2 = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff);
     for n = 1:mcmcInfo.n_chains_eff
         mcmcInfo.coeff_MS2(:,n) = ms2_loading_coeff_frac(mcmcInfo.alphaCurr(n), mcmcInfo.nStepsCurr(n), mcmcInfo.nStepsMax)';
     end
