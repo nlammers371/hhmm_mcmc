@@ -2,7 +2,7 @@ function mcmcInfo = mh_sample_nSteps(mcmcInfo)
 
 % pull out parameters for conveneice
 % n_chains = mcmcInfo.n_chains;
-n_chains_eff = mcmcInfo.n_chains_eff;
+% n_chains_eff = mcmcInfo.n_chains_eff;
 
 % propose new nSteps values
 nStepsCurr = mcmcInfo.nStepsCurr;

@@ -17,15 +17,15 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     end
     
     % tempering options
-    mcmcInfo.temperingFlag = temperingFlag; % use parallel tempering?
-    mcmcInfo.n_rs_per_trace = n_swaps*mcmcInfo.temperingFlag; % number of swap proposals per neighboring trace pair
+    mcmcInfo.temperingFlag = temperingFlag; % use parallel tempering
+    mcmcInfo.n_rs_per_trace = n_swaps*temperingFlag; % number of swap proposals per neighboring trace pair
     mcmcInfo.n_temps_per_chain = n_temps; % number of rungs in the temperature ladder for each chain
     mcmcInfo.n_chains_eff = mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
     mcmcInfo.enforceRateConsistency = 0;
 
     % memory parameter
     mcmcInfo.inferNStepsFlag = inferMemory;
-    mcmcInfo.nStepsPropSize = 0.1;    
+    mcmcInfo.nStepsPropSize = 0.25;    
 %     mcmcInfo.trueParams.nSteps = 6; % True parameters
     mcmcInfo.nStepsGuess = 6;
     mcmcInfo.nStepsMax = 9; % set upper limit

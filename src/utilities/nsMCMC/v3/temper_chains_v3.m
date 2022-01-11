@@ -146,8 +146,7 @@ for m = 1:n_traces
             sigma_ref = permute(sigma_ref,[3 2 1]);
         end
         
-        logL_fluo = -0.5*(((ref_trace-fluo_predicted)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
-       
+        logL_fluo = -0.5*(((ref_trace-fluo_predicted)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));       
         
         % combine
         total_log_likelihoods = logL_tr + sum(logL_fluo);  
