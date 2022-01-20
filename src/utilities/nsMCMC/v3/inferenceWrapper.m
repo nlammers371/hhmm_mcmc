@@ -27,8 +27,11 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
 
             % perform additional "cross-talk" MH sampling if we are doing chain
             % tempering
-            mcmcInfo = temper_chains_v3(mcmcInfo);
+            if mcmcInfo.temperingFlag
+                mcmcInfo = temper_chains_v3(mcmcInfo);
+            end
         else
+            error('Consistency testing not currently supported')
             % assign true chains
             sample_chains_true = NaN(size(mcmcInfo.sample_chains));
             for i = 1:length(mcmcInfo.masterSimStruct)
