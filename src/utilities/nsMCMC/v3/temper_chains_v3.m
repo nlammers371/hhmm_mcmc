@@ -48,28 +48,29 @@ for m = 1:n_traces
         temperature_array = NaN(2,n_swaps);
         id_array = NaN(2,n_swaps);  
         chain_id_array = NaN(1,n_swaps,2);  
-        used_id_flags = false(size(id_vec));
+%         used_id_flags = false(size(id_vec));
         
         % randomly assign partners
         for n = 1:n_swaps          
           
             % pick first
-            id1 = randsample(find(~used_id_flags),1);
-            used_id_flags(id1) = 1;
+            id1 = randsample(id_vec,1);
+%             used_id_flags(id1) = 1;
 
             % find permitted partners
             chain_neighbor_options = chain_id_vec == chain_id_vec(id1) & abs(temp_id_vec-temp_id_vec(id1))==1; 
             temp_neighbor_options = (temp_id_vec == temp_id_vec(id1) & chain_id_vec~=chain_id_vec(id1)) & infoSharingFlag;%abs(chain_id_vec-chain_id_vec(id1))==1; 
-            partner_options = (temp_neighbor_options | chain_neighbor_options) & ~used_id_flags; 
+            partner_options = (temp_neighbor_options | chain_neighbor_options);% & ~used_id_flags; 
             if any(partner_options) 
                 partner_ids = repelem(find(partner_options),2);% keep ransample from being stupid            
             else
+                error('this is dumb')
                 partner_ids = repelem(find(~used_id_flags),2);
             end
 
             % select second id
             id2 = randsample(partner_ids,1);
-            used_id_flags(id2) = 1;
+%             used_id_flags(id2) = 1;
 
             % assign
             id_array(:,n) = [id1 id2];

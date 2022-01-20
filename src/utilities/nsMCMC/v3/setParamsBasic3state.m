@@ -8,11 +8,11 @@ mcmcInfo.tres = 20;
 % define parameters to be inferred
 trueParams.R = [-.02, .04, 0; .02 -.05 .08; 0 .01 -.08];
 trueParams.A = expm(trueParams.R*mcmcInfo.tres);
-trueParams.v = [.05, 2, 4]';
+trueParams.v = [0, 2, 4]';
 [V, D] = eig(trueParams.A);
 [~, mi] = max(real(diag(D)));
 trueParams.pi0 = V(:,mi)/sum(V(:,mi));
-trueParams.nSteps = 7;
+trueParams.nSteps = 6.4;
 mcmcInfo.trueParams = trueParams;
 
 % add known hyperparameters

@@ -27,9 +27,9 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     mcmcInfo.inferNStepsFlag = inferMemory;
     mcmcInfo.nStepsPropSize = 0.25;    
 %     mcmcInfo.trueParams.nSteps = 6; % True parameters
-    mcmcInfo.nStepsGuess = 6;
-    mcmcInfo.nStepsMax = 9; % set upper limit
-    mcmcInfo.nStepsMin = 4; % lower limit   
+    mcmcInfo.nStepsGuess = 4 + rand()*3;
+    mcmcInfo.nStepsMax = 10; % set upper limit
+    mcmcInfo.nStepsMin = 3.5; % lower limit   
 
     % inference type
     mcmcInfo.refChainVec = false(1,mcmcInfo.n_chains_eff);

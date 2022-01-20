@@ -12,12 +12,12 @@ trueParams.v = [0, 4]';
 [V, D] = eig(trueParams.A);
 [~, mi] = max(real(diag(D)));
 trueParams.pi0 = V(:,mi)/sum(V(:,mi));
-trueParams.nSteps = 7;
+trueParams.nSteps = 8.3;
 mcmcInfo.trueParams = trueParams;
 
 % add known hyperparameters
 mcmcInfo.nStates = size(trueParams.A,1);
-mcmcInfo.alpha_frac = 1.05/6;
+mcmcInfo.alpha_frac = 1/6;
 % mcmcInfo.trueParams.alpha = mcmcInfo.alpha_frac*mcmcInfo.trueParams.nSteps;
 mcmcInfo.eps = 1e-2; % NL: note that this is not currently used
 mcmcInfo.n_reps = 1;
