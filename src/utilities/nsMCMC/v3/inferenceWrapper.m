@@ -50,7 +50,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         if mcmcInfo.inferNStepsFlag
             mcmcInfo = mh_sample_nSteps(mcmcInfo);
             
-            if ~mcmcInfo.temperingFlag && mcmcInfo.step == mcmcInfo.swapSteps
+            if ~mcmcInfo.temperingFlag && ismember(mcmcInfo.step,mcmcInfo.swapSteps) && mcmcInfo.nStepsSwapFlag
                 mcmcInfo = mh_swap_nSteps(mcmcInfo);
             end
         end

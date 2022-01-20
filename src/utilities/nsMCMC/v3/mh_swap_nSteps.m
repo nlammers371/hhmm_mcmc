@@ -5,9 +5,11 @@ function mcmcInfo = mh_swap_nSteps(mcmcInfo)
 start_i = ceil((mcmcInfo.step-mcmcInfo.swapInc+1)/mcmcInfo.update_increment);
 stop_i = floor(mcmcInfo.step/mcmcInfo.update_increment);
 
-nStepsDist = mcmcInfoInit.n_steps_inf_array(start_i:stop_i,:);
+nStepsDist = mcmcInfo.n_steps_inf_array(start_i:stop_i,:);
 nStepsDist = nStepsDist(:);
-nStepsProp = randsample(nStepsDist,mcmcInfo.n_chains,true);
+nStepsWeight = exp(mcmcInfo.logL_vec(start_i:stop_i,:));
+nStepsWeight = nStepsWeight(:);
+nStepsProp = randsample(nStepsDist,mcmcInfo.n_chains,true,nStepsWeight);
 
 % randomly sample MS2 kernels
 coeff_MS2_prop = NaN(size(mcmcInfo.coeff_MS2));

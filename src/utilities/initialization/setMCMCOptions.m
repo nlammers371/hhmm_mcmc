@@ -3,6 +3,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
    
     mcmcInfo.update_increment = 2;
+    mcmcInfo.swapSteps = mcmcInfo.burn_in + mcmcInfo.swapInc + 1:mcmcInfo.swapInc:mcmcInfo.n_mcmc_steps;
+    
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
     if ~temperingFlag
         n_temps = 1;
@@ -25,7 +27,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
 
     % memory parameter
     mcmcInfo.inferNStepsFlag = inferMemory;
-    mcmcInfo.nStepsPropSize = 0.25;    
+    mcmcInfo.nStepsPropSize = 0.2;    
 %     mcmcInfo.trueParams.nSteps = 6; % True parameters
     mcmcInfo.nStepsGuess = 4 + rand()*3;
     mcmcInfo.nStepsMax = 10; % set upper limit

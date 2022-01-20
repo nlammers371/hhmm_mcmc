@@ -34,6 +34,8 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     else
         % generate prior distribution and draw samples        
         mcmcInfo.nStepsCurr = mcmcInfo.nStepsGuess + 2*trandn(-ones(1,mcmcInfo.n_chains_eff),ones(1,mcmcInfo.n_chains_eff));
+        mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr<mcmcInfo.nStepsMin) = mcmcInfo.nStepsMin;
+        mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr>mcmcInfo.nStepsMax) = mcmcInfo.nStepsMax;
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
         mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
     end

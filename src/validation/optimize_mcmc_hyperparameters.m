@@ -14,13 +14,15 @@ mkdir(outPath);
 mcmcInfoInit = setParamsBasic3state;
 
 % indicate how many replicates of each we want
-n_sims = 4;
+n_sims = 1;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 2500; % number of MCMC steps (need to add convergence criteria)
-mcmcInfoInit.burn_in = 500;
+mcmcInfoInit.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.burn_in = 250;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
+mcmcInfoInit.swapInc = 10;
+mcmcInfoInit.nStepsSwapFlag = 0; % this does not appear to work
 
 % characteristics of simulated data
 mcmcInfoInit.n_traces = 10;
@@ -35,7 +37,7 @@ mcmcInfoInit = genericInitialization(mcmcInfoInit);
 repVec = 1:n_sims;
 inferMemoryVec = 1;
 temperVec = 0;
-nChainsVec = [5];
+nChainsVec = [10];
 nTempsVec = [1];
 nSwaps = [14];
 infoSharing = 0;
@@ -58,7 +60,7 @@ catch
     % do nothing
 end  
 
-parfor iter = 1:size(combArray,1)
+for iter = 1:size(combArray,1)
   
     inferMemory = combArray(iter,1)==1;
     n_chains = combArray(iter,2);
