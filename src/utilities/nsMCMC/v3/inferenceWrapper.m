@@ -49,6 +49,10 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         % if desired, perform MH moves to sample "nSteps"
         if mcmcInfo.inferNStepsFlag
             mcmcInfo = mh_sample_nSteps(mcmcInfo);
+            
+            if ~mcmcInfo.temperingFlag && mcmcInfo.step == mcmcInfo.swapSteps
+                mcmcInfo = mh_swap_nSteps(mcmcInfo);
+            end
         end
         
         % calculate updated logL
