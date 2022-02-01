@@ -25,7 +25,7 @@ mcmcInfoInit.swapInc = 10;
 mcmcInfoInit.nStepsSwapFlag = 0; % this does not appear to work
 
 % characteristics of simulated data
-mcmcInfoInit.n_traces = 12;
+mcmcInfoInit.n_traces = 8;
 mcmcInfoInit.seq_length = 120; % length of simulated traces in time steps
 
 %%% Are we doing a consistency test?
@@ -97,8 +97,8 @@ for iter = 1:size(combArray,1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     mcmcInfo = initializeInferenceArrays(mcmcInfo);
 %     ids_to_use = randsample(1:mcmcInfoTemp.n_chains,mcmcInfoTemp.n_chains,true,exp(sum(mcmcInfoTemp.trace_logL_vec,3)));    
-%     mcmcInfo = initializeVariablesWithPriors(mcmcInfo,mcmcInfoTemp,ids_to_use);
-    mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+    mcmcInfo = initializeVariablesWithPriors(mcmcInfo,mcmcInfoTemp,ids_to_use);
+        
     mcmcInfo = inferenceWrapper(mcmcInfo);  
     
     mcmcInfo.duration = toc;
@@ -106,6 +106,7 @@ for iter = 1:size(combArray,1)
     % save results
 %     saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
 %                 '_mem' num2str(inferMemory) '_info' num2str(info_sharing)  '_tempInc' num2str(round(temp_increment,1)) '_rep' sprintf('%03d',step_num)];
+
     saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
                 '_mem' num2str(inferMemory) '_tempInc' num2str(round(10*temp_increment,0)) '_rep' sprintf('%03d',step_num)];
 

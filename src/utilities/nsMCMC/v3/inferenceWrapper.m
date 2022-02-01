@@ -4,7 +4,9 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
     mcmcInfo.step = 1;
     
     % initialize chains
-    mcmcInfo = initialize_chains_v3(mcmcInfo);
+    if ~isfield(mcmcInfo, 'sample_chains')
+        mcmcInfo = initialize_chains_v3(mcmcInfo);
+    end
 
     % get predicted fluorescence
     mcmcInfo = predict_fluo_full_v3(mcmcInfo);

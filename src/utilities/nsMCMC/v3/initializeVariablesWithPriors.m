@@ -44,8 +44,8 @@ function mcmcInfo = initializeVariablesWithPriors(mcmcInfo,mcmcInfoInit,ids_to_u
     
     % initialize v
     mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);    
-    mcmcInfo.v0 = mcmcInfo.v0(ids_to_use,:);
-    mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    
+    mcmcInfo.v0 = mcmcInfoInit.v0(ids_to_use,:);
+    mcmcInfo.M0 = eye(mcmcInfoInit.nStates)*1e1;    
     mcmcInfo.M0(1,1) = 1e5; % add extra weight to "OFF" state
     
     for n = 1:n_chains        
@@ -53,4 +53,5 @@ function mcmcInfo = initializeVariablesWithPriors(mcmcInfo,mcmcInfoInit,ids_to_u
         mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
     end  
     
-    
+    % assign chains
+%     mcmcInfo.sample_chains = mcmcInfoInit.sample_chains(:,ids_to_use,:);

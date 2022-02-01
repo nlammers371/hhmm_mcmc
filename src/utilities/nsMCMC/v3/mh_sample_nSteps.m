@@ -5,31 +5,36 @@ function mcmcInfo = mh_sample_nSteps(mcmcInfo)
 % n_chains_eff = mcmcInfo.n_chains_eff;
 
 % propose new nSteps values
-nStepsCurr = mcmcInfo.nStepsCurr;
-ubVec = mcmcInfo.nStepsMax-nStepsCurr;
-lbVec = mcmcInfo.nStepsMin-nStepsCurr;
-nStepsProp = nStepsCurr + trandn(lbVec,ubVec)*mcmcInfo.nStepsPropSize;
+%%
+% tic
+for iter = 1:mcmcInfo.nStep_tries_per_run
+    nStepsCurr = mcmcInfo.nStepsCurr;
+    ubVec = mcmcInfo.nStepsMax-nStepsCurr;
+    lbVec = mcmcInfo.nStepsMin-nStepsCurr;
+    nStepsProp = nStepsCurr + trandn(lbVec,ubVec)*mcmcInfo.nStepsPropSize;
 
-% generate MS2 kernels
-coeff_MS2_prop = NaN(size(mcmcInfo.coeff_MS2));
-for n = 1:length(nStepsProp)
-    alpha = mcmcInfo.alpha_frac*nStepsProp(n);
-    coeff_MS2_prop(:,n) = ms2_loading_coeff_frac(alpha, nStepsProp(n), mcmcInfo.nStepsMax);
+    % generate MS2 kernels
+    coeff_MS2_prop = NaN(size(mcmcInfo.coeff_MS2));
+    for n = 1:length(nStepsProp)
+        alpha = mcmcInfo.alpha_frac*nStepsProp(n);
+        coeff_MS2_prop(:,n) = ms2_loading_coeff_frac(alpha, nStepsProp(n), mcmcInfo.nStepsMax);
+    end
+
+    [mcmcInfo, trace_logL_array, trace_temp_array] = calculateNStepLogL(mcmcInfo, coeff_MS2_prop);
+
+    % calculate MH metric
+    L_factor = exp(sum(trace_logL_array));
+
+    % perform MH move
+    mh_flags = L_factor >= rand(size(L_factor));
+
+    % update    
+    mcmcInfo.coeff_MS2(:,mh_flags) = coeff_MS2_prop(:,mh_flags);
+    mcmcInfo.nStepsCurr(mh_flags) = nStepsProp(mh_flags);
+    mcmcInfo.sample_fluo(:,mh_flags,:) = trace_temp_array(:,mh_flags,:);
 end
-
-[mcmcInfo, trace_logL_array, trace_temp_array] = calculateNStepLogL(mcmcInfo, coeff_MS2_prop);
-
-% calculate MH metric
-L_factor = exp(sum(trace_logL_array));
-
-% perform MH move
-mh_flags = L_factor >= rand(size(L_factor));
-
-% update    
-mcmcInfo.coeff_MS2(:,mh_flags) = coeff_MS2_prop(:,mh_flags);
-mcmcInfo.nStepsCurr(mh_flags) = nStepsProp(mh_flags);
-mcmcInfo.sample_fluo(:,mh_flags,:) = trace_temp_array(:,mh_flags,:);
-
+% toc
+%%
 % if mcmcInfo.temperingFlag
 %     
 %     for n = 1:mcmcInfo.n_chains
