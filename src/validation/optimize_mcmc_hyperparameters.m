@@ -7,6 +7,9 @@ addpath(genpath('../utilities'))
 
 % make save diractor
 DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
+if ~exist(DropboxFolder)
+    DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
+end    
 outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization_3state\'];
 mkdir(outPath);
 
@@ -18,14 +21,14 @@ n_sims = 1;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 1e4; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.swapInc = 10;
 mcmcInfoInit.nStepsSwapFlag = 0; % this does not appear to work
 
 % characteristics of simulated data
-mcmcInfoInit.n_traces = 12;
+mcmcInfoInit.n_traces = 2;
 mcmcInfoInit.seq_length = 120; % length of simulated traces in time steps
 
 %%% Are we doing a consistency test?
