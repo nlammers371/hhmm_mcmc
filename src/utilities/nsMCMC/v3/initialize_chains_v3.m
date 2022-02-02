@@ -27,8 +27,8 @@ function mcmcInfo = initialize_chains_v3(mcmcInfo)
             prev_state_array = mcmcInfo.sample_chains(t-1,n,:);
             row_col_array = (prev_state_array-1)*nStates+row_ref;
             lin_index_array = row_col_array;% chain_id_ref*nStates^2;
-            % simulate transitions
             
+            % simulate transitions            
             A_array = cumsum(A_chain(lin_index_array));
             rand_array = repmat(rand(1,1,n_traces),nStates,1);
             mcmcInfo.sample_chains(t,n,:) = sum(rand_array > A_array) + 1;

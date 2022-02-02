@@ -1,4 +1,4 @@
-function mcmcInfo = genericInitialization(mcmcInfo)             
+function mcmcInfo = simulateRawData(mcmcInfo)             
     
     %%%%%%%%%%%%%%%%%%%%%%% simulate traces %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     mcmcInfo.observed_fluo = NaN(mcmcInfo.seq_length,mcmcInfo.n_traces);

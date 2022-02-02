@@ -27,3 +27,11 @@ mcmcInfo.ensembleInferenceFlag = 0;
 mcmcInfo.testResampling = 0;
 mcmcInfo.MHResampling = 0;
 mcmcInfo.update_increment = 1; % sets how often parameter values are recorded in inference arrays
+
+% calculate MS2 convolution kernel
+mcmcInfo.trueParams.alpha = mcmcInfo.alpha_frac*mcmcInfo.trueParams.nSteps;
+coeff_MS2 = ms2_loading_coeff_frac(mcmcInfo.trueParams.alpha, mcmcInfo.trueParams.nSteps, 12)';
+
+% calculate scaled noise
+f_mean = (mcmcInfo.trueParams.pi0'*mcmcInfo.trueParams.v)*sum(coeff_MS2);   
+mcmcInfo.trueParams.sigma = f_mean/10;  

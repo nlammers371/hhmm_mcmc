@@ -46,11 +46,15 @@ seq_len_dummy = seq_length+2*(nStepsMax-1);
 
 % second temporary array used for fluorescence sampling
 mcmcInfo.sample_chains_dummy = cat(1,ones(nStepsMax-1,n_chains,n_traces),mcmcInfo.sample_chains,ones(nStepsMax-1,n_chains,n_traces));
-mcmcInfo.observed_fluo_dummy = cat(1,zeros(nStepsMax-1,n_traces),mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_traces));
-
-mcmcInfo.observed_fluo_dummy2 = cat(1,mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_traces)); % NL: is this used?
 mcmcInfo.sample_fluo_dummy2 = cat(1,mcmcInfo.sample_fluo,zeros(nStepsMax-1,n_chains,n_traces));
 
+if ~mcmcInfo.bootstrapFlag
+    mcmcInfo.observed_fluo_dummy2 = cat(1,mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_traces)); % NL: is this used?
+    mcmcInfo.observed_fluo_dummy = cat(1,zeros(nStepsMax-1,n_traces),mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_traces));
+else
+    mcmcInfo.observed_fluo_dummy2 = cat(1,mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_chains,n_traces)); % NL: is this used?
+    mcmcInfo.observed_fluo_dummy = cat(1,zeros(nStepsMax-1,n_chains,n_traces),mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_chains,n_traces));
+end  
 % preallocate helper array for indexing
 index_helper1 = mcmcInfo.chain_id_ref*seq_len_temp + mcmcInfo.trace_id_ref*seq_len_temp*n_chains;
 index_helper2 = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates;

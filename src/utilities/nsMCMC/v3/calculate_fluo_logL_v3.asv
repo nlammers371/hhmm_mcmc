@@ -44,7 +44,7 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     else
         ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFull(nStepsMax:end,:,:)),1,1,1,nStates);
     end
-    dummy_trunc = repmat(dummyFilter(nStepsMax:end,:,:),1,1,1,nStates);
+    dummy_trunc2 = repmat(dummyFilter(nStepsMax:end,:,:),1,1,1,4);
     
     % set leading and trailing observations equal to model fluo. This is
     % the easiest way to remove from likelihood calculation
