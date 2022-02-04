@@ -4,7 +4,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     n_chains_eff = mcmcInfo.n_chains_eff;
     for n = 1:n_chains_eff    
         alpha_temp = mcmcInfo.A_alpha(:,:,n);
-        alpha_temp(eye(mcmcInfo.nStates)==1) = alpha_temp(eye(mcmcInfo.nStates)==1) + rand(mcmcInfo.nStates,1)*3; % distribution hyper params
+        alpha_temp(eye(mcmcInfo.nStates)==1) = alpha_temp(eye(mcmcInfo.nStates)==1) + normrnd(2,1,mcmcInfo.nStates,1); % distribution hyper params
         mcmcInfo.A_alpha(:,:,n) = 2*alpha_temp;
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1);
         mcmcInfo.A_inf_array(:,:,1,n) = mcmcInfo.A_curr(:,:,n);
@@ -28,16 +28,20 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     end
 
     % initialize nSteps
-    if ~mcmcInfo.inferNStepsFlag
+    if ~mcmcInfo.inferNStepsFlag        
         mcmcInfo.nStepsCurr = repelem(mcmcInfo.trueParams.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+    elseif isfield(mcmcInfo,'nSteps_prior')
+        
     else
         % generate prior distribution and draw samples        
         mcmcInfo.nStepsCurr = mcmcInfo.nStepsGuess + 2*trandn(-ones(1,mcmcInfo.n_chains_eff),ones(1,mcmcInfo.n_chains_eff));
         mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr<mcmcInfo.nStepsMin) = mcmcInfo.nStepsMin;
         mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr>mcmcInfo.nStepsMax) = mcmcInfo.nStepsMax;
-        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;        
         mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
+        mcmcInfo.nSteps_prior = makedist('Uniform',mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
+
     end
     
     % calculate MS2 convolution kernel

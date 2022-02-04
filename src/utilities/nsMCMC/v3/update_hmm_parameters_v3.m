@@ -19,8 +19,8 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
 %     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
         T = mcmcInfo.tempGradVec(n);
-        A_chain = A_counts(:,:,n).^(1/T);        
-        A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
+        A_chain = A_counts(:,:,n);%.^(1/T);        
+        A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain, T);    
         mcmcInfo.A_curr(:,:,n) = A_samp;
         
         % update pi0    
@@ -47,7 +47,11 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
             ind1 = (n-1)*seq_length+1;
             ind2 = n*seq_length;
             % record observed fluo
-            y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            if ~mcmcInfo.bootstrapFlag              
+                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            else
+                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,c,n);
+            end
             for m = 1:nStates
                 % record counts
                 state_counts = convn(coeff_MS2(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full');            
@@ -56,15 +60,17 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         end
     end  
 
-    for c = 1:n_chains        
+    for c = 1:n_chains   
+
+        % symp
         T = mcmcInfo.tempGradVec(c);
-        M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-4;    
+        M = ((F_array(:,:,c)'*F_array(:,:,c)));    
         b = ((F_array(:,:,c)'*y_array(:,c)));
                  
         % calculate mean and variance
         v_lsq = M\b;
         v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
-        v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
+        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M / T +  mcmcInfo.sigma_curr(c)^-2 / T *inv(mcmcInfo.M0));
         
         % sample
         mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
@@ -82,11 +88,16 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     for c = 1:n_chains
         T = mcmcInfo.tempGradVec(c);
         % see: https://discdown.org/flexregression/bayesreg.html
-        a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
         
-        F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+        if ~mcmcInfo.bootstrapFlag
+            a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
+            F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+        else
+            F_diff = reshape(mcmcInfo.sample_fluo(:,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
+            a = (numel(mcmcInfo.observed_fluo(:,1,:))/2 + mcmcInfo.a0)./T;    
+        end
         b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
-        b = (F_diff'*F_diff / 2 + b_prior_piece);
+        b = (F_diff'*F_diff / 2 + b_prior_piece)/T;
         
         mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.trueParams.sigma
         if update_flag

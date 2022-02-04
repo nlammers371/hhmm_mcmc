@@ -1,4 +1,6 @@
-function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, MCMCInitFlag, temp_increment, info_sharing, bootstrapFlag)
+function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, ...
+                              n_swaps, inferMemory, MCMCInitFlag, temp_increment,...
+                              info_sharing, bootstrapFlag,annealingFlag,annealingSigmaFlag)
 
     mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run   
     mcmcInfo.update_increment = 1;    
@@ -10,7 +12,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     mcmcInfo.bootstrapFlag = bootstrapFlag;
     if bootstrapFlag
         % randomly assign subset of traces to each chain
-        mcmcInfo.n_traces_per_chain = ceil(360/mcmcInfo.seq_length);
+        mcmcInfo.n_traces_per_chain = ceil(200/mcmcInfo.seq_length);
         mcmcInfo.trace_id_array = NaN(mcmcInfo.n_traces_per_chain,mcmcInfo.n_chains);
         for n = 1:mcmcInfo.n_chains
             mcmcInfo.trace_id_array(:,n) = randsample(1:mcmcInfo.n_traces,mcmcInfo.n_traces_per_chain,true);
@@ -25,7 +27,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
         for n = 1:n_chains
             mcmcInfo.observed_fluo(:,n,:) = mcmcInfo.observed_fluo_orig(:,mcmcInfo.trace_id_array(:,n)');
         end
-    end
+    end       
+    
     if ~temperingFlag
         n_temps = 1;
     end
@@ -63,8 +66,24 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, temperingFlag, n_temps, n
     exp_vec = repmat(0:mcmcInfo.n_temps_per_chain-1,1,mcmcInfo.n_chains);
     mcmcInfo.tempGradVec = mcmcInfo.temp_incrememt.^exp_vec;%logspace(0,log10(mcmcInfo.max_temp),mcmcInfo.n_chains);
 
+    % simulated annealing?
+    mcmcInfo.annealingFlag = annealingFlag;
+    mcmcInfo.annealingSigmaFlag = annealingSigmaFlag;
+    mcmcInfo.tempGradArray = repmat(mcmcInfo.tempGradVec,mcmcInfo.n_mcmc_steps,1);
+    
+    if mcmcInfo.annealingFlag || mcmcInfo.annealingSigmaFlag
+        stepVec = 1:mcmcInfo.n_mcmc_steps;
+%         hm = mcmcInfo.burn_in/log(100);
+        sg = mcmcInfo.burn_in;
+%         gradientVec = 2*exp(-((stepVec-2*sg)/sg*3).^2)+1;
+        gradientVec = 2*exp(-stepVec/sg*5)+1;
+        mcmcInfo.tempGradArray = repmat(gradientVec',1,mcmcInfo.n_chains);
+        mcmcInfo.tempGradArray(mcmcInfo.burn_in+1:end,:) = 1;
+    end
+    
     % mcmcInfo.tempGradVec(2) = 1;
-    mcmcInfo.move_flag_array = false(mcmcInfo.n_rs_per_trace,floor(n_chains*n_temps/2),mcmcInfo.n_traces,mcmcInfo.n_mcmc_steps);
+    mcmcInfo.move_flag_array = false(mcmcInfo.n_rs_per_trace,floor(n_chains*n_temps/2),...
+                                      mcmcInfo.n_traces,mcmcInfo.n_mcmc_steps);
 
     
         

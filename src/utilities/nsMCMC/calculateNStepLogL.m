@@ -16,8 +16,11 @@ for m = 1:mcmcInfo.n_traces
     chain_slice = mcmcInfo.sample_chains(:,:,m);
 
     % extract trace
-    ref_trace = mcmcInfo.observed_fluo(:,m);          
-
+    if ~mcmcInfo.bootstrapFlag
+        ref_traces = mcmcInfo.observed_fluo(:,m);          
+    else
+        ref_traces = mcmcInfo.observed_fluo(:,:,m);          
+    end
     %%%%%%%%%%%%%%%%%%%%%%%%%
     % Extract correct initiation rates
     %%%%%%%%%%%%%%%%%%%%%%%%%                               
@@ -34,7 +37,7 @@ for m = 1:mcmcInfo.n_traces
     fluo_prop = fluo_conv_fun(initiation_rates,coeff_MS2_prop);
     sigma_ref = mcmcInfo.sigma_curr';    
 
-    logL_fluo = -0.5*(((ref_trace-cat(3,fluo_prop,fluo_curr))./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
+    logL_fluo = -0.5*(((ref_traces-cat(3,fluo_prop,fluo_curr))./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
     
     % reshape and store difference
     total_log_likelihoods = permute(sum(logL_fluo),[3 2 1]);      

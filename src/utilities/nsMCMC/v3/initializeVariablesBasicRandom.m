@@ -28,16 +28,27 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     end
 
     % initialize nSteps
-    if ~mcmcInfo.inferNStepsFlag
+    if ~mcmcInfo.inferNStepsFlag        
+      
         mcmcInfo.nStepsCurr = repelem(mcmcInfo.trueParams.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+        
+    elseif isfield(mcmcInfo,'nSteps_prior')
+      
+        mcmcInfo.nStepsCurr = random(mcmcInfo.nSteps_prior,1,mcmcInfo.n_chains)';
+        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;        
+        mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
+        
     else
+      
         % generate prior distribution and draw samples        
         mcmcInfo.nStepsCurr = mcmcInfo.nStepsGuess + 2*trandn(-ones(1,mcmcInfo.n_chains_eff),ones(1,mcmcInfo.n_chains_eff));
         mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr<mcmcInfo.nStepsMin) = mcmcInfo.nStepsMin;
         mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr>mcmcInfo.nStepsMax) = mcmcInfo.nStepsMax;
-        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
+        mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;        
         mcmcInfo.n_steps_inf_array(1,:) = mcmcInfo.nStepsCurr;
+        mcmcInfo.nSteps_prior = makedist('Uniform',mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
+
     end
     
     % calculate MS2 convolution kernel

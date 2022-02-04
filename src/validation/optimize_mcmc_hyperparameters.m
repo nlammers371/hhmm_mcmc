@@ -22,11 +22,13 @@ n_sims = 1;
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
 mcmcInfoInit.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
-mcmcInfoInit.burn_in = 500;
+mcmcInfoInit.burn_in = 250;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfoInit.swapInc = 10;
+mcmcInfoInit.swapInc = 10; % NL: not used atm
 
-bootstrapFlag = 1;
+bootstrapFlag = 0;
+annealingFlag = 0;
+annealingSigmaFlag = 1;
 
 % characteristics of simulated data
 mcmcInfoInit.n_traces = 10;
@@ -40,7 +42,7 @@ mcmcInfoInit = simulateRawData(mcmcInfoInit);
 repVec = 1:n_sims;
 inferMemoryVec = 1;
 temperVec = 0;
-nChainsVec = [10];
+nChainsVec = [5];
 nTempsVec = [1]; 
 nSwaps = [14]; % NL: not used currently
 tempIncrement = [1]; 
@@ -70,26 +72,49 @@ for iter = 1:size(combArray,1)
     step_num = combArray(iter,5);
     
     % start timer
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Set MCMC options
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
-    mcmcInfo = setMCMCOptions(mcmcInfoInit, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, false,...
-                              temp_increment, info_sharing, bootstrapFlag);                                                       
+    mcmcInfoAnneal = setMCMCOptions(mcmcInfoInit, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, false,...
+                              temp_increment, info_sharing, bootstrapFlag, annealingFlag, annealingSigmaFlag);                                                       
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % initialize inference arrays and variables
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-    mcmcInfo = initializeInferenceArrays(mcmcInfo);
-    mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+    mcmcInfoAnneal = initializeInferenceArrays(mcmcInfoAnneal);
+    mcmcInfoAnneal = initializeVariablesBasicRandom(mcmcInfoAnneal);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % conduct full inference
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    mcmcInfoAnneal = inferenceWrapper_v2(mcmcInfoAnneal);  
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+    mcmcInfo = setMCMCOptions(mcmcInfoInit, n_chains, temperingFlag, n_temps, n_swaps, inferMemory, false,...
+                              temp_increment, info_sharing, bootstrapFlag, 0, 0);                                                       
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % initialize inference arrays and variables
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % generate prior
+    trunc_array = mcmcInfoAnneal.n_steps_inf_array(mcmcInfoAnneal.burn_in:end,:);
+    mu = mean(trunc_array(:));
+    sigma = std(trunc_array(:));
+    prior_dist = makedist('Normal',mu,sigma);
+    mcmcInfo.nSteps_prior = truncate(prior_dist,mcmcInfo.nStepsMin,mcmcInfo.nStepsMax);
+    
+    mcmcInfo = initializeInferenceArrays(mcmcInfo);
+    mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+    
     mcmcInfo = inferenceWrapper_v2(mcmcInfo);  
     
-    mcmcInfo.duration = toc;
+%     mcmcInfoAnneal.duration = toc;
     
     % save results
     saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
@@ -97,8 +122,8 @@ for iter = 1:size(combArray,1)
 
     disp('saving...')
     % strip unneccesarry fields    
-    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','masterSimStruct','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
-    saveFun(mcmcInfo, outPath, saveString)
+    mcmcInfoAnneal = rmfield(mcmcInfoAnneal,{'indArray','trace_logL_array','trace_logL_vec','masterSimStruct','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+    saveFun(mcmcInfoAnneal, outPath, saveString)
     
 end    
 
