@@ -102,6 +102,7 @@ for iter = 1:size(combArray,1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % initialize inference arrays and variables
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     % generate prior
     trunc_array = mcmcInfoAnneal.n_steps_inf_array(mcmcInfoAnneal.burn_in:end,:);
     mu = mean(trunc_array(:));
@@ -112,15 +113,14 @@ for iter = 1:size(combArray,1)
     mcmcInfo = initializeInferenceArrays(mcmcInfo);
     mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
     
-    mcmcInfo = inferenceWrapper_v2(mcmcInfo);  
-    
-%     mcmcInfoAnneal.duration = toc;
+    mcmcInfo = inferenceWrapper_v2(mcmcInfo);      
     
     % save results
     saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
                 '_mem' num2str(inferMemory) '_tempInc' num2str(round(10*temp_increment,0)) '_rep' sprintf('%03d',step_num)];
 
     disp('saving...')
+    
     % strip unneccesarry fields    
     mcmcInfoAnneal = rmfield(mcmcInfoAnneal,{'indArray','trace_logL_array','trace_logL_vec','masterSimStruct','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
     saveFun(mcmcInfoAnneal, outPath, saveString)
