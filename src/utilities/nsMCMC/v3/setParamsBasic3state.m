@@ -12,7 +12,7 @@ trueParams.v = [0, 2, 4]';
 [V, D] = eig(trueParams.A);
 [~, mi] = max(real(diag(D)));
 trueParams.pi0 = V(:,mi)/sum(V(:,mi));
-trueParams.nSteps = 8.1;
+trueParams.nSteps = 6.9;
 mcmcInfo.trueParams = trueParams;
 
 % add known hyperparameters

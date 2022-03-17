@@ -31,7 +31,7 @@ annealingFlag = 0;
 annealingSigmaFlag = 0;
 
 % characteristics of simulated data
-mcmcInfoInit.n_traces = 10;
+mcmcInfoInit.n_traces = 50;
 mcmcInfoInit.seq_length = 120; % length of simulated traces in time steps
 
 %%% Are we doing a consistency test?
@@ -42,7 +42,7 @@ mcmcInfoInit = simulateRawData(mcmcInfoInit);
 repVec = 1:n_sims;
 inferMemoryVec = 0;
 temperVec = 0;
-nChainsVec = [50];
+nChainsVec = [25];
 nTempsVec = [1]; 
 nSwaps = [14]; % NL: not used currently
 tempIncrement = [1]; 
