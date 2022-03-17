@@ -16,8 +16,8 @@ function mcmcInfo = initializeInferenceArrays(mcmcInfo)
         mcmcInfo.n_steps_inf_array = NaN(n_updates,n_chains);
     end
     
-    % A prior--assume strongly diagonal PDF given short timescale
-    % take A columns to follow multinomial Dirichlet distribution
-    mcmcInfo.A_curr = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain);
-    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,mcmcInfo.nStates);
-    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain);%*n_particles*n_traces;
+    % initialize arrays to store current parameters
+    mcmcInfo.A_curr = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
+    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
+    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);   
+    mcmcInfo.sigma_curr = NaN(mcmcInfo.n_chains_eff,1);

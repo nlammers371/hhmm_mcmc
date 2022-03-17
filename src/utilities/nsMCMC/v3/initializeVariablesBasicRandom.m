@@ -1,6 +1,7 @@
 function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % initialize transition probabilities
+    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
     n_chains_eff = mcmcInfo.n_chains_eff;
     for n = 1:n_chains_eff    
         alpha_temp = mcmcInfo.A_alpha(:,:,n);
@@ -16,8 +17,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.pi0_inf_array(1,:,n) = mcmcInfo.pi0_curr(n,:);
     end
 
-    % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)
-    mcmcInfo.sigma_curr = NaN(mcmcInfo.n_chains*mcmcInfo.n_temps_per_chain,1);
+    % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)    
     mcmcInfo.a0 = numel(mcmcInfo.observed_fluo)/100;
     fluo_vec = mcmcInfo.observed_fluo(:);
     mcmcInfo.b0 = 0.3*mean(fluo_vec).^2;
@@ -29,7 +29,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
 
     % initialize nSteps
     if ~mcmcInfo.inferNStepsFlag
-        mcmcInfo.nStepsCurr = repelem(mcmcInfo.trueParams.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
+        mcmcInfo.nStepsCurr = repelem(mcmcInfo.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
     else
         % generate prior distribution and draw samples        
@@ -46,20 +46,17 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.coeff_MS2(:,n) = ms2_loading_coeff_frac(mcmcInfo.alphaCurr(n), mcmcInfo.nStepsCurr(n), mcmcInfo.nStepsMax)';
     end
     
-    % initialize v
-    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
-    v2 = prctile(fluo_vec,95) ./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+    % initialize v    
+    v2 = prctile(fluo_vec,99) ./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [zeros(n_chains_eff,1) v2];
     if mcmcInfo.nStates==3
          mcmcInfo.v0(:,end+1) = 2*v2;
     end
-    mcmcInfo.M0 = eye(mcmcInfo.nStates)*1e1;    
+    mcmcInfo.M0 = eye(mcmcInfo.nStates)*0.5;    
     mcmcInfo.M0(1,1) = 1e5; % add extra weight to "OFF" state
     
     for n = 1:n_chains_eff
-        v_cov_mat = 4*mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
+        v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
         mcmcInfo.v_curr(n,:) = mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)';
         mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
-    end  
-    
-    
+    end         

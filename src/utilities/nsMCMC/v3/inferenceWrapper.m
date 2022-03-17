@@ -20,28 +20,17 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
 %         tic
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
         
-        mcmcInfo.step = step;
-
-        if ~mcmcInfo.consistencyTestFlag
+        mcmcInfo.step = step;       
           
-            % resample chains            
-            mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"                 
+        % resample chains  promoter state sequences        
+        mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"                 
 
-            % perform additional "cross-talk" MH sampling if we are doing chain
-            % tempering
-            if mcmcInfo.temperingFlag
-                mcmcInfo = temper_chains_v3(mcmcInfo);
-            end
-        else
-            error('Consistency testing not currently supported')
-            % assign true chains
-            sample_chains_true = NaN(size(mcmcInfo.sample_chains));
-            for i = 1:length(mcmcInfo.masterSimStruct)
-                sample_chains_true(:,:,i) = repmat(mcmcInfo.masterSimStruct(i).naive_states',1,mcmcInfo.n_chains_eff);
-            end
-            mcmcInfo.sample_chains = sample_chains_true;
-        end                
-        
+        % perform additional "cross-talk" MH sampling if we are doing chain
+        % tempering
+%         if mcmcInfo.temperingFlag
+%             mcmcInfo = temper_chains_v3(mcmcInfo);
+%         end
+                       
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 
@@ -50,11 +39,10 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         
         % if desired, perform MH moves to sample "nSteps"
         if mcmcInfo.inferNStepsFlag
-            mcmcInfo = mh_sample_nSteps(mcmcInfo);
-            
-            if ~mcmcInfo.temperingFlag && ismember(mcmcInfo.step,mcmcInfo.swapSteps) && mcmcInfo.nStepsSwapFlag
-                mcmcInfo = mh_swap_nSteps(mcmcInfo);
-            end
+            mcmcInfo = mh_sample_nSteps(mcmcInfo);           
+%             if ~mcmcInfo.temperingFlag 
+%                 mcmcInfo = mh_swap_nSteps(mcmcInfo);
+%             end
         end
         
         % calculate updated logL

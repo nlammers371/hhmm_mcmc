@@ -18,8 +18,8 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     A_counts = mcmcInfo.transition_count_array;  
 %     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
-        T = mcmcInfo.tempGradVec(n);
-        A_chain = A_counts(:,:,n).^(1/T);        
+        T = 1;%mcmcInfo.tempGradVec(n);
+        A_chain = A_counts(:,:,n).^(1/T); % NL: note that this technically should be applied to full distribution, including prior       
         A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
         mcmcInfo.A_curr(:,:,n) = A_samp;
         
@@ -57,7 +57,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     end  
 
     for c = 1:n_chains        
-        T = mcmcInfo.tempGradVec(c);
+        T = 1;%mcmcInfo.tempGradVec(c);
         M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-4;    
         b = ((F_array(:,:,c)'*y_array(:,c)));
                  
@@ -80,7 +80,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     
     % Update sigma
     for c = 1:n_chains
-        T = mcmcInfo.tempGradVec(c);
+        T = 1;%mcmcInfo.tempGradVec(c);
         % see: https://discdown.org/flexregression/bayesreg.html
         a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
         
