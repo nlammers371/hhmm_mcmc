@@ -1,0 +1,17 @@
+function mcmcInfo = calculateModelLoss(param_vec)
+
+global mcmcInfo
+
+
+mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"                 
+
+% get empirical transition and occupancy counts    
+mcmcInfo = get_empirical_counts_v3(mcmcInfo);
+
+% use Gibbs sampling to update hyperparameters      
+% mcmcInfo = update_hmm_parameters_v3(mcmcInfo);   
+
+% calculate updated logL
+mcmcInfo = calculateLogLikelihood(mcmcInfo);
+
+mcmcInfo.step = mcmcInfo.step + 1;
