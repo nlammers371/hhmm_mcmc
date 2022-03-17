@@ -21,7 +21,7 @@ n_sims = 1;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-mcmcInfoInit.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 2.5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 250;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.swapInc = 10; % NL: not used atm
@@ -42,7 +42,7 @@ mcmcInfoInit = simulateRawData(mcmcInfoInit);
 repVec = 1:n_sims;
 inferMemoryVec = 1;
 temperVec = 0;
-nChainsVec = [5];
+nChainsVec = [25];
 nTempsVec = [1]; 
 nSwaps = [14]; % NL: not used currently
 tempIncrement = [1]; 
