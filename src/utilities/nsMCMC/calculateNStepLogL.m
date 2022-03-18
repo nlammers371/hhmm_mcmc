@@ -38,7 +38,7 @@ for m = 1:mcmcInfo.n_traces
     
     % reshape and store difference
     total_log_likelihoods = permute(sum(logL_fluo),[3 2 1]);      
-    trace_logL_array(m,:) = (total_log_likelihoods(1,:)-total_log_likelihoods(2,:))./mcmcInfo.tempGradVec;
+    trace_logL_array(m,:) = (total_log_likelihoods(1,:)-total_log_likelihoods(2,:));%./mcmcInfo.tempGradVec;
     
     % store fluo
     trace_temp_array(:,:,m) = fluo_prop;

@@ -29,9 +29,9 @@ mcmcInfo.n_traces = size(mcmcInfo.observed_fluo,2);
 mcmcInfo.seq_length = size(mcmcInfo.observed_fluo,1);
 
 % other key hyperparameters
-mcmcInfo.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.burn_in = 500;
-mcmcInfo.n_reps = 10; % number of chain state resampling passes per inference step
+mcmcInfo.n_mcmc_steps = 3e2; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.burn_in = 125;
+mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfo.nStepsSwapFlag = 0; % this does not appear to work
 mcmcInfo.NumWorkers = 4;
 mcmcInfo.annealingSigmaFlag = 0; % need to implement this
@@ -39,7 +39,7 @@ mcmcInfo.annealingSigmaFlag = 0; % need to implement this
 % Set the parameter options to explore
 repVec = 1:n_sims;
 inferMemory = 0;
-n_chains = 5;
+n_chains = 50;
 
 if ~inferMemory
     mcmcInfo.nSteps = trueParams.nSteps;

@@ -1,5 +1,4 @@
-% Script to experiment with non-sequential MCMC sampling for parameter
-% inference
+% Script to validate ns MCMC method for burs parameter inference
 clear 
 close all force
 
@@ -13,48 +12,66 @@ end
 outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization_3state\'];
 mkdir(outPath);
 
-% initialize 3 state system 
-trueParams = setParamsBasic3state;
-
-% characteristics of simulated data
-trueParams.n_traces = 10;
-trueParams.seq_length = 120; % length of simulated traces in time steps
-
-% simulate transcription traces
-trueParams = generateSimulatedData(trueParams);
-
-% indicate how many replicates of each we want
-n_sims = 1;
 
 %%%%%%%%%%%%%%%%%%%%% Initialize sampling struct %%%%%%%%%%%%%%%%
 mcmcInfoInit = struct;
 
-% add "known" hyperparameters
-mcmcInfoInit.nStates = trueParams.nStates;
-mcmcInfoInit.alpha_frac = trueParams.alpha_frac;
-mcmcInfoInit.observed_fluo = trueParams.observed_fluo;
-mcmcInfoInit.n_traces = size(mcmcInfoInit.observed_fluo,2);
-mcmcInfoInit.seq_length = size(mcmcInfoInit.observed_fluo,1);
-
 % other key hyperparameters
-mcmcInfoInit.n_mcmc_steps = 1e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfoInit.nStepsSwapFlag = 0; % this does not appear to work
-mcmcInfoInit.NumWorkers = 4;
+mcmcInfoInit.NumWorkers = 24;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
 
 % Set the parameter options to explore
-repVec = 1:n_sims;
-inferMemoryVec = 0;
-nChainsVec = [10];
+seq_length = 100; % length of simulated traces in time steps
+inferMemory = 0;
+n_chains = 10;
+n_traces_vec = [2 5 10 20 30 40 50 60];
+mem_vec = linspace(4,10,10);
+nStates_vec = [2 3];
+simVec = 1:10;
 
+sim_struct = struct;
+iter = 1;
+for n = 1:length(n_traces_vec)
+    for m = 1:length(mem_vec)
+        for s = 1:length(nStates_vec)
 
-if ~inferMemoryVec
-    mcmcInfoInit.nSteps = trueParams.nSteps;
-end    
-% get all possible combinations
-elements = {inferMemoryVec nChainsVec repVec};
+            nStates = nStates_vec(s);
+            n_traces = n_traces_vec(n);
+            nSteps = mem_vec(m);
+            
+            if nStates == 3
+                % initialize 3 state system 
+                trueParams = setParamsBasic3state;
+            elseif nStates == 2
+                trueParams = setParamsBasic2state;
+            else
+                error('unsupported number of states')
+            end
+            trueParams.nSteps = nSteps;
+            trueParams.n_traces = n_traces;
+            trueParams.seq_length = seq_length;
+            
+            % simulate transcription traces
+%             sim_struct(iter).trueParams = trueParams;
+            sim_struct(iter).trueParams = generateSimulatedData(trueParams);
+            sim_struct(iter).nSteps = nSteps;
+            sim_struct(iter).n_traces = n_traces;
+            sim_struct(iter).nStates = nStates;
+            sim_struct(iter).seq_length = seq_length;
+            
+            iter = iter + 1;
+        end
+    end  
+end
+n_trace_lookup = [sim_struct.n_traces];
+n_step_lookup = [sim_struct.nSteps];
+n_state_lookup = [sim_struct.nStates];
+
+%% get all possible combinations
+elements = {n_traces_vec mem_vec nStates_vec simVec};
 combCell = cell(1, numel(elements));
 [combCell{:}] = ndgrid(elements{:});
 combCell = cellfun(@(x) x(:), combCell,'uniformoutput',false); %there may be a better way to do this
@@ -64,44 +81,62 @@ combArray = [combCell{:}];
 initializePool(mcmcInfoInit)
 
 for iter = 1:size(combArray,1)
-  
-    inferMemory = combArray(iter,1)==1;
-    n_chains = combArray(iter,2);
-%     n_temps = combArray(iter,3);
-%     n_swaps = combArray(iter,4);
-%     info_sharing = combArray(iter,6);
-%     temp_increment = combArray(iter,7);
-%     temperingFlag = combArray(iter,8);
-    step_num = combArray(iter,end);    
+
+    % extract sim characteristics
+    n_traces = combArray(iter,1);
+    nSteps = combArray(iter,2);
+    nStates = combArray(iter,3);
+    rep_num = combArray(iter,4);
+
+    % extract model
+    trace_filter = n_trace_lookup == n_traces;
+    step_filter = n_step_lookup == nSteps;
+    state_filter = n_state_lookup == nStates;
     
+    trueParams = sim_struct(trace_filter & step_filter & state_filter).trueParams;
+
+    % initialize inference results structure
+    mcmcInfo = mcmcInfoInit;
+
+    if ~inferMemory
+        mcmcInfo.nSteps = nSteps;
+    end    
+
+    % add "known" hyperparameters
+    mcmcInfo.nStates = trueParams.nStates;    
+    mcmcInfo.alpha_frac = trueParams.alpha_frac;
+    mcmcInfo.observed_fluo = trueParams.observed_fluo;
+    mcmcInfo.n_traces = n_traces;
+    mcmcInfo.seq_length = seq_length;
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Set MCMC options
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
-    mcmcInfoTemp = setMCMCOptions(mcmcInfoInit, n_chains, inferMemory);
-    
+    mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory);
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % initialize inference arrays and variables
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    mcmcInfo = mcmcInfoTemp;
-    
+    mcmcInfo = initializeInferenceArrays(mcmcInfo);
+    mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % conduct full inference
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-    tic
-    mcmcInfo = initializeInferenceArrays(mcmcInfo);
-    mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
-    mcmcInfo = inferenceWrapper(mcmcInfo);  
-    
+    tic    
+    mcmcInfo = inferenceWrapper(mcmcInfo);      
     mcmcInfo.duration = toc;
-    
+
     % save results
-    saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
-                '_mem' num2str(inferMemory) '_tempInc' num2str(round(10*temp_increment,0)) '_rep' sprintf('%03d',step_num)];
+    saveString = ['K' sprintf('%01d',nStates) '_W' num2str(round(nSteps,2)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
 
     disp('saving...')
-    % strip unneccesarry fields    
-    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','masterSimStruct','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
-    saveFun(mcmcInfo, outPath, saveString)
     
+    % strip unneccesarry fields    
+    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+    trueParams = rmfield(trueParams,{'masterSimStruct'});
+    mcmcInfo.trueParams = trueParams;
+    saveFun(mcmcInfo, outPath, saveString)
+
 end    
 

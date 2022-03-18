@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization_3state\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_v1_validation\'];
 mkdir(outPath);
 
 
@@ -80,7 +80,7 @@ combArray = [combCell{:}];
 % initialize parallel pool
 initializePool(mcmcInfoInit)
 
-for iter = 1:size(combArray,1)
+parfor iter = 1:size(combArray,1)
 
     % extract sim characteristics
     n_traces = combArray(iter,1);
@@ -128,12 +128,14 @@ for iter = 1:size(combArray,1)
     mcmcInfo.duration = toc;
 
     % save results
-    saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
-                '_mem' num2str(inferMemory) '_tempInc' num2str(round(10*temp_increment,0)) '_rep' sprintf('%03d',step_num)];
+    saveString = ['K' sprintf('%01d',nStates) '_W' num2str(round(nSteps,2)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
 
     disp('saving...')
+    
     % strip unneccesarry fields    
-    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','masterSimStruct','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+    trueParams = rmfield(trueParams,{'masterSimStruct'});
+    mcmcInfo.trueParams = trueParams;
     saveFun(mcmcInfo, outPath, saveString)
 
 end    

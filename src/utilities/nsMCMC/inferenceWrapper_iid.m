@@ -15,10 +15,13 @@ function mcmcInfo = inferenceWrapper_iid(mcmcInfo)
     wb = waitbar(0,'conducting iid MCMC inference...');
 
     for step = 2:mcmcInfo.n_mcmc_steps    
+            
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
         
         mcmcInfo.step = step;       
-          
+        if mcmcInfo.annealingSigmaFlag
+            mcmcInfo.sigma_curr = mcmcInfo.sigma_curr.*mcmcInfo.tempGradArray(mcmcInfo.step,:)';
+        end
         % resample chains  promoter state sequences        
         mcmcInfo = resample_chains_iid(mcmcInfo);    % "Expectation Step"                 
                        
@@ -27,6 +30,10 @@ function mcmcInfo = inferenceWrapper_iid(mcmcInfo)
 
         % use Gibbs sampling to update hyperparameters      
         mcmcInfo = update_hmm_parameters_iid(mcmcInfo);                
+        
+%         if mcmcInfo.inferNStepsFlag
+%             mcmcInfo = mh_sample_nSteps(mcmcInfo);           
+%         end
         
         % calculate updated logL
         mcmcInfo = calculateLogLikelihood_iid(mcmcInfo);
