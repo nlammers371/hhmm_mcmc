@@ -3,9 +3,20 @@ function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
               
     % get number of states          
     nStates = trueParams.nStates;          
+    n_chains = size(v_inf_array,3);
+    % reorder states to be in ascending order as necessary
+    for c = 1:n_chains
+        v_slice = v_inf_array(:,:,c);
+        v_mean = mean(v_slice,1);
+        [~,si] = sort(v_mean);
+        v_inf_array(:,:,c) = v_slice(:,si);
+        
+        a_slice = A_inf_array(:,:,:,c);
+        A_inf_array(:,:,:,c) = a_slice(si,si,:);
+    end
     
     % flag outlier chains
-    outlier_chain_flags = false(1,size(v_inf_array,3));
+    outlier_chain_flags = false(1,n_chains);
     if rm_outlier_flag
         % look for outliers in 2 key transition probs
         a21_vec = reshape(mean(A_inf_array(2,1,:,:),3),1,[]);
