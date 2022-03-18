@@ -128,7 +128,7 @@ parfor iter = 1:size(combArray,1)
     mcmcInfo.duration = toc;
 
     % save results
-    saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
+    saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%01d',n) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
 
     disp('saving...')
     

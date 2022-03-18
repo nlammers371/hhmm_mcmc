@@ -58,7 +58,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
 
     for c = 1:n_chains        
         T = 1;%mcmcInfo.tempGradVec(c);
-        M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-4;    
+        M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
         b = ((F_array(:,:,c)'*y_array(:,c)));
                  
         % calculate mean and variance
