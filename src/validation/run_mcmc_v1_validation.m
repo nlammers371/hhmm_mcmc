@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_v1_validation\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_v1_validation_norm3\'];
 mkdir(outPath);
 
 
@@ -27,10 +27,11 @@ mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces_vec = [3 5 10 20 30 40 50 60];
-mem_vec = linspace(4,10,10);
-nStates_vec = [2 3];
+n_traces_vec = [5 20 50];
+mem_vec = 4:10;
+nStates_vec = [3 2];
 simVec = 1:10;
+fast3_flag = 0;
 
 sim_struct = struct;
 iter = 1;
@@ -44,7 +45,11 @@ for n = 1:length(n_traces_vec)
             
             if nStates == 3
                 % initialize 3 state system 
-                trueParams = setParamsBasic3state;
+                if fast3_flag
+                    trueParams = setParamsBasic3state_fast;
+                else
+                    trueParams = setParamsBasic3state;
+                end
             elseif nStates == 2
                 trueParams = setParamsBasic2state;
             else
@@ -79,7 +84,7 @@ combArray = [combCell{:}];
 
 % initialize parallel pool
 initializePool(mcmcInfoInit)
-
+%%
 parfor iter = 1:size(combArray,1)
 
     % extract sim characteristics
