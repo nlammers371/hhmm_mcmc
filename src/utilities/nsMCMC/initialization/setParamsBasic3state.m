@@ -3,7 +3,7 @@ function trueParams = setParamsBasic3state
 % mcmcInfo = struct;
 trueParams = struct;
 
-trueParams.tres = 20;
+trueParams.tres = 10;
 trueParams.nStates = 3;
 % define parameters to be inferred
 trueParams.R = [-0.0200    0.0210         0;

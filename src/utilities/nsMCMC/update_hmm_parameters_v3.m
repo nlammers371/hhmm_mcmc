@@ -3,6 +3,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     % extrace parameters
     nStates = mcmcInfo.nStates;
     seq_length = mcmcInfo.seq_length;
+    seq_length_obs = mcmcInfo.seq_length_obs;
     n_traces = mcmcInfo.n_traces;
     n_chains = mcmcInfo.n_chains_eff;
     coeff_MS2 = mcmcInfo.coeff_MS2;        
@@ -14,7 +15,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         update_index = ceil(mcmcInfo.step/mcmcInfo.update_increment) + 1;
     else
         update_index = mcmcInfo.step;
-    end
+    end    
     A_counts = mcmcInfo.transition_count_array;  
 %     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
@@ -40,14 +41,16 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     
     % generate F count arrays
     F_array = zeros(seq_length*n_traces,nStates,n_chains);        
-    y_array = NaN(seq_length*n_traces,n_chains);    
+    y_array = NaN(seq_length_obs*n_traces,n_chains);    
         
     for c = 1:n_chains
         for n = 1:n_traces        
             ind1 = (n-1)*seq_length+1;
             ind2 = n*seq_length;
+            ind1_obs = (n-1)*seq_length_obs+1;
+            ind2_obs = n*seq_length_obs;
             % record observed fluo
-            y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            y_array(ind1_obs:ind2_obs,c) = mcmcInfo.observed_fluo(:,n);
             for m = 1:nStates
                 % record counts
                 state_counts = convn(coeff_MS2(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full');            
@@ -55,7 +58,12 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
             end
         end
     end  
-
+    if mcmcInfo.upsample_factor > 1
+        conv_kernel = ones(mcmcInfo.upsample_factor,1);
+        F_array_conv = convn(conv_kernel,F_array,'full');
+        F_array = F_array_conv(mcmcInfo.upsample_factor:mcmcInfo.upsample_factor:end,:,:);
+    end
+        
     for c = 1:n_chains        
         T = 1;%mcmcInfo.tempGradVec(c);
         M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    

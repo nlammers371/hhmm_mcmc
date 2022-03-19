@@ -8,4 +8,9 @@ function mcmcInfo = predict_fluo_full_v3(mcmcInfo)
 
     fluo_out = fluo_conv_fun(initiation_rates,coeff_MS2);
     
-    mcmcInfo.sample_fluo = fluo_out;
+    if mcmcInfo.upsample_factor > 1
+        mcmcInfo.sample_fluo_full = fluo_out;
+        mcmcInfo.sample_fluo = fluo_out(1:mcmcInfo.upsample_factor:end,:,:);
+    else
+        mcmcInfo.sample_fluo = fluo_out;
+    end

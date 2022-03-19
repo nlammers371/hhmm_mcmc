@@ -45,7 +45,7 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     logL_transition_array_full = cat(1,logL_pi0,logL_transition_array);
 
     % record
-    mcmcInfo.trace_logL_array = logL_transition_array_full + logL_fluo;
+    mcmcInfo.trace_logL_array = logL_transition_array_full + repelem(logL_fluo,mcmcInfo.upsample_factor,1,1);
     mcmcInfo.trace_logL_vec = mean(mcmcInfo.trace_logL_array);
 
     update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0 || mcmcInfo.step == 1 || mcmcInfo.step == mcmcInfo.n_mcmc_steps;

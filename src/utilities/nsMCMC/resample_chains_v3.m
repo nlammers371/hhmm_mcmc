@@ -12,6 +12,7 @@ nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains_eff;
 nStepsMax = mcmcInfo.nStepsMax;
+nStepsMaxObs = nStepsMax/mcmcInfo.upsample_factor;
 seq_length = mcmcInfo.seq_length;
 
 % generate reference vector
@@ -19,6 +20,7 @@ mcmcInfo.chain_id_ref = 0:n_chains-1;
 mcmcInfo.trace_id_ref = reshape(0:n_traces-1,1,1,[]);
 mcmcInfo.row_ref = (1:nStates)';
 mcmcInfo.step_ref = (-nStepsMax+1:nStepsMax-1)';
+mcmcInfo.step_ref_obs = (-nStepsMaxObs+1:nStepsMaxObs-1)';
 
 % generate random sampling orders
 n_reps = mcmcInfo.n_reps;
@@ -46,10 +48,11 @@ seq_len_dummy = seq_length+2*(nStepsMax-1);
 
 % second temporary array used for fluorescence sampling
 mcmcInfo.sample_chains_dummy = cat(1,ones(nStepsMax-1,n_chains,n_traces),mcmcInfo.sample_chains,ones(nStepsMax-1,n_chains,n_traces));
-mcmcInfo.observed_fluo_dummy = cat(1,zeros(nStepsMax-1,n_traces),mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_traces));
 
-mcmcInfo.observed_fluo_dummy2 = cat(1,mcmcInfo.observed_fluo,zeros(nStepsMax-1,n_traces)); % NL: is this used?
-mcmcInfo.sample_fluo_dummy2 = cat(1,mcmcInfo.sample_fluo,zeros(nStepsMax-1,n_chains,n_traces));
+mcmcInfo.observed_fluo_dummy = cat(1,zeros(nStepsMaxObs-1,n_traces),mcmcInfo.observed_fluo,zeros(nStepsMaxObs-1,n_traces));
+mcmcInfo.observed_fluo_dummy2 = cat(1,mcmcInfo.observed_fluo,zeros(nStepsMaxObs-1,n_traces)); % NL: is this used?
+
+mcmcInfo.sample_fluo_dummy2 = cat(1,mcmcInfo.sample_fluo,zeros(nStepsMaxObs-1,n_chains,n_traces));
 
 % preallocate helper array for indexing
 index_helper1 = mcmcInfo.chain_id_ref*seq_len_temp + mcmcInfo.trace_id_ref*seq_len_temp*n_chains;
@@ -60,6 +63,7 @@ index_helper3 = mcmcInfo.chain_id_ref*seq_len_dummy + mcmcInfo.trace_id_ref*seq_
 for i = 1:seq_length*n_reps  
     
     mcmcInfo.indArray = sample_indices(i,:,:);    
+    mcmcInfo.indArrayObs = ceil(sample_indices(i,:,:)/mcmcInfo.upsample_factor);    
     
     prev_time_index_array = sample_indices(i,:,:);    
     prev_lin_index_array = prev_time_index_array + index_helper1;%mcmcInfo.chain_id_ref*seq_len_temp + mcmcInfo.trace_id_ref*seq_len_temp*n_chains;%ind_helper;
@@ -89,7 +93,7 @@ for i = 1:seq_length*n_reps
     logL_fluo = calculate_fluo_logL_v3(mcmcInfo);              
     
     %%% put everything together
-    total_log_likelihoods = logL_tr + logL_fluo;    
+    total_log_likelihoods = logL_tr/mcmcInfo.upsample_factor + logL_fluo;    
     
     % apply differential temperature correction if appropirate
 %     if mcmcInfo.temperingFlag 
