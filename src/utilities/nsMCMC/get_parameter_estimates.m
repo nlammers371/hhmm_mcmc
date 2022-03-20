@@ -19,17 +19,17 @@ function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
     outlier_chain_flags = false(1,n_chains);
     if rm_outlier_flag
         % look for outliers in 2 key transition probs
-        a21_vec = reshape(mean(A_inf_array(2,1,:,:),3),1,[]);
+        a21_vec = reshape(nanmean(A_inf_array(2,1,:,:),3),1,[]);
         [~,a21_flags] = rmoutliers(a21_vec);        
-        a12_vec = reshape(mean(A_inf_array(1,2,:,:),3),1,[]);
+        a12_vec = reshape(nanmean(A_inf_array(1,2,:,:),3),1,[]);
         [~,a12_flags] = rmoutliers(a12_vec);
         
         % look for outliers in nonzero initiation rates
-        v2_vec = reshape(mean(v_inf_array(:,2,:),1),1,[]);
+        v2_vec = reshape(nanmean(v_inf_array(:,2,:),1),1,[]);
         [~,v2_flags] = rmoutliers(v2_vec);
         v3_flags = false(size(v2_flags));
         if nStates == 3
-            v3_vec = reshape(mean(v_inf_array(:,3,:),1),1,[]);
+            v3_vec = reshape(nanmean(v_inf_array(:,3,:),1),1,[]);
             [~,v3_flags] = rmoutliers(v3_vec);
         end
         outlier_chain_flags = a21_flags | a12_flags | v2_flags | v3_flags;        
@@ -45,8 +45,8 @@ function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
         for j = j_vec
               a_chunk = A_inf_array(j,i,:,~outlier_chain_flags);              
               
-              a_mean_vec(end+1) = mean(a_chunk(:));
-              a_ste_vec(end+1) = std(a_chunk(:));
+              a_mean_vec(end+1) = nanmean(a_chunk(:));
+              a_ste_vec(end+1) = nanstd(a_chunk(:));
               
               a_string_cell(end+1) = {['a' num2str(j) num2str(i)]};
               a_true_vec(end+1) = trueParams.A(j,i);
@@ -61,8 +61,8 @@ function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
     for i = 2:nStates        
           v_chunk = v_inf_array(:,i,~outlier_chain_flags);
 
-          v_mean_vec(end+1) = mean(v_chunk(:));
-          v_ste_vec(end+1) = std(v_chunk(:));         
+          v_mean_vec(end+1) = nanmean(v_chunk(:));
+          v_ste_vec(end+1) = nanstd(v_chunk(:));         
           
           v_string_cell(end+1) = {['v' num2str(i)]};        
           v_true_vec(end+1) = trueParams.v(i);

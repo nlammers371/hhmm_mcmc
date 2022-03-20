@@ -29,7 +29,7 @@ inferMemory = 0;
 n_chains = 10;
 n_traces_vec = [5 20 50];
 mem_vec = 4:10;
-nStates_vec = [3 2];
+nStates_vec = [3];
 simVec = 1:10;
 fast3_flag = 0;
 

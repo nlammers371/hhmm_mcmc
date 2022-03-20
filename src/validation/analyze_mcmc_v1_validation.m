@@ -9,8 +9,9 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_v1_validation\'];
-figPath = '../../fig/validation/mcmc_v1_validation/';
+runName = 'mcmc_v1_validation_norm3';
+outPath = [DropboxFolder 'hhmm_MCMC_data\' runName filesep];
+figPath = ['../../fig/validation/' runName filesep];
 mkdir(figPath)
 
 inf_files = dir([outPath '*.mat']);
@@ -110,7 +111,7 @@ for s = 1:size(stat_index,1)
     
     ylabel('transition probability')
     xlabel('parameter')
-    legend([s1 s2 s3 s4], 'ML','Mean','No Outlier','Truth','Location','Southeast')
+    legend([s1 s2 s3 s4], 'ML','Mean','No Outlier','Truth','Location','northwest')
     
     title(['Transition prob results (K' num2str(trueParams.nStates) ' W' num2str(trueParams.nSteps) ' N' sprintf('%04d',100*trueParams.n_traces) ')'])
     saveString = ['K' sprintf('%01d',trueParams.nStates) '_W' sprintf('%03d',10*round(trueParams.nSteps,1)) '_nt' sprintf('%03d',trueParams.n_traces)];
