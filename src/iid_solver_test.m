@@ -9,7 +9,7 @@ addpath(genpath('../utilities'))
 trueParams = setParamsBasic3state;
 
 % characteristics of simulated data
-trueParams.n_traces = 10;
+trueParams.n_traces = 20;
 trueParams.seq_length = 120; % length of simulated traces in time steps
 
 % simulate transcription traces
@@ -39,7 +39,7 @@ mcmcInfo.annealingSigmaFlag = 0; % need to implement this
 % Set the parameter options to explore
 repVec = 1:n_sims;
 inferMemory = 0;
-n_chains = 50;
+n_chains = 25;
 
 if ~inferMemory
     mcmcInfo.nSteps = trueParams.nSteps;
