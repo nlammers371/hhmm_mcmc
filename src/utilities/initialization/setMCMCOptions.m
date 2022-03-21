@@ -4,12 +4,12 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory)
     mcmcInfo.update_increment = 1;        
     
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
-    mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
+%     mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
     mcmcInfo.trace_id_array = repmat((1:mcmcInfo.n_traces)',1,mcmcInfo.n_chains);
 %     mcmcInfo.bootstrapFlag = bootstrapFlag;
     if mcmcInfo.bootstrapFlag
         % randomly assign subset of traces to each chain
-        mcmcInfo.n_traces_per_chain = ceil(200/mcmcInfo.seq_length);
+%         mcmcInfo.n_traces_per_chain = ceil(200/mcmcInfo.seq_length);
         mcmcInfo.trace_id_array = NaN(mcmcInfo.n_traces_per_chain,mcmcInfo.n_chains);
         for n = 1:mcmcInfo.n_chains
             mcmcInfo.trace_id_array(:,n) = randsample(1:mcmcInfo.n_traces,mcmcInfo.n_traces_per_chain,true);

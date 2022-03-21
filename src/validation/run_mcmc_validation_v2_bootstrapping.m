@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v2_bootstrapping\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v2_bootstrapping_\'];
 mkdir(outPath);
 
 iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -17,7 +17,7 @@ iter_size = 50; % parpool deleted and reinitiated every N iterations
 mcmcInfoInit = struct;
 
 % other key hyperparameters
-mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 3e1; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
@@ -28,7 +28,7 @@ mcmcInfoInit.bootstrapFlag = 1;
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces_per_chain_vec = [10 20 50];
+n_traces_per_chain_vec = [5 10 20 50];
 n_traces = 50;
 mem_vec = 4:10;
 nStates_vec = [3 2];
@@ -72,6 +72,7 @@ for m = 1:length(mem_vec)
         iter = iter + 1;
     end
 end  
+clear iter
 
 n_step_lookup = [sim_struct.nSteps];
 n_state_lookup = [sim_struct.nStates];
@@ -139,7 +140,7 @@ for n = 1:n_blocks
         mcmcInfo.duration = toc;
 
         % save results
-        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
+        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces_per_chain) '_rep' sprintf('%03d',rep_num)];
 
         disp('saving...')
 

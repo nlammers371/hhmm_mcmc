@@ -9,7 +9,8 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-runName = 'mcmc_v1_validation_norm3';
+% runName = 'mcmc_v1_validation_norm3';
+runName = 'run_mcmc_validation_v2_bootstrapping';
 outPath = [DropboxFolder 'hhmm_MCMC_data\' runName filesep];
 figPath = ['../../fig/validation/' runName filesep];
 mkdir(figPath)
@@ -17,22 +18,28 @@ mkdir(figPath)
 inf_files = dir([outPath '*.mat']);
 master_struct = struct;
 wb = waitbar(0,'loading MCMC results...');
+iter = 1;
 for i = 1:length(inf_files)
     waitbar(i/length(inf_files),wb)
-    load([outPath inf_files(i).name])
-    % store key fields
-    master_struct(i).sample_fluo = mcmcInfo.sample_fluo;
-    master_struct(i).observed_fluo = mcmcInfo.observed_fluo;
-    master_struct(i).trueParams = mcmcInfo.trueParams;
-    master_struct(i).A_inf_array = mcmcInfo.A_inf_array;
-    master_struct(i).err_flag_vec = mcmcInfo.err_flag_vec;
-    master_struct(i).v_inf_array = mcmcInfo.v_inf_array;
-    master_struct(i).logL_array = mcmcInfo.logL_vec;
-    master_struct(i).sigma_inf_array = mcmcInfo.sigma_inf_array;
-    master_struct(i).n_traces = mcmcInfo.n_traces;
-    master_struct(i).nSteps = mcmcInfo.nSteps;
-    master_struct(i).nStates = mcmcInfo.nStates;
-    clear mcmcInfo
+    try
+        load([outPath inf_files(i).name])
+        % store key fields
+        master_struct(iter).sample_fluo = mcmcInfo.sample_fluo;
+        master_struct(iter).observed_fluo = mcmcInfo.observed_fluo;
+        master_struct(iter).trueParams = mcmcInfo.trueParams;
+        master_struct(iter).A_inf_array = mcmcInfo.A_inf_array;
+        master_struct(iter).err_flag_vec = mcmcInfo.err_flag_vec;
+        master_struct(iter).v_inf_array = mcmcInfo.v_inf_array;
+        master_struct(iter).logL_array = mcmcInfo.logL_vec;
+        master_struct(iter).sigma_inf_array = mcmcInfo.sigma_inf_array;
+        master_struct(iter).n_traces = mcmcInfo.n_traces_per_chain;
+        master_struct(iter).nSteps = mcmcInfo.nSteps;
+        master_struct(iter).nStates = mcmcInfo.nStates;
+        clear mcmcInfo
+        iter = iter + 1;
+    catch
+      % do nothing
+    end
 end
 delete(wb)
 

@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v2_bootstrapping\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v2_bootstrapping_\'];
 mkdir(outPath);
 
 iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -22,13 +22,13 @@ mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
-mcmcInfoInit.bootstrappingFlag = 1;
+mcmcInfoInit.bootstrapFlag = 1;
 
 % Set the parameter options to explore
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces_per_chain_vec = [5 20 50];
+n_traces_per_chain_vec = [10 20 50];
 n_traces = 50;
 mem_vec = 4:10;
 nStates_vec = [3 2];
@@ -72,6 +72,7 @@ for m = 1:length(mem_vec)
         iter = iter + 1;
     end
 end  
+clear iter
 
 n_step_lookup = [sim_struct.nSteps];
 n_state_lookup = [sim_struct.nStates];
@@ -89,9 +90,9 @@ for n = 1:n_blocks
     iter_min = (n-1)*iter_size+1;
     iter_max = min(n*iter_size,size(combArray,1));
     % initialize parallel pool
-    initializePool(mcmcInfoInit, 1)
+%     initializePool(mcmcInfoInit, 1)
     
-    parfor iter = iter_min:iter_max
+    for iter = iter_min:iter_max
 
         % extract sim characteristics
         n_traces_per_chain = combArray(iter,1);
@@ -99,12 +100,11 @@ for n = 1:n_blocks
         nStates = combArray(iter,3);
         rep_num = combArray(iter,4);
 
-        % extract model
-        trace_filter = n_trace_lookup == n_traces;
+        % extract model        
         step_filter = n_step_lookup == nSteps;
         state_filter = n_state_lookup == nStates;
 
-        trueParams = sim_struct(trace_filter & step_filter & state_filter).trueParams;
+        trueParams = sim_struct(step_filter & state_filter).trueParams;
 
         % initialize inference results structure
         mcmcInfo = mcmcInfoInit;
@@ -118,6 +118,7 @@ for n = 1:n_blocks
         mcmcInfo.alpha_frac = trueParams.alpha_frac;
         mcmcInfo.observed_fluo = trueParams.observed_fluo;
         mcmcInfo.n_traces = n_traces;
+        mcmcInfo.n_traces_per_chain = n_traces_per_chain;
         mcmcInfo.seq_length = seq_length;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,7 +140,7 @@ for n = 1:n_blocks
         mcmcInfo.duration = toc;
 
         % save results
-        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
+        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces_per_chain) '_rep' sprintf('%03d',rep_num)];
 
         disp('saving...')
 
