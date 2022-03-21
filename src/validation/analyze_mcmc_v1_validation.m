@@ -25,6 +25,7 @@ for i = 1:length(inf_files)
     master_struct(i).observed_fluo = mcmcInfo.observed_fluo;
     master_struct(i).trueParams = mcmcInfo.trueParams;
     master_struct(i).A_inf_array = mcmcInfo.A_inf_array;
+    master_struct(i).err_flag_vec = mcmcInfo.err_flag_vec;
     master_struct(i).v_inf_array = mcmcInfo.v_inf_array;
     master_struct(i).logL_array = mcmcInfo.logL_vec;
     master_struct(i).sigma_inf_array = mcmcInfo.sigma_inf_array;
@@ -50,10 +51,12 @@ for s = 1:size(stat_index,1)
     A_inf_array = [];
     v_inf_array = [];    
     logL_array = [];
+    err_flag_vec = [];
     for g = 1:length(group_indices)
         A_inf_array = cat(4,A_inf_array,master_struct(group_indices(g)).A_inf_array(:,:,burn_in:end,:));
         v_inf_array = cat(3,v_inf_array,master_struct(group_indices(g)).v_inf_array(burn_in:end,:,:));
         logL_array = cat(2,logL_array,master_struct(group_indices(g)).logL_array(burn_in:end,:));
+        err_flag_vec = [err_flag_vec master_struct(group_indices(g)).err_flag_vec];
     end
     n_chains = size(v_inf_array,3);
     trueParams = master_struct(group_indices(1)).trueParams;
@@ -66,15 +69,15 @@ for s = 1:size(stat_index,1)
     [~ , si] = sort(logL_vec,'descend');
     
     [true_val_vec, param_mean_vec1, param_ste_vec1, param_names] = ...
-                get_parameter_estimates(trueParams,A_inf_array(:,:,:,si(1)),v_inf_array(:,:,si(1)),0);
+                get_parameter_estimates(trueParams,A_inf_array(:,:,:,si(1)),v_inf_array(:,:,si(1)),0,false);
               
     % (2) Take average across all chains         
     [~, param_mean_vec2, param_ste_vec2, ~] = ...
-                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,0);
+                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,0,err_flag_vec);
               
     % (3) Take average, removing outlier chains    
     [~, param_mean_vec3, param_ste_vec3, ~] = ...
-                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,1);
+                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,1,err_flag_vec);
               
               
     % generate basic results plot
@@ -94,13 +97,13 @@ for s = 1:size(stat_index,1)
     
     % strat 1
     errorbar((1:ind)+xf1,param_mean_vec1(1:ind),param_ste_vec1(1:ind),'ok','Capsize',0)
-    s1 = scatter((1:ind)+xf1,param_mean_vec1(1:ind),markerSize,'MarkerFaceColor',cmap(5,:),'MarkerEdgeColor','k');
+    s1 = scatter((1:ind)+xf1,param_mean_vec1(1:ind),markerSize,'d','MarkerFaceColor',cmap(5,:),'MarkerEdgeColor','k');
     % strat 2
-    errorbar((1:ind)+xf2,param_mean_vec2(1:ind),param_ste_vec2(1:ind),'ok','Capsize',0)
-    s2 = scatter((1:ind)+xf2,param_mean_vec2(1:ind),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+%     errorbar((1:ind)+xf2,param_mean_vec2(1:ind),param_ste_vec2(1:ind),'ok','Capsize',0)
+%     s2 = scatter((1:ind)+xf2,param_mean_vec2(1:ind),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
     % strat 3
     errorbar((1:ind)+xf3,param_mean_vec3(1:ind),param_ste_vec3(1:ind),'ok','Capsize',0)
-    s3 = scatter((1:ind)+xf3,param_mean_vec3(1:ind),markerSize,'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+    s3 = scatter((1:ind)+xf3,param_mean_vec3(1:ind),markerSize,'o','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
     % ground truth
     s4 = scatter(1:ind,true_val_vec(1:ind),markerSize,'s','MarkerFaceColor',cmap(8,:),'MarkerEdgeColor','k');
     
@@ -111,7 +114,7 @@ for s = 1:size(stat_index,1)
     
     ylabel('transition probability')
     xlabel('parameter')
-    legend([s1 s2 s3 s4], 'ML','Mean','No Outlier','Truth','Location','northwest')
+    legend([s1 s3 s4], 'ML','Mean','Truth','Location','northwest')
     
     title(['Transition prob results (K' num2str(trueParams.nStates) ' W' num2str(trueParams.nSteps) ' N' sprintf('%04d',100*trueParams.n_traces) ')'])
     saveString = ['K' sprintf('%01d',trueParams.nStates) '_W' sprintf('%03d',10*round(trueParams.nSteps,1)) '_nt' sprintf('%03d',trueParams.n_traces)];
@@ -130,10 +133,10 @@ for s = 1:size(stat_index,1)
     
     % strat 1
     errorbar((1:dim)+xf1,param_mean_vec1(ind+1:end),param_ste_vec1(ind+1:end),'ok','Capsize',0)
-    s1 = scatter((1:dim)+xf1,param_mean_vec1(ind+1:end),markerSize,'MarkerFaceColor',cmap(5,:),'MarkerEdgeColor','k');
+    s1 = scatter((1:dim)+xf1,param_mean_vec1(ind+1:end),markerSize,'d','MarkerFaceColor',cmap(5,:),'MarkerEdgeColor','k');
     % strat 2
-    errorbar((1:dim)+xf2,param_mean_vec2(ind+1:end),param_ste_vec2(ind+1:end),'ok','Capsize',0)
-    s2 = scatter((1:dim)+xf2,param_mean_vec2(ind+1:end),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+%     errorbar((1:dim)+xf2,param_mean_vec2(ind+1:end),param_ste_vec2(ind+1:end),'ok','Capsize',0)
+%     s2 = scatter((1:dim)+xf2,param_mean_vec2(ind+1:end),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
     % strat 3
     errorbar((1:dim)+xf3,param_mean_vec3(ind+1:end),param_ste_vec3(ind+1:end),'ok','Capsize',0)
     s3 = scatter((1:dim)+xf3,param_mean_vec3(ind+1:end),markerSize,'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
@@ -147,7 +150,7 @@ for s = 1:size(stat_index,1)
     
     ylabel('emission rate (au)')
     xlabel('parameter')
-    legend([s1 s2 s3 s4], 'ML','Mean','No Outlier','Truth','Location','Southeast')
+    legend([s1 s3 s4], 'ML','Mean','Truth','Location','Southeast')
     
     title(['Emission rate results (K' num2str(trueParams.nStates) ' W' num2str(trueParams.nSteps) ' N' sprintf('%04d',100*trueParams.n_traces) ')'])
     saveString = ['K' sprintf('%01d',trueParams.nStates) '_W' sprintf('%03d',10*round(trueParams.nSteps,1)) '_nt' sprintf('%03d',trueParams.n_traces)];

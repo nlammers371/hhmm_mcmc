@@ -1,5 +1,5 @@
 function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
-                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,rm_outlier_flag)
+                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,rm_outlier_flag,inference_error_flag)
               
     % get number of states          
     nStates = trueParams.nStates;          
@@ -16,7 +16,7 @@ function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
     end
     
     % flag outlier chains
-    outlier_chain_flags = false(1,n_chains);
+    outlier_chain_flags = inference_error_flag;
     if rm_outlier_flag
         % look for outliers in 2 key transition probs
         a21_vec = reshape(nanmean(A_inf_array(2,1,:,:),3),1,[]);
@@ -32,7 +32,7 @@ function [true_val_vec, param_mean_vec, param_ste_vec, param_names] = ...
             v3_vec = reshape(nanmean(v_inf_array(:,3,:),1),1,[]);
             [~,v3_flags] = rmoutliers(v3_vec);
         end
-        outlier_chain_flags = a21_flags | a12_flags | v2_flags | v3_flags;        
+        outlier_chain_flags = outlier_chain_flags | a21_flags | a12_flags | v2_flags | v3_flags;        
     end
     
     % get transition parameter averages

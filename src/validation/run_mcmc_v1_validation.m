@@ -20,7 +20,7 @@ mcmcInfoInit = struct;
 mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfoInit.NumWorkers = 24;
+mcmcInfoInit.NumWorkers = 25;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
 
 % Set the parameter options to explore
