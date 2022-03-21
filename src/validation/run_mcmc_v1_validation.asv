@@ -9,15 +9,15 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\hyperParameterOptimization_3state\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_v1_validation_norm3\'];
 mkdir(outPath);
 
-
+iter_size = 50; % parpool deleted and reinitiated every N iterations
 %%%%%%%%%%%%%%%%%%%%% Initialize sampling struct %%%%%%%%%%%%%%%%
 mcmcInfoInit = struct;
 
 % other key hyperparameters
-mcmcInfoInit.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 24;
@@ -27,10 +27,11 @@ mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces_vec = [2 5 10 20 30 40 50 60];
-mem_vec = linspace(4,10,10);
-nStates_vec = [2 3];
+n_traces_vec = [5 20 50];
+mem_vec = 4:10;
+nStates_vec = [3];
 simVec = 1:10;
+fast3_flag = 0;
 
 sim_struct = struct;
 iter = 1;
@@ -44,7 +45,11 @@ for n = 1:length(n_traces_vec)
             
             if nStates == 3
                 % initialize 3 state system 
-                trueParams = setParamsBasic3state;
+                if fast3_flag
+                    trueParams = setParamsBasic3state_fast;
+                else
+                    trueParams = setParamsBasic3state;
+                end
             elseif nStates == 2
                 trueParams = setParamsBasic2state;
             else
@@ -70,17 +75,22 @@ n_trace_lookup = [sim_struct.n_traces];
 n_step_lookup = [sim_struct.nSteps];
 n_state_lookup = [sim_struct.nStates];
 
-%% get all possible combinations
+% get all possible combinations
 elements = {n_traces_vec mem_vec nStates_vec simVec};
 combCell = cell(1, numel(elements));
 [combCell{:}] = ndgrid(elements{:});
 combCell = cellfun(@(x) x(:), combCell,'uniformoutput',false); %there may be a better way to do this
 combArray = [combCell{:}]; 
 
+n_blocks = ceil(size(combArray,1)/iter_size);
+
+for n = 1:n_blocks
+    iter_min = (n-1)*iter_size+1;
+    iter_max = min(n*iter_size,size(combArray,1));
 % initialize parallel pool
 initializePool(mcmcInfoInit)
-
-for iter = 1:size(combArray,1)
+%%
+parfor iter = 1:size(combArray,1)
 
     % extract sim characteristics
     n_traces = combArray(iter,1);
@@ -128,12 +138,14 @@ for iter = 1:size(combArray,1)
     mcmcInfo.duration = toc;
 
     % save results
-    saveString = ['nc' sprintf('%03d',n_chains) '_tempering' num2str(temperingFlag) '_ntm' sprintf('%03d',n_temps) '_nsw' sprintf('%03d',n_swaps)...
-                '_mem' num2str(inferMemory) '_tempInc' num2str(round(10*temp_increment,0)) '_rep' sprintf('%03d',step_num)];
+    saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
 
     disp('saving...')
+    
     % strip unneccesarry fields    
-    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','masterSimStruct','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+    trueParams = rmfield(trueParams,{'masterSimStruct'});
+    mcmcInfo.trueParams = trueParams;
     saveFun(mcmcInfo, outPath, saveString)
 
 end    

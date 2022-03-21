@@ -5,8 +5,8 @@ function trueParams = generateSimulatedData(trueParams)
     coeff_MS2 = ms2_loading_coeff_frac(trueParams.alpha, trueParams.nSteps, 12)';
     
     % calculate scaled noise
-    f_mean = (trueParams.pi0'*trueParams.v)*sum(coeff_MS2);   
-    trueParams.sigma = f_mean/10;        
+%     f_mean = (trueParams.pi0'*trueParams.v)*sum(coeff_MS2);   
+%     trueParams.sigma = f_mean/10;        
     
     %%%%%%%%%%%%%%%%%%%%%%% simulate traces %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     trueParams.observed_fluo = NaN(trueParams.seq_length,trueParams.n_traces);

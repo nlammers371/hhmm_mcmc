@@ -70,9 +70,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         try
             mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
         catch
-            v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
-            mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
-            mcmcInfo.err_flag_vec(c) = 1;
+            
         end
 
         if update_flag

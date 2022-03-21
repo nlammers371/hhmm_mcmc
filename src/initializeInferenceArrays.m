@@ -8,6 +8,7 @@ function mcmcInfo = initializeInferenceArrays(mcmcInfo)
     n_updates = ceil(mcmcInfo.n_mcmc_steps/mcmcInfo.update_increment);
     n_chains = mcmcInfo.n_chains_eff;
     mcmcInfo.logL_vec = NaN(n_updates,n_chains);
+    mcmcInfo.err_flag_vec = false(1,n_chains);
     mcmcInfo.A_inf_array = NaN(mcmcInfo.nStates,mcmcInfo.nStates,n_updates,n_chains);
     mcmcInfo.v_inf_array = NaN(n_updates,mcmcInfo.nStates,n_chains);
     mcmcInfo.pi0_inf_array = NaN(n_updates,mcmcInfo.nStates,n_chains);

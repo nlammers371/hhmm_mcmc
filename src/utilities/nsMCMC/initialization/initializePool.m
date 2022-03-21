@@ -1,4 +1,4 @@
-function initializePool(mcmcInfo)
+function initializePool(mcmcInfo,forceRestart)
 
     % determine max number of workers available
     myCluster = parcluster('local');
@@ -9,7 +9,7 @@ function initializePool(mcmcInfo)
     pool = gcp('nocreate');
     if isempty(pool)
       parpool(mcmcInfo.NumWorkers);  
-    elseif  pool.NumWorkers ~= mcmcInfo.NumWorkers     
+    elseif  pool.NumWorkers ~= mcmcInfo.NumWorkers || forceRestart   
       delete(pool)
       parpool(mcmcInfo.NumWorkers);  
     end  

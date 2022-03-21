@@ -12,12 +12,12 @@ end
 outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_v1_validation_norm3\'];
 mkdir(outPath);
 
-
+iter_size = 50; % parpool deleted and reinitiated every N iterations
 %%%%%%%%%%%%%%%%%%%%% Initialize sampling struct %%%%%%%%%%%%%%%%
 mcmcInfoInit = struct;
 
 % other key hyperparameters
-mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 24;
@@ -82,66 +82,71 @@ combCell = cell(1, numel(elements));
 combCell = cellfun(@(x) x(:), combCell,'uniformoutput',false); %there may be a better way to do this
 combArray = [combCell{:}]; 
 
-% initialize parallel pool
-initializePool(mcmcInfoInit)
-%%
-parfor iter = 1:size(combArray,1)
+n_blocks = ceil(size(combArray,1)/iter_size);
 
-    % extract sim characteristics
-    n_traces = combArray(iter,1);
-    nSteps = combArray(iter,2);
-    nStates = combArray(iter,3);
-    rep_num = combArray(iter,4);
-
-    % extract model
-    trace_filter = n_trace_lookup == n_traces;
-    step_filter = n_step_lookup == nSteps;
-    state_filter = n_state_lookup == nStates;
+for n = 1:n_blocks
+    iter_min = (n-1)*iter_size+1;
+    iter_max = min(n*iter_size,size(combArray,1));
+    % initialize parallel pool
+    initializePool(mcmcInfoInit, 1)
     
-    trueParams = sim_struct(trace_filter & step_filter & state_filter).trueParams;
+    parfor iter = iter_min:iter_max
 
-    % initialize inference results structure
-    mcmcInfo = mcmcInfoInit;
+        % extract sim characteristics
+        n_traces = combArray(iter,1);
+        nSteps = combArray(iter,2);
+        nStates = combArray(iter,3);
+        rep_num = combArray(iter,4);
 
-    if ~inferMemory
-        mcmcInfo.nSteps = nSteps;
+        % extract model
+        trace_filter = n_trace_lookup == n_traces;
+        step_filter = n_step_lookup == nSteps;
+        state_filter = n_state_lookup == nStates;
+
+        trueParams = sim_struct(trace_filter & step_filter & state_filter).trueParams;
+
+        % initialize inference results structure
+        mcmcInfo = mcmcInfoInit;
+
+        if ~inferMemory
+            mcmcInfo.nSteps = nSteps;
+        end    
+
+        % add "known" hyperparameters
+        mcmcInfo.nStates = trueParams.nStates;    
+        mcmcInfo.alpha_frac = trueParams.alpha_frac;
+        mcmcInfo.observed_fluo = trueParams.observed_fluo;
+        mcmcInfo.n_traces = n_traces;
+        mcmcInfo.seq_length = seq_length;
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Set MCMC options
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
+        mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % initialize inference arrays and variables
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        mcmcInfo = initializeInferenceArrays(mcmcInfo);
+        mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % conduct full inference
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+        tic    
+        mcmcInfo = inferenceWrapper(mcmcInfo);      
+        mcmcInfo.duration = toc;
+
+        % save results
+        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
+
+        disp('saving...')
+
+        % strip unneccesarry fields    
+        mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+        trueParams = rmfield(trueParams,{'masterSimStruct'});
+        mcmcInfo.trueParams = trueParams;
+        saveFun(mcmcInfo, outPath, saveString)
+
     end    
-
-    % add "known" hyperparameters
-    mcmcInfo.nStates = trueParams.nStates;    
-    mcmcInfo.alpha_frac = trueParams.alpha_frac;
-    mcmcInfo.observed_fluo = trueParams.observed_fluo;
-    mcmcInfo.n_traces = n_traces;
-    mcmcInfo.seq_length = seq_length;
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Set MCMC options
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     
-    mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory);
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % initialize inference arrays and variables
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    mcmcInfo = initializeInferenceArrays(mcmcInfo);
-    mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % conduct full inference
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-    tic    
-    mcmcInfo = inferenceWrapper(mcmcInfo);      
-    mcmcInfo.duration = toc;
-
-    % save results
-    saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) '_rep' sprintf('%03d',rep_num)];
-
-    disp('saving...')
-    
-    % strip unneccesarry fields    
-    mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
-    trueParams = rmfield(trueParams,{'masterSimStruct'});
-    mcmcInfo.trueParams = trueParams;
-    saveFun(mcmcInfo, outPath, saveString)
-
-end    
-
+end
