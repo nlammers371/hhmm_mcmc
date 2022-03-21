@@ -17,7 +17,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
     wb = waitbar(0,'conducting MCMC inference...');
 
     for step = 2:mcmcInfo.n_mcmc_steps    
-        tic
+%         tic
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
         
         mcmcInfo.step = step;       
@@ -50,7 +50,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         
         % calculate updated logL
         mcmcInfo = calculateLogLikelihood(mcmcInfo);
-        toc
+%         toc
     end
     
     disp('done')
