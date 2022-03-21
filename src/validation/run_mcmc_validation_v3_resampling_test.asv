@@ -19,18 +19,19 @@ mcmcInfoInit = struct;
 % other key hyperparameters
 mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
-mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
+% mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
-mcmcInfoInit.bootstrapFlag = 1;
+mcmcInfoInit.bootstrapFlag = 0;
 
 % Set the parameter options to explore
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces_per_chain_vec = [5 10 20 50];
-n_traces = 50;
-mem_vec = 4:10;
+% n_traces_per_chain_vec = [5 10 20 50];
+n_traces = 20;
+n_resamp_vec = [1 2 5 10];
+mem_vec = 7:10;
 nStates_vec = [3 2];
 simVec = 1:10;
 fast3_flag = 0;
@@ -89,7 +90,6 @@ n_blocks = ceil(size(combArray,1)/iter_size);
 for n = 1:n_blocks
     iter_min = (n-1)*iter_size+1;
     iter_max = min(n*iter_size,size(combArray,1));
-    
     % initialize parallel pool
     initializePool(mcmcInfoInit, 1)
     

@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v2_bootstrapping_\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v3_resampling_test\'];
 mkdir(outPath);
 
 iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -19,18 +19,19 @@ mcmcInfoInit = struct;
 % other key hyperparameters
 mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
-mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfoInit.NumWorkers = 25;
+% mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
+mcmcInfoInit.NumWorkers = 12;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
-mcmcInfoInit.bootstrapFlag = 1;
+mcmcInfoInit.bootstrapFlag = 0;
 
 % Set the parameter options to explore
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces_per_chain_vec = [5 10 20 50];
-n_traces = 50;
-mem_vec = 4:10;
+% n_traces_per_chain_vec = [5 10 20 50];
+n_traces = 20;
+n_resamp_vec = [1 2 5 10];
+mem_vec = 7:10;
 nStates_vec = [3 2];
 simVec = 1:10;
 fast3_flag = 0;
@@ -78,7 +79,7 @@ n_step_lookup = [sim_struct.nSteps];
 n_state_lookup = [sim_struct.nStates];
 
 % get all possible combinations
-elements = {n_traces_per_chain_vec mem_vec nStates_vec simVec};
+elements = {n_resamp_vec mem_vec nStates_vec simVec};
 combCell = cell(1, numel(elements));
 [combCell{:}] = ndgrid(elements{:});
 combCell = cellfun(@(x) x(:), combCell,'uniformoutput',false); %there may be a better way to do this
@@ -89,14 +90,13 @@ n_blocks = ceil(size(combArray,1)/iter_size);
 for n = 1:n_blocks
     iter_min = (n-1)*iter_size+1;
     iter_max = min(n*iter_size,size(combArray,1));
-    
     % initialize parallel pool
     initializePool(mcmcInfoInit, 1)
     
     parfor iter = iter_min:iter_max
 
         % extract sim characteristics
-        n_traces_per_chain = combArray(iter,1);
+        n_reps = combArray(iter,1);
         nSteps = combArray(iter,2);
         nStates = combArray(iter,3);
         rep_num = combArray(iter,4);
@@ -115,11 +115,12 @@ for n = 1:n_blocks
         end    
 
         % add "known" hyperparameters
-        mcmcInfo.nStates = trueParams.nStates;    
+        mcmcInfo.nStates = trueParams.nStates;  
+        mcmcInfo.n_reps = n_reps;  
         mcmcInfo.alpha_frac = trueParams.alpha_frac;
         mcmcInfo.observed_fluo = trueParams.observed_fluo;
         mcmcInfo.n_traces = n_traces;
-        mcmcInfo.n_traces_per_chain = n_traces_per_chain;
+%         mcmcInfo.n_traces_per_chain = n_traces_per_chain;
         mcmcInfo.seq_length = seq_length;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,7 +142,7 @@ for n = 1:n_blocks
         mcmcInfo.duration = toc;
 
         % save results
-        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces_per_chain) '_rep' sprintf('%03d',rep_num)];
+        saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nrep' sprintf('%03d',n_reps) '_rep' sprintf('%03d',rep_num)];
 
         disp('saving...')
 
