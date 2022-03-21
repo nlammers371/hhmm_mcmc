@@ -50,7 +50,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     end
     
     % initialize v    
-    v2 = prctile(fluo_vec,99) ./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+    v2 = mean(fluo_vec)/0.5./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [zeros(n_chains_eff,1) v2];
     if mcmcInfo.nStates==3
          mcmcInfo.v0(:,end+1) = 2*v2;
@@ -60,6 +60,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     for n = 1:n_chains_eff
         v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
-        mcmcInfo.v_curr(n,:) = mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)';
+        mcmcInfo.v_curr(n,:) = sort(mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)');
         mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
-    end         
+    end      
+    
