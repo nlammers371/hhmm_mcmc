@@ -6,7 +6,7 @@ close all force
 addpath(genpath('utilities'))
 
 % initialize info structure
-trueParams = setParamsBasic3state;
+trueParams = setParamsBasic2state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
@@ -22,36 +22,54 @@ mcmcInfo.n_traces = 50;
 mcmcInfo.n_traces_per_chain = 20;
 mcmcInfo.seq_length = 100; % length of simulated traces in time steps
 mcmcInfo.bootstrapFlag = 1;
-mcmcInfo.annealingSigmaFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 inferMemory = 0;
 
+mcmcInfo = setMCMCOptions(mcmcInfo, mcmcInfo.n_chains, inferMemory);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% simulate data
+% simualte data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 nSteps = 6.1;
 trueParams.nSteps = nSteps;
 trueParams.n_traces = mcmcInfo.n_traces;
-trueParams.seq_length = mcmcInfo.seq_length;
+trueParams.seq_length = seq_length;
 trueParams = generateSimulatedData(trueParams);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize inference arrays and variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo.nStates = trueParams.nStates;    
-mcmcInfo.alpha_frac = trueParams.alpha_frac;
-mcmcInfo.observed_fluo = trueParams.observed_fluo;
-if ~inferMemory
-    mcmcInfo.nSteps = trueParams.nSteps;
-end    
-
-mcmcInfo = setMCMCOptions(mcmcInfo, mcmcInfo.n_chains, inferMemory);
+mcmcInfo = genericInitialization(mcmcInfo);
 mcmcInfo = initializeInferenceArrays(mcmcInfo);
 mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% conduct MCMC initialization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if mcmcInfo.MCMCInitFlag
+    mcmcInfoTemp = mcmcInfo;
+    disp('Initializing chains...')    
+    mcmcInfoInit = inferenceWrapper(mcmcInfo);
+    disp('Done.')
+    
+    % sample chains to use for main inference
+    weight_vec = mcmcInfoInit.logL_vec(end,:)-min(mcmcInfoInit.logL_vec(end,:));
+    [~,si] = sort(weight_vec,'descend');
+    ids_to_use = si(1:n_chains);
+     
+    % re-initialize    
+    mcmcInfo = mcmcInfoTemp;
+    mcmcInfo.n_chains = n_chains;
+    mcmcInfo.n_chains_eff = n_chains*mcmcInfo.n_temps_per_chain;
+    mcmcInfo.n_mcmc_steps = n_mcmc_steps;
+    mcmcInfo.tempGradVec = mcmcInfo.tempGradVec(1:n_chains);
+    mcmcInfo = initializeInferenceArrays(mcmcInfo);
+    mcmcInfo = initializeVariablesWithPriors(mcmcInfo,mcmcInfoInit,ids_to_use);
+   
+end    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,7 +77,6 @@ tic
 mcmcInfo = inferenceWrapper(mcmcInfo);
 toc
 
-%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % plot results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

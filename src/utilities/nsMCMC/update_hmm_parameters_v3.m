@@ -46,8 +46,12 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         for n = 1:n_traces        
             ind1 = (n-1)*seq_length+1;
             ind2 = n*seq_length;
-            % record observed fluo
-            y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            % record observed fluo            
+            if ~mcmcInfo.bootstrapFlag              
+                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            else
+                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,c,n);
+            end
             for m = 1:nStates
                 % record counts
                 state_counts = convn(coeff_MS2(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full');            
@@ -87,10 +91,14 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     % Update sigma
     for c = 1:n_chains
         T = 1;%mcmcInfo.tempGradVec(c);
-        % see: https://discdown.org/flexregression/bayesreg.html
-        a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
-        
-        F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+        % see: https://discdown.org/flexregression/bayesreg.html                        
+        if ~mcmcInfo.bootstrapFlag
+            a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
+            F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+        else
+            F_diff = reshape(mcmcInfo.sample_fluo(:,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
+            a = (numel(mcmcInfo.observed_fluo(:,1,:))/2 + mcmcInfo.a0)./T;    
+        end
         b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
         b = (F_diff'*F_diff / 2 + b_prior_piece);
         

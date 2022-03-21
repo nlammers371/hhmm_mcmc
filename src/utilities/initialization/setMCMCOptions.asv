@@ -1,4 +1,4 @@
-function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory)
+function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory, bootstrapFlag)
 
     mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run   
     mcmcInfo.update_increment = 1;        
@@ -6,8 +6,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory)
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
     mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
     mcmcInfo.trace_id_array = repmat((1:mcmcInfo.n_traces)',1,mcmcInfo.n_chains);
-%     mcmcInfo.bootstrapFlag = bootstrapFlag;
-    if mcmcInfo.bootstrapFlag
+    mcmcInfo.bootstrapFlag = bootstrapFlag;
+    if bootstrapFlag
         % randomly assign subset of traces to each chain
         mcmcInfo.n_traces_per_chain = ceil(200/mcmcInfo.seq_length);
         mcmcInfo.trace_id_array = NaN(mcmcInfo.n_traces_per_chain,mcmcInfo.n_chains);

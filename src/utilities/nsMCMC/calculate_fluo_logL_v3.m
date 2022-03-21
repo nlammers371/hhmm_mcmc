@@ -40,8 +40,15 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     fluo_fragment = fluo_fragment(nStepsMax:2*nStepsMax-1,:,:,:);
     
     % get differences   
-    linIndexArrayFluo = indexArrayFull(nStepsMax:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
-    ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);
+    % get differences   
+    if ~mcmcInfo.bootstrapFlag
+        linIndexArrayFluo = indexArrayFull(nStepsMax:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
+        ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);        
+    else
+        ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFull(nStepsMax:end,:,:)),1,1,1,nStates);
+    end
+%     linIndexArrayFluo = indexArrayFull(nStepsMax:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy;
+%     ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);
     dummy_trunc = dummyFilter(nStepsMax:end,:,:);
     
     % set leading and trailing observations equal to model fluo. This is

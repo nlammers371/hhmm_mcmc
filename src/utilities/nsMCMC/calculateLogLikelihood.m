@@ -33,7 +33,11 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     logL_transition_array = A_log(lin_index_array);
 
     % calculate fluo-based likelihood
-    ref_fluo = repmat(permute(mcmcInfo.observed_fluo,[1 3 2]),1,n_chains,1);
+    if ~mcmcInfo.bootstrapFlag
+        ref_fluo = repmat(permute(mcmcInfo.observed_fluo,[1 3 2]),1,n_chains,1);
+    else
+        ref_fluo = mcmcInfo.observed_fluo;
+    end
     sigma_ref = repmat(sigma_curr',1,1,n_traces);    
     logL_fluo = -0.5*(((ref_fluo-mcmcInfo.sample_fluo)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
 
