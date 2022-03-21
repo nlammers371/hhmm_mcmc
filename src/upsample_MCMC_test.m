@@ -8,7 +8,7 @@ addpath(genpath('./utilities'))
 mcmcInfo = struct;
 
 % other key hyperparameters
-mcmcInfo.n_mcmc_steps = 5e2; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_mcmc_steps = 50; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 100;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 % mcmcInfoInit.NumWorkers = 24;
@@ -58,8 +58,10 @@ mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory);
 mcmcInfo = initializeInferenceArrays(mcmcInfo);
 mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
+mcmcInfo.sample_chains = repmat(permute(trueParams.true_states,[1 3 2]),1,mcmcInfo.n_chains);
+mcmcInfo.v_curr = repmat(trueParams.v', mcmcInfo.n_chains, 1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% conduct inference
+%% conduct inference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
 tic    
 mcmcInfo = inferenceWrapper(mcmcInfo);      

@@ -46,8 +46,7 @@ function logL_fluo = calculate_fluo_logL_v3(mcmcInfo)
     end
     fluo_fragment = fluo_fragment(1:mcmcInfo.upsample_factor:end,:,:,:);
     fluo_fragment = fluo_fragment(nStepsMaxObs:2*nStepsMaxObs-1,:,:,:);
-    
-    
+        
     % get differences   
     linIndexArrayFluo = indexArrayFullObs(nStepsMaxObs:end,:,:) +  mcmcInfo.trace_id_ref*seq_length_dummy_obs;
     ref_fluo = repmat(mcmcInfo.observed_fluo_dummy(linIndexArrayFluo),1,1,1,nStates);

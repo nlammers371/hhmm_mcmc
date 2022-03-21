@@ -58,12 +58,13 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
             end
         end
     end  
-    if mcmcInfo.upsample_factor > 1
-        conv_kernel = ones(mcmcInfo.upsample_factor,1);
-        F_array_conv = convn(conv_kernel,F_array,'full');
-        F_array = F_array_conv(mcmcInfo.upsample_factor:mcmcInfo.upsample_factor:end,:,:);
-    end
-        
+%     if mcmcInfo.upsample_factor > 1
+%         conv_kernel = ones(mcmcInfo.upsample_factor,1);
+%         F_array_conv = convn(conv_kernel,F_array,'full');
+%         F_array = F_array_conv(mcmcInfo.upsample_factor:mcmcInfo.upsample_factor:end,:,:);
+%     end
+    F_array = F_array(mcmcInfo.upsample_factor:mcmcInfo.upsample_factor:end,:,:);
+    
     for c = 1:n_chains        
         T = 1;%mcmcInfo.tempGradVec(c);
         M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
