@@ -23,7 +23,7 @@ mcmcInfo.n_traces_per_chain = 20;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 mcmcInfo.bootstrapFlag = 0;
 mcmcInfo.annealingSigmaFlag = 0;
-mcmcInfo.ensembleInferenceFlag = 0;
+mcmcInfo.ensembleInferenceFlag = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
