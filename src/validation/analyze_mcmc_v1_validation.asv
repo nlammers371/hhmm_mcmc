@@ -55,10 +55,7 @@ for s = 1:size(stat_index,1)
     close all
     % concatenate results from same group
     group_indices = find(group_id_vec==s);
-    n_traces = stat_index(s,2);
-    nStates = stat_index(s,1);
-    nSteps = stat_index(s,3);
-    
+    n_traces = stat_array(
     A_inf_array = [];
     v_inf_array = [];    
     logL_array = [];
@@ -127,8 +124,8 @@ for s = 1:size(stat_index,1)
     xlabel('parameter')
     legend([s1 s3 s4], 'ML','Mean','Truth','Location','northwest')
     
-    title(['Transition prob results (K' num2str(nStates) ' W' num2str(nSteps) ' N' sprintf('%04d',100*n_traces) ')'])
-    saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces)];
+    title(['Transition prob results (K' num2str(trueParams.nStates) ' W' num2str(trueParams.nSteps) ' N' sprintf('%04d',100*trueParams.n_traces) ')'])
+    saveString = ['K' sprintf('%01d',trueParams.nStates) '_W' sprintf('%03d',10*round(trueParams.nSteps,1)) '_nt' sprintf('%03d',trueParams.n_traces)];
     saveas(a_fig,[figPath 'a_fit_' saveString '.png'])
     
     
@@ -163,8 +160,8 @@ for s = 1:size(stat_index,1)
     xlabel('parameter')
     legend([s1 s3 s4], 'ML','Mean','Truth','Location','Southeast')
     
-    title(['Emission rate results (K' num2str(nStates) ' W' num2str(nSteps) ' N' sprintf('%04d',100*n_traces) ')'])
-    
+    title(['Emission rate results (K' num2str(trueParams.nStates) ' W' num2str(trueParams.nSteps) ' N' sprintf('%04d',100*trueParams.n_traces) ')'])
+    saveString = ['K' sprintf('%01d',trueParams.nStates) '_W' sprintf('%03d',10*round(trueParams.nSteps,1)) '_nt' sprintf('%03d',trueParams.n_traces)];
     saveas(v_fig,[figPath 'v_fit_' saveString '.png'])
     
 end 
