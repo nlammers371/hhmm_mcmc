@@ -66,15 +66,11 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % if we're doing ensemble inference, reset everything to have single
     % value
-%     if mcmcInfo.ensembleInferenceFlag
-%         mcmcInfo.v0 = repmat(mcmcInfo.v0(1,:),mcmcInfo.n_chains_eff,1);
-%         mcmcInfo.v_curr = repmat(mcmcInfo.v_curr(1,:),mcmcInfo.n_chains_eff,1);
-%         mcmcInfo.pi0_curr = repmat(mcmcInfo.pi0_curr(1,:),mcmcInfo.n_chains_eff,1);
-%         mcmcInfo.sigma_curr = repmat(mcmcInfo.sigma_curr(1),mcmcInfo.n_chains_eff,1);
-%         mcmcInfo.A_curr = repmat(mcmcInfo.A_curr(:,:,1),1,1,mcmcInfo.n_chains_eff);
-%         mcmcInfo.A_alpha = repmat(mcmcInfo.A_alpha(:,:,1),1,1,mcmcInfo.n_chains_eff);
-%         mcmcInfo.coeff_MS2 = repmat(mcmcInfo.coeff_MS2(:,1),1,mcmcInfo.n_chains_eff);
-%         mcmcInfo.nStepsCurr = repmat(mcmcInfo.nStepsCurr(1),mcmcInfo.n_chains_eff,1);
-%         mcmcInfo.alphaCurr = repmat(mcmcInfo.alphaCurr(1),mcmcInfo.n_chains_eff,1);
-%     end   
+    if mcmcInfo.ensembleInferenceFlag
+        mcmcInfo.v0 = repmat(mcmcInfo.v0(1,:),mcmcInfo.n_chains_eff,1);
+        mcmcInfo.v_curr = repmat(mcmcInfo.v_curr(1,:),mcmcInfo.n_chains_eff,1);
+        mcmcInfo.pi0_curr = repmat(mcmcInfo.pi0_curr(1,:),mcmcInfo.n_chains_eff,1);
+        mcmcInfo.sigma_curr = repmat(mcmcInfo.sigma_curr(1,:),mcmcInfo.n_chains_eff,1);
+        mcmcInfo.A_curr = repmat(mcmcInfo.A_curr(:,:,1),1,1,mcmcInfo.n_chains_eff);
+        
         

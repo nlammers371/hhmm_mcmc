@@ -10,19 +10,20 @@ trueParams = setParamsBasic3state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 500;
+n_mcmc_steps = 250;
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 250;
-n_chains = 10;
+n_chains = 5;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 
 % characteristics of simulated data
-mcmcInfo.n_traces = 50;
+mcmcInfo.n_traces = 2;
 mcmcInfo.n_traces_per_chain = 20;
-mcmcInfo.seq_length = 100; % length of simulated traces in time steps
-mcmcInfo.bootstrapFlag = 1;
+mcmcInfo.seq_length = 1000; % length of simulated traces in time steps
+mcmcInfo.bootstrapFlag = 0;
 mcmcInfo.annealingSigmaFlag = 0;
+mcmcInfo.ensembleInferenceFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
