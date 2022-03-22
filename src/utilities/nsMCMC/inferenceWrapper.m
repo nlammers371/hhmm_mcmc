@@ -22,14 +22,8 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         mcmcInfo.step = step;       
           
         % resample chains  promoter state sequences        
-        mcmcInfo = resample_chains_v3(mcmcInfo);    % "Expectation Step"                 
+        mcmcInfo = resample_chains_v4(mcmcInfo);    % "Expectation Step"                 
 
-        % perform additional "cross-talk" MH sampling if we are doing chain
-        % tempering
-%         if mcmcInfo.temperingFlag
-%             mcmcInfo = temper_chains_v3(mcmcInfo);
-%         end
-                       
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 
@@ -42,9 +36,6 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         % if desired, perform MH moves to sample "nSteps"
         if mcmcInfo.inferNStepsFlag
             mcmcInfo = mh_sample_nSteps(mcmcInfo);           
-%             if ~mcmcInfo.temperingFlag 
-%                 mcmcInfo = mh_swap_nSteps(mcmcInfo);
-%             end
         end
         
         % calculate updated logL

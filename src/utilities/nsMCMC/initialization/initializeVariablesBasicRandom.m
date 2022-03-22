@@ -1,18 +1,21 @@
 function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % initialize transition probabilities
-    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
+%     mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
+    n_scale = numel(mcmcInfo.observed_fluo)/50;
     n_chains_eff = mcmcInfo.n_chains_eff;
     for n = 1:n_chains_eff    
-        alpha_temp = mcmcInfo.A_alpha(:,:,n);
-        alpha_temp(eye(mcmcInfo.nStates)==1) = alpha_temp(eye(mcmcInfo.nStates)==1) + abs(normrnd(2,1,mcmcInfo.nStates,1)); % distribution hyper params
+%         alpha_temp = mcmcInfo.A_alpha(:,:,n);
+        alpha_temp = abs(normrnd(n_scale,n_scale/3,mcmcInfo.nStates,mcmcInfo.nStates));        
+        alpha_temp(eye(mcmcInfo.nStates)~=1) = alpha_temp(eye(mcmcInfo.nStates)~=1)/2; % distribution hyper params
+        if mcmcInfo.nStates == 3
+            alpha_temp(1,3) = alpha_temp(1,3)/4;
+            alpha_temp(3,1) = alpha_temp(3,1)/4;
+        end
         mcmcInfo.A_alpha(:,:,n) = 2*alpha_temp;
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1);
         mcmcInfo.A_inf_array(:,:,1,n) = mcmcInfo.A_curr(:,:,n);
         
-        if any(any(isnan(mcmcInfo.A_curr(:,:,n)),1))
-            error('wtf?')
-        end
         % calculate pi0 
         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
         [~, mi] = max(real(diag(D)));

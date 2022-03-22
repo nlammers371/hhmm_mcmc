@@ -1,18 +1,18 @@
 function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % initialize transition probabilities
-    mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
+%     mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
+    n_scale = numel(mcmcInfo.observed_fluo)/50;
     n_chains_eff = mcmcInfo.n_chains_eff;
     for n = 1:n_chains_eff    
-        alpha_temp = mcmcInfo.A_alpha(:,:,n);
-        alpha_temp(eye(mcmcInfo.nStates)==1) = alpha_temp(eye(mcmcInfo.nStates)==1) + abs(normrnd(2,1,mcmcInfo.nStates,1)); % distribution hyper params
+%         alpha_temp = mcmcInfo.A_alpha(:,:,n);
+        alpha_temp = abs(normrnd(n_scale,n_scale/3,mcmcInfo.nStates,mcmcInfo.nStates));
+        
+        alpha_temp(eye(mcmcInfo.nStates)~=1) = alpha_temp(eye(mcmcInfo.nStates)~=1) + abs(normrnd(n_scale/2,1,mcmcInfo.nStates,1)); % distribution hyper params
         mcmcInfo.A_alpha(:,:,n) = 2*alpha_temp;
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1);
         mcmcInfo.A_inf_array(:,:,1,n) = mcmcInfo.A_curr(:,:,n);
         
-        if any(any(isnan(mcmcInfo.A_curr(:,:,n)),1))
-            error('wtf?')
-        end
         % calculate pi0 
         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
         [~, mi] = max(real(diag(D)));
@@ -66,11 +66,15 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     % if we're doing ensemble inference, reset everything to have single
     % value
-    if mcmcInfo.ensembleInferenceFlag
-        mcmcInfo.v0 = repmat(mcmcInfo.v0(1,:),mcmcInfo.n_chains_eff,1);
-        mcmcInfo.v_curr = repmat(mcmcInfo.v_curr(1,:),mcmcInfo.n_chains_eff,1);
-        mcmcInfo.pi0_curr = repmat(mcmcInfo.pi0_curr(1,:),mcmcInfo.n_chains_eff,1);
-        mcmcInfo.sigma_curr = repmat(mcmcInfo.sigma_curr(1,:),mcmcInfo.n_chains_eff,1);
-        mcmcInfo.A_curr = repmat(mcmcInfo.A_curr(:,:,1),1,1,mcmcInfo.n_chains_eff);
-        
+%     if mcmcInfo.ensembleInferenceFlag
+%         mcmcInfo.v0 = repmat(mcmcInfo.v0(1,:),mcmcInfo.n_chains_eff,1);
+%         mcmcInfo.v_curr = repmat(mcmcInfo.v_curr(1,:),mcmcInfo.n_chains_eff,1);
+%         mcmcInfo.pi0_curr = repmat(mcmcInfo.pi0_curr(1,:),mcmcInfo.n_chains_eff,1);
+%         mcmcInfo.sigma_curr = repmat(mcmcInfo.sigma_curr(1),mcmcInfo.n_chains_eff,1);
+%         mcmcInfo.A_curr = repmat(mcmcInfo.A_curr(:,:,1),1,1,mcmcInfo.n_chains_eff);
+%         mcmcInfo.A_alpha = repmat(mcmcInfo.A_alpha(:,:,1),1,1,mcmcInfo.n_chains_eff);
+%         mcmcInfo.coeff_MS2 = repmat(mcmcInfo.coeff_MS2(:,1),1,mcmcInfo.n_chains_eff);
+%         mcmcInfo.nStepsCurr = repmat(mcmcInfo.nStepsCurr(1),mcmcInfo.n_chains_eff,1);
+%         mcmcInfo.alphaCurr = repmat(mcmcInfo.alphaCurr(1),mcmcInfo.n_chains_eff,1);
+%     end   
         
