@@ -24,7 +24,9 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory)
         for n = 1:n_chains
             mcmcInfo.observed_fluo(:,n,:) = mcmcInfo.observed_fluo_orig(:,mcmcInfo.trace_id_array(:,n)');
         end
-    end  
+    else
+        mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
+    end
 %     if ~temperingFlag
 %         n_temps = 1;
 %     end

@@ -16,6 +16,9 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         update_index = mcmcInfo.step;
     end
     A_counts = mcmcInfo.transition_count_array;  
+    if mcmcInfo.ensembleInferenceFlag
+        A_counts = repmat(mean(A_counts,3),1,1,n_chains);
+    end
 %     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
         T = 1;%mcmcInfo.tempGradVec(n);
@@ -59,7 +62,12 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
             end
         end
     end  
-
+    if mcmcInfo.ensembleInferenceFlag
+        if mcmcInfo.bootstrapFlag
+            error('incompatible inference options')
+        end
+        F_array = repmat(mean(F_array,3),1,1,n_chains);
+    end
     for c = 1:n_chains        
         T = 1;%mcmcInfo.tempGradVec(c);
         M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
@@ -87,6 +95,10 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
 
     % get predicted fluorescence (using new v values)
     mcmcInfo = predict_fluo_full_v3(mcmcInfo);
+    
+    if mcmcInfo.ensembleInferenceFlag
+        mcmcInfo.sample_fluo = repmat(mean(mcmcInfo.sample_fluo,2),1,n_chains);
+    end
     
     % Update sigma
     for c = 1:n_chains
