@@ -8,14 +8,14 @@ addpath(genpath('./utilities'))
 mcmcInfo = struct;
 
 % other key hyperparameters
-mcmcInfo.n_mcmc_steps = 150; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.n_mcmc_steps = 50; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 100;
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 % mcmcInfoInit.NumWorkers = 24;
 mcmcInfo.annealingSigmaFlag = 0; % need to implement this
 
 % initialize model
-trueParams = setParamsBasic2state;
+trueParams = setParamsBasic3state;
 
 % set system characteristics
 seq_length_obs = 100; % length of simulated traces in time steps
@@ -23,7 +23,7 @@ inferMemory = 0;
 n_chains = 5;
 n_traces = 15;
 trueParams.nSteps_obs = 6.1;
-trueParams.upsample_factor = 3;
+trueParams.upsample_factor = 2;
 trueParams.nSteps = trueParams.nSteps*trueParams.upsample_factor;
 mcmcInfo.tres_obs = trueParams.upsample_factor*trueParams.tres; % "true" resolution of system
 
@@ -60,8 +60,7 @@ mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
 mcmcInfo.sample_chains = repmat(permute(trueParams.true_states,[1 3 2]),1,mcmcInfo.n_chains);
 mcmcInfo.v_curr = repmat(trueParams.v', mcmcInfo.n_chains, 1);
-mcmcInfo.A_curr = repmat(trueParams.A, 1,1,mcmcInfo.n_chains);
-
+mcmcInfo.A_curr = repmat(trueParams.A, mcmcInfo.n_chains, 1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   

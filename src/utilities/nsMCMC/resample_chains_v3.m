@@ -95,7 +95,7 @@ for i = 1:seq_length*n_reps
     %%% put everything together
     total_log_likelihoods = logL_tr/mcmcInfo.upsample_factor + logL_fluo;    
     
-    % apply differential temperature correction if appropirate
+    % apply differential temperature correction if appropriate
 %     if mcmcInfo.temperingFlag 
 %         total_log_likelihoods = total_log_likelihoods ./ mcmcInfo.tempGradVec;
 %     end

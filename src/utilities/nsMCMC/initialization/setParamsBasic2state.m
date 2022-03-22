@@ -2,12 +2,12 @@ function trueParams = setParamsBasic2state
 
 trueParams = struct;
 
-trueParams.tres = 20;
+trueParams.tres = 10;
 
 % define parameters to be inferred
-trueParams.R = [-.02, .05 ; .02 -.05];
+trueParams.R = [-.02, .05 ; .02 -.05]/2;
 trueParams.A = expm(trueParams.R*trueParams.tres);
-trueParams.v = [0, 4]';
+trueParams.v = [0, 4]' * trueParams.tres / 20;
 [V, D] = eig(trueParams.A);
 [~, mi] = max(real(diag(D)));
 trueParams.pi0 = V(:,mi)/sum(V(:,mi));
