@@ -20,9 +20,18 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
         
         mcmcInfo.step = step;       
-          
+        
+        % if tempering, artificially raise sigma values
+        if mcmcInfo.annealingSigmaFlag
+            mcmcInfo.sigma_curr = mcmcInfo.sigma_curr .* mcmcInfo.tempGradArray(mcmcInfo.step,:)';
+        end
+        
         % resample chains  promoter state sequences        
-        mcmcInfo = resample_chains_v4(mcmcInfo);    % "Expectation Step"                 
+        if mcmcInfo.mhResamplingFlag
+            mcmcInfo = resample_chains_v4_mh(mcmcInfo);
+        else
+            mcmcInfo = resample_chains_v4(mcmcInfo);    % "Expectation Step"                 
+        end
 
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
