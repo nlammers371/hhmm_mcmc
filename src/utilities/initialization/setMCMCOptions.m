@@ -42,7 +42,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory)
     mcmcInfo.nStepsPropSize = 0.15;    
     mcmcInfo.nStep_tries_per_run = 10;
     mcmcInfo.nStepsGuess = 5 + rand()*3;
-    mcmcInfo.nStepsMax = 10; % set upper limit
+    mcmcInfo.nStepsMax = 12; % set upper limit
     mcmcInfo.nStepsMin = 3.5; % lower limit   
 
     % set curve if we are using sigma-mediated annealing 
