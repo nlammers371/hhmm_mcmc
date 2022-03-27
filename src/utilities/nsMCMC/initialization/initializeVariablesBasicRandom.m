@@ -5,14 +5,17 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     n_scale = numel(mcmcInfo.observed_fluo)/50;
     n_chains_eff = mcmcInfo.n_chains_eff;
     for n = 1:n_chains_eff    
-%         alpha_temp = mcmcInfo.A_alpha(:,:,n);
+%         alpha_temp = mcmcInfo.A_alpha(:,:,n);        
         alpha_temp = abs(normrnd(n_scale,n_scale/3,mcmcInfo.nStates,mcmcInfo.nStates));        
         alpha_temp(eye(mcmcInfo.nStates)~=1) = alpha_temp(eye(mcmcInfo.nStates)~=1)/2; % distribution hyper params
         if mcmcInfo.nStates == 3
             alpha_temp(1,3) = alpha_temp(1,3)/4;
             alpha_temp(3,1) = alpha_temp(3,1)/4;
         end
-        mcmcInfo.A_alpha(:,:,n) = 2*alpha_temp;
+        if ~mcmcInfo.strongAPriorFlag
+            alpha_temp = alpha_temp / 2;
+        end
+        mcmcInfo.A_alpha(:,:,n) = alpha_temp;
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1);
         mcmcInfo.A_inf_array(:,:,1,n) = mcmcInfo.A_curr(:,:,n);
         

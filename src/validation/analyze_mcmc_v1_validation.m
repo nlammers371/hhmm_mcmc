@@ -9,8 +9,8 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-% runName = 'mcmc_v1_validation_norm3';
-runName = 'run_mcmc_validation_v2_bootstrapping_';
+runName = 'mcmc_v1_validation_serial';
+% runName = 'run_mcmc_validation_v2_bootstrapping_';
 outPath = [DropboxFolder 'hhmm_MCMC_data\' runName filesep];
 figPath = ['../../fig/validation/' runName filesep];
 mkdir(figPath)
