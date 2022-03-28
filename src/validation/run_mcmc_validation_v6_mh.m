@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v4_ensemble\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v6_mh\'];
 mkdir(outPath);
 
 iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -17,22 +17,26 @@ iter_size = 50; % parpool deleted and reinitiated every N iterations
 mcmcInfoInit = struct;
 
 % other key hyperparameters
-mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
 mcmcInfoInit.bootstrapFlag = 0;
-mcmcInfoInit.ensembleInferenceFlag = 1;
+mcmcInfoInit.bootstrapFlagPar = 0;
+mcmcInfoInit.mhResamplingFlag = 1;
+mcmcInfoInit.strongAPriorFlag = 0;
+mcmcInfoInit.ensembleInferenceFlag = 0;
 
 % Set the parameter options to explore
-seq_length = 120; % length of simulated traces in time steps
+seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
 n_chains = 10;
-n_traces = 25;
+n_traces_per_chain_vec = [5 10 20 50];
+n_traces = 50;
 mem_vec = 4:10;
 nStates_vec = [3 2];
-simVec = 1:5;
+simVec = 1:10;
 fast3_flag = 0;
 
 sim_struct = struct;
@@ -146,7 +150,7 @@ for n = 1:n_blocks
         disp('saving...')
 
         % strip unneccesarry fields    
-        mcmcInfo = rmfield(mcmcInfo,{'indArray','trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_dummy','observed_fluo_dummy','observed_fluo_dummy2','sample_fluo_dummy2'});
+        mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr'});
         trueParams = rmfield(trueParams,{'masterSimStruct'});
         mcmcInfo.trueParams = trueParams;
         saveFun(mcmcInfo, outPath, saveString)

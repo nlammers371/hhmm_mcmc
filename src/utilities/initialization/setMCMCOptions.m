@@ -24,6 +24,13 @@ function mcmcInfo = setMCMCOptions(mcmcInfo, n_chains, inferMemory)
         for n = 1:n_chains
             mcmcInfo.observed_fluo(:,n,:) = mcmcInfo.observed_fluo_orig(:,mcmcInfo.trace_id_array(:,n)');
         end
+    elseif mcmcInfo.bootstrapFlagPar        
+        mcmcInfo.trace_id_array = randsample(1:mcmcInfo.n_traces,mcmcInfo.n_traces_per_chain,true); 
+        mcmcInfo.n_traces_orig = mcmcInfo.n_traces;
+        mcmcInfo.n_traces = mcmcInfo.n_traces_per_chain;     
+        mcmcInfo.observed_fluo_orig = mcmcInfo.observed_fluo;
+        mcmcInfo.observed_fluo = mcmcInfo.observed_fluo_orig(:,mcmcInfo.trace_id_array');
+        
     else
         mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
     end

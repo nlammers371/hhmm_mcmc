@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v2_bootstrapping_\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\run_mcmc_validation_v5_bootstrapping_serial\'];
 mkdir(outPath);
 
 iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -23,6 +23,8 @@ mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference
 mcmcInfoInit.NumWorkers = 25;
 mcmcInfoInit.annealingSigmaFlag = 0; % need to implement this
 mcmcInfoInit.bootstrapFlag = 1;
+mcmcInfoInit.mhResamplingFlag = 0;
+mcmcInfoInit.strongAPriorFlag = 0;
 
 % Set the parameter options to explore
 seq_length = 100; % length of simulated traces in time steps
@@ -91,9 +93,9 @@ for n = 1:n_blocks
     iter_max = min(n*iter_size,size(combArray,1));
     
     % initialize parallel pool
-    initializePool(mcmcInfoInit, 1)
+%     initializePool(mcmcInfoInit, 1)
     
-    parfor iter = iter_min:iter_max
+    for iter = iter_min:iter_max
 
         % extract sim characteristics
         n_traces_per_chain = combArray(iter,1);

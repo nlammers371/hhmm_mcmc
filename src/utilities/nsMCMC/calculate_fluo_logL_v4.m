@@ -42,7 +42,7 @@ function logL_fluo = calculate_fluo_logL_v4(mcmcInfo)
     if ~mcmcInfo.bootstrapFlag
         ref_fluo = repmat(permute(mcmcInfo.observed_fluo(comp_indices,:),[1 3 2]),1,n_chains,1,nStates);
     else
-        ref_fluo = repmat(mcmcInfo.observed_fluo(comp_indices,:),1,1,1,nStates);
+        ref_fluo = repmat(mcmcInfo.observed_fluo(comp_indices,:,:),1,1,1,nStates);
     end
        
     % generate sigma array    
