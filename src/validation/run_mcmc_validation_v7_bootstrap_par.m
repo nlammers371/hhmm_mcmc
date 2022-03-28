@@ -96,9 +96,9 @@ for n = 1:n_blocks
     iter_max = min(n*iter_size,size(combArray,1));
     
     % initialize parallel pool
-%     initializePool(mcmcInfoInit, 1)
+    initializePool(mcmcInfoInit, 1)
     
-    for iter = iter_min:iter_max
+    parfor iter = iter_min:iter_max
 
         % extract sim characteristics
         n_traces_per_chain = combArray(iter,1);

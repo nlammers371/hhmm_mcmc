@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-runName = 'mcmc_v1_validation_serial';
+runName = 'run_mcmc_validation_v6_mh';
 % runName = 'run_mcmc_validation_v2_bootstrapping_';
 outPath = [DropboxFolder 'hhmm_MCMC_data\' runName filesep];
 figPath = ['../../fig/validation/' runName filesep];
@@ -63,11 +63,14 @@ for s = 1:size(stat_index,1)
     v_inf_array = [];    
     logL_array = [];
     err_flag_vec = [];
+    boot_flag_vec = [];
     for g = 1:length(group_indices)
         A_inf_array = cat(4,A_inf_array,master_struct(group_indices(g)).A_inf_array(:,:,burn_in:end,:));
         v_inf_array = cat(3,v_inf_array,master_struct(group_indices(g)).v_inf_array(burn_in:end,:,:));
         logL_array = cat(2,logL_array,master_struct(group_indices(g)).logL_array(burn_in:end,:));
         err_flag_vec = [err_flag_vec master_struct(group_indices(g)).err_flag_vec];
+        sz = size(master_struct(group_indices(g)).A_inf_array(:,:,burn_in:end,:),4);
+        boot_flag_vec = [boot_flag_vec repelem(g,sz)];
     end
     n_chains = size(v_inf_array,3);
     trueParams = master_struct(group_indices(1)).trueParams;
@@ -83,8 +86,11 @@ for s = 1:size(stat_index,1)
                 get_parameter_estimates(trueParams,A_inf_array(:,:,:,si(1)),v_inf_array(:,:,si(1)),0,false);
               
     % (2) Take average across all chains         
+%     [~, param_mean_vec2, param_ste_vec2, ~] = ...
+%                 get_parameter_estimates(trueParams,A_inf_array,v_inf_array,0,err_flag_vec);
+
     [~, param_mean_vec2, param_ste_vec2, ~] = ...
-                get_parameter_estimates(trueParams,A_inf_array,v_inf_array,0,err_flag_vec);
+                get_parameter_estimates_boot(trueParams,A_inf_array,v_inf_array,nanmean(logL_array,1),boot_flag_vec,err_flag_vec);
               
     % (3) Take average, removing outlier chains    
     [~, param_mean_vec3, param_ste_vec3, ~] = ...
@@ -110,8 +116,8 @@ for s = 1:size(stat_index,1)
     errorbar((1:ind)+xf1,param_mean_vec1(1:ind),param_ste_vec1(1:ind),'ok','Capsize',0)
     s1 = scatter((1:ind)+xf1,param_mean_vec1(1:ind),markerSize,'d','MarkerFaceColor',cmap(5,:),'MarkerEdgeColor','k');
     % strat 2
-%     errorbar((1:ind)+xf2,param_mean_vec2(1:ind),param_ste_vec2(1:ind),'ok','Capsize',0)
-%     s2 = scatter((1:ind)+xf2,param_mean_vec2(1:ind),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+    errorbar((1:ind)+xf2,param_mean_vec2(1:ind),param_ste_vec2(1:ind),'ok','Capsize',0)
+    s2 = scatter((1:ind)+xf2,param_mean_vec2(1:ind),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
     % strat 3
     errorbar((1:ind)+xf3,param_mean_vec3(1:ind),param_ste_vec3(1:ind),'ok','Capsize',0)
     s3 = scatter((1:ind)+xf3,param_mean_vec3(1:ind),markerSize,'o','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
@@ -125,7 +131,7 @@ for s = 1:size(stat_index,1)
     
     ylabel('transition probability')
     xlabel('parameter')
-    legend([s1 s3 s4], 'ML','Mean','Truth','Location','northwest')
+    legend([s1 s2 s3 s4], 'ML','ML (boot)','Mean','Truth','Location','northwest')
     
     title(['Transition prob results (K' num2str(nStates) ' W' num2str(nSteps) ' N' sprintf('%04d',100*n_traces) ')'])
     saveString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces)];
@@ -146,8 +152,8 @@ for s = 1:size(stat_index,1)
     errorbar((1:dim)+xf1,param_mean_vec1(ind+1:end),param_ste_vec1(ind+1:end),'ok','Capsize',0)
     s1 = scatter((1:dim)+xf1,param_mean_vec1(ind+1:end),markerSize,'d','MarkerFaceColor',cmap(5,:),'MarkerEdgeColor','k');
     % strat 2
-%     errorbar((1:dim)+xf2,param_mean_vec2(ind+1:end),param_ste_vec2(ind+1:end),'ok','Capsize',0)
-%     s2 = scatter((1:dim)+xf2,param_mean_vec2(ind+1:end),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+    errorbar((1:dim)+xf2,param_mean_vec2(ind+1:end),param_ste_vec2(ind+1:end),'ok','Capsize',0)
+    s2 = scatter((1:dim)+xf2,param_mean_vec2(ind+1:end),markerSize,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
     % strat 3
     errorbar((1:dim)+xf3,param_mean_vec3(ind+1:end),param_ste_vec3(ind+1:end),'ok','Capsize',0)
     s3 = scatter((1:dim)+xf3,param_mean_vec3(ind+1:end),markerSize,'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
@@ -161,7 +167,7 @@ for s = 1:size(stat_index,1)
     
     ylabel('emission rate (au)')
     xlabel('parameter')
-    legend([s1 s3 s4], 'ML','Mean','Truth','Location','Southeast')
+    legend([s1 s2 s3 s4], 'ML','ML (boot)','Mean','Truth','Location','Southeast')
     
     title(['Emission rate results (K' num2str(nStates) ' W' num2str(nSteps) ' N' sprintf('%04d',100*n_traces) ')'])
     

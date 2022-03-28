@@ -17,7 +17,7 @@ iter_size = 50; % parpool deleted and reinitiated every N iterations
 mcmcInfoInit = struct;
 
 % other key hyperparameters
-mcmcInfoInit.n_mcmc_steps = 3e3; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 1e1;%3e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 500;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
@@ -96,9 +96,9 @@ for n = 1:n_blocks
     iter_max = min(n*iter_size,size(combArray,1));
     
     % initialize parallel pool
-    initializePool(mcmcInfoInit, 1)
+%     initializePool(mcmcInfoInit, 1)
     
-    parfor iter = iter_min:iter_max
+    for iter = iter_min:iter_max
 
         % extract sim characteristics
         n_traces_per_chain = combArray(iter,1);
