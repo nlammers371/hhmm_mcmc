@@ -6,7 +6,7 @@ close all force
 addpath(genpath('utilities'))
 
 % initialize info structure
-trueParams = setParamsBasic3state;
+trueParams = setParamsBasic2state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
@@ -18,13 +18,15 @@ mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 
 % characteristics of simulated data
-mcmcInfo.n_traces = 15;
-mcmcInfo.n_traces_per_chain = 20;
+mcmcInfo.n_traces = 20;
+mcmcInfo.n_traces_per_chain = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 mcmcInfo.bootstrapFlag = 0;
+mcmcInfo.bootstrapFlagPar = 1;
 mcmcInfo.annealingSigmaFlag = 0;
 mcmcInfo.ensembleInferenceFlag = 0;
-mcmcInfo.mhResamplingFlag = 1;
+mcmcInfo.mhResamplingFlag = 0;
+mcmcInfo.strongAPriorFlag = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
@@ -34,7 +36,7 @@ inferMemory = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % simulate data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nSteps = 6.1;
+nSteps = 8.1;
 trueParams.nSteps = nSteps;
 trueParams.n_traces = mcmcInfo.n_traces;
 trueParams.seq_length = mcmcInfo.seq_length;

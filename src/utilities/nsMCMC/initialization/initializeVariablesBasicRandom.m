@@ -61,6 +61,8 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     mcmcInfo.v0 = [zeros(n_chains_eff,1) v2];
     if mcmcInfo.nStates==3
          mcmcInfo.v0(:,end+1) = 2*v2;
+    elseif mcmcInfo.nStates==2
+        mcmcInfo.v0(:,2) = 2*v2;
     end
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1;    
     mcmcInfo.M0(1,1) = 1e5; % add extra weight to "OFF" state
