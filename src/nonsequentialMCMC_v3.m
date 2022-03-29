@@ -10,7 +10,7 @@ trueParams = setParamsBasic2state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 250;
+n_mcmc_steps = 50;
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 100;
 n_chains = 10;
@@ -23,15 +23,11 @@ mcmcInfo.n_traces_per_chain = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 mcmcInfo.bootstrapFlag = 0;
 mcmcInfo.bootstrapFlagPar = 1;
-mcmcInfo.annealingSigmaFlag = 0;
-mcmcInfo.ensembleInferenceFlag = 0;
-mcmcInfo.mhResamplingFlag = 0;
-mcmcInfo.strongAPriorFlag = 0;
-
+mcmcInfo.inferMemory = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-inferMemory = 0;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % simulate data
@@ -52,7 +48,7 @@ if ~inferMemory
     mcmcInfo.nSteps = trueParams.nSteps;
 end    
 
-mcmcInfo = setMCMCOptions(mcmcInfo, mcmcInfo.n_chains, inferMemory);
+mcmcInfo = setMCMCOptions(mcmcInfos);
 mcmcInfo = initializeInferenceArrays(mcmcInfo);
 mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 
