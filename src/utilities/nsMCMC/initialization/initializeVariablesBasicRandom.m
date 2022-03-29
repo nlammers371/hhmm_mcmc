@@ -62,7 +62,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     v2 = randsample(fluo_vec_mid,n_chains_eff,true) ./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
     mcmcInfo.v0 = [zeros(n_chains_eff,1) v2];
     if mcmcInfo.nStates==3
-         mcmcInfo.v0(:,end+1) = 2*v2;
+         mcmcInfo.v0(:,end+1) = 2.5*v2;
     elseif mcmcInfo.nStates==2
         mcmcInfo.v0(:,2) = 2*v2;
     end
