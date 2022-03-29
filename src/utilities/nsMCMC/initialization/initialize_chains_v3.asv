@@ -11,9 +11,11 @@ function mcmcInfo = initialize_chains_v3(mcmcInfo)
     % generate reference vector
     row_ref = (1:nStates)';
     
-    % initialize    
-    mcmcInfo.sample_chains = NaN(sql, n_chains, n_traces);
-
+    % initialize
+    try
+      mcmcInfo.sample_chains = NaN(sql, n_chains, n_traces);
+    catch
+      error
     % draw from initial state PDF 
     for n = 1:n_chains
         mcmcInfo.sample_chains(1,n,:) = reshape(randsample(1:nStates,n_traces,true,pi0(n,:)),1,1,n_traces);
