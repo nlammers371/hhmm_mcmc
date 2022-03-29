@@ -10,7 +10,8 @@ nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains_eff;
 nStepsMax = mcmcInfo.nStepsMax;
-seq_length = mcmcInfo.seq_length;
+seq_length = mcmcInfo.seq_length_true;
+u_factor = mcmcInfo.upsample_factor;
 
 % generate reference vector
 mcmcInfo.chain_id_ref = 0:n_chains-1;
@@ -62,20 +63,38 @@ for i = 1:seq_length*n_reps
     % extract probabilities
     post_probs_log = A_log(row_col_array_to);
        
-    % combine
-    logL_tr = prev_probs_log + post_probs_log;
+    % account for multiple jumps
+
+    prev_prob_array_long = NaN([size(prev_probs_log),u_factor]);
+    post_prob_array_long = NaN([size(post_probs_log),u_factor]);
     
-    % zero out current state
-%     curr_inds = sample_chains_temp(prev_time_index+1,:,:) + mcmcInfo.chain_id_ref*nStates + mcmcInfo.trace_id_ref*nStates*n_chains;
-%     logL_tr(curr_inds) = -Inf;
+    prev_prob_array_long(:,:,:,1) = prev_probs_log;
+    post_prob_array_long(:,:,:,end) = post_probs_log;
+    
+    for c = 1:n_chains
+        prev_slice = prev_prob_array_long(:,c,:,:);
+        post_slice = post_prob_array_long(:,c,:,:);
+        A_slice = repmat(A_log(:,:,c),1,1,n_traces);
+        A_perm = permute(A_slice,[2 1 3]);
+        for tr = 2:u_factor
+            prev_slice(:,1,:,tr) = logsumexp(repmat(prev_slice(:,1,:,tr-1),1,nStates,1,1) + A_perm, 1);
+            post_slice(:,1,:,u_factor-tr+1) = logsumexp(repmat(post_slice(:,1,:,u_factor-tr+2),1,nStates,1,1) + A_slice,1);
+        end
+        % add
+        prev_prob_array_long(:,c,:,:) = prev_slice;
+        post_prob_array_long(:,c,:,:) = post_slice;
+    end
+    
+    logL_tr = prev_prob_array_long + post_prob_array_long;
+    logL_tr = logL_tr - logsumexp(logL_tr,1);       
     
     % use transition probabilities as jump proposal distribution
-    logL_tr_norm = exp(logL_tr - logsumexp(logL_tr,1));
+    prob_tr_norm = exp(logL_tr - logsumexp(logL_tr,1));
     
     % randomly select new state proposals
-    option_array = cumsum(logL_tr_norm);
-    rand_array = repmat(rand(1,n_chains,n_traces),nStates,1);
-    mcmcInfo.state_proposals = sum(rand_array > option_array,1) + 1;    
+    option_array = cumsum(prob_tr_norm,1);
+    rand_array = repmat(rand(1,n_chains,n_traces,u_factor),nStates,1);
+    mcmcInfo.state_proposals = permute(sum(rand_array > option_array,1) + 1,[4 2 3 1]);    
     
     %%% calculate fluorescence probability component
     % calculate fluo error term           
