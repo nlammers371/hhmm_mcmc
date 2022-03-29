@@ -32,8 +32,8 @@ mcmcInfoInit.ensembleInferenceFlag = 0;
 % Set the parameter options to explore
 seq_length = 100; % length of simulated traces in time steps
 inferMemory = 0;
-n_chains = 10;
-n_traces_per_chain_vec = [5 10 20 50];
+n_chains = 25;
+n_traces_per_chain_vec = [10 20 50];
 n_traces = 50;
 mem_vec = 6:10;
 nStates_vec = [3 2];
@@ -142,7 +142,11 @@ for n = 1:n_blocks
         % conduct full inference
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
         tic    
-        mcmcInfo = inferenceWrapper(mcmcInfo);      
+        try
+            mcmcInfo = inferenceWrapper(mcmcInfo);      
+        catch
+            mcmcInfo.err_flag_vec = true(1,n_chains);
+        end
         mcmcInfo.duration = toc;
 
         % save results
@@ -151,7 +155,11 @@ for n = 1:n_blocks
         disp('saving...')
 
         % strip unneccesarry fields    
-        mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr'});
+        try
+            mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr'});
+        catch
+            % Do nothing
+        end
         trueParams = rmfield(trueParams,{'masterSimStruct'});
         mcmcInfo.trueParams = trueParams;
         saveFun(mcmcInfo, outPath, saveString)
