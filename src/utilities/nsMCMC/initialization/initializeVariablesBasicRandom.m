@@ -4,13 +4,14 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
 %     mcmcInfo.A_alpha = ones(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains_eff);
     n_scale = numel(mcmcInfo.observed_fluo)/50;
     n_chains_eff = mcmcInfo.n_chains_eff;
+    u_factor = mcmcInfo.upsample_factor;
     for n = 1:n_chains_eff    
 %         alpha_temp = mcmcInfo.A_alpha(:,:,n);        
         alpha_temp = abs(normrnd(n_scale,n_scale/3,mcmcInfo.nStates,mcmcInfo.nStates));        
-        alpha_temp(eye(mcmcInfo.nStates)~=1) = alpha_temp(eye(mcmcInfo.nStates)~=1)/2; % distribution hyper params
+        alpha_temp(eye(mcmcInfo.nStates)~=1) = alpha_temp(eye(mcmcInfo.nStates)~=1)/2/u_factor; % distribution hyper params
         if mcmcInfo.nStates == 3
-            alpha_temp(1,3) = alpha_temp(1,3)/4;
-            alpha_temp(3,1) = alpha_temp(3,1)/4;
+            alpha_temp(1,3) = alpha_temp(1,3)/4/u_factor;
+            alpha_temp(3,1) = alpha_temp(3,1)/4/u_factor;
         end
         if ~mcmcInfo.strongAPriorFlag
             alpha_temp = alpha_temp / 2;
@@ -38,7 +39,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
 
     % initialize nSteps
     if ~mcmcInfo.inferNStepsFlag
-        mcmcInfo.nStepsCurr = repelem(mcmcInfo.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
+        mcmcInfo.nStepsCurr = repelem(mcmcInfo.nSteps_true,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
     else
         % generate prior distribution and draw samples        
@@ -58,6 +59,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     % initialize v    
     fluo_vec_mid = fluo_vec(fluo_vec >= mean(fluo_vec) & fluo_vec <= mean(fluo_vec) + 2*std(fluo_vec));
     v2 = randsample(fluo_vec_mid,n_chains_eff,true) ./ sum(mcmcInfo.coeff_MS2)';%mean(fluo_vec)/sum(mcmcInfo.coeff_MS2)/(mcmcInfo.pi0_curr(2)+2*mcmcInfo.pi0_curr(3));
+    v2 = v2 / u_factor;
     mcmcInfo.v0 = [zeros(n_chains_eff,1) v2];
     if mcmcInfo.nStates==3
          mcmcInfo.v0(:,end+1) = 2*v2;

@@ -49,10 +49,10 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     end
     logL_transition_array_full = cat(1,logL_pi0,logL_transition_array);
     % condense tr array if needed
-    if u_factor > 1
+    if upsample_factor > 1
         dk = ones(u_factor,1);
-        logL_transition_array_full = convn(dk,logL_transition_array_full,'full');
-        logL_transition_array_full = logL_transition_array_full(u_factor:u_factor:mcmcInfo.seq_length_true,:,:);
+        logL_transition_array_temp = convn(dk,logL_transition_array_full,'full');
+        logL_transition_array_temp = logL_transition_array_temp(u_factor:u_factor:mcmcInfo.seq_length_data,:,:);
     end
     % record
     mcmcInfo.trace_logL_array = logL_transition_array_full + logL_fluo;

@@ -40,7 +40,7 @@ trueParams.seq_length_true = mcmcInfo.seq_length_data * upsample_factor;
 trueParams = generateSimulatedData(trueParams);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% initialize inference arrays and variables
+%% initialize inference arrays and variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mcmcInfo = setMCMCOptions(mcmcInfo, trueParams);
 mcmcInfo = initializeInferenceArrays(mcmcInfo);
@@ -49,7 +49,6 @@ mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 tic
 mcmcInfo = inferenceWrapper(mcmcInfo);
 toc

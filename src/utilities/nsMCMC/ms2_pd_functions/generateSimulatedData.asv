@@ -21,6 +21,7 @@ function trueParams = generateSimulatedData(trueParams)
         end
     end       
     
-    % downsample data    
-    trueParams.observed_fluo_full = trueParams.observed_fluo;
-    trueParams.observed_fluo = trueParams.observed_fluo(1:trueParams.upsample_factor:end,:);
+    % downsample data
+    if trueParams.upsample_factor > 1
+    truePara
+    

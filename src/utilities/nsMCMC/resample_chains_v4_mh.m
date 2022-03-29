@@ -81,7 +81,7 @@ for i = 1:seq_length*n_reps
     % calculate fluo error term           
     logL_fluo = calculate_fluo_logL_v4_mh(mcmcInfo);              
     
-    %%% put everything together
+    %%% calculate difference
     logL_diffs = logL_fluo(2,:,:) - logL_fluo(1,:,:);    
     
     %%% draw new samples        
