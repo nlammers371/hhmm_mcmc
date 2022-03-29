@@ -16,7 +16,8 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
             alpha_temp = alpha_temp / 2;
         end
         mcmcInfo.A_alpha(:,:,n) = alpha_temp;
-        mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1);
+        mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1) + 1e-2; % pseuodcounts to avooid underflow issues
+        mcmcInfo.A_curr(:,:,n) = mcmcInfo.A_curr(:,:,n) ./ sum(mcmcInfo.A_curr(:,:,n),1);
         mcmcInfo.A_inf_array(:,:,1,n) = mcmcInfo.A_curr(:,:,n);
         
         % calculate pi0 
@@ -24,6 +25,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         [~, mi] = max(real(diag(D)));
         mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));
         mcmcInfo.pi0_inf_array(1,:,n) = mcmcInfo.pi0_curr(n,:);
+          
     end
 
     % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)    

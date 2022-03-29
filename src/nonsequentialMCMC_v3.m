@@ -10,7 +10,7 @@ trueParams = setParamsBasic2state;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 50;
+n_mcmc_steps = 150;
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 100;
 n_chains = 10;
@@ -23,17 +23,18 @@ mcmcInfo.n_traces_per_chain = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
 mcmcInfo.bootstrapFlag = 0;
 mcmcInfo.bootstrapFlagPar = 1;
-mcmcInfo.inferMemory = 0;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+nSteps = 5.1;
+trueParams.nSteps = nSteps;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % simulate data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nSteps = 8.1;
-trueParams.nSteps = nSteps;
+
 trueParams.n_traces = mcmcInfo.n_traces;
 trueParams.seq_length = mcmcInfo.seq_length;
 trueParams = generateSimulatedData(trueParams);
@@ -44,13 +45,15 @@ trueParams = generateSimulatedData(trueParams);
 mcmcInfo.nStates = trueParams.nStates;    
 mcmcInfo.alpha_frac = trueParams.alpha_frac;
 mcmcInfo.observed_fluo = trueParams.observed_fluo;
-if ~inferMemory
+
+mcmcInfo = setMCMCOptions(mcmcInfo);
+if ~mcmcInfo.inferNStepsFlag
     mcmcInfo.nSteps = trueParams.nSteps;
 end    
-
-mcmcInfo = setMCMCOptions(mcmcInfos);
 mcmcInfo = initializeInferenceArrays(mcmcInfo);
 mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference

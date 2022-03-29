@@ -96,9 +96,9 @@ for n = 1:n_blocks
     iter_max = min(n*iter_size,size(combArray,1));
     
     % initialize parallel pool
-    initializePool(mcmcInfoInit, 1)
+%     initializePool(mcmcInfoInit, 1)
     
-    parfor iter = iter_min:iter_max
+    for iter = iter_min:iter_max
 
         % extract sim characteristics
         n_traces_per_chain = combArray(iter,1);
@@ -142,11 +142,11 @@ for n = 1:n_blocks
         % conduct full inference
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
         tic    
-        try
+%         try
             mcmcInfo = inferenceWrapper(mcmcInfo);      
-        catch
-            mcmcInfo.err_flag_vec = true(1,n_chains);
-        end
+%         catch
+%             mcmcInfo.err_flag_vec = true(1,n_chains);
+%         end
         mcmcInfo.duration = toc;
 
         % save results

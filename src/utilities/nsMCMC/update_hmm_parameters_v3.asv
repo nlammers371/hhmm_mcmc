@@ -19,7 +19,6 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     if mcmcInfo.ensembleInferenceFlag
         A_counts = repmat(mean(A_counts,3),1,1,n_chains);
     end
-    pi0_counts = sum(A_counts,1);
 %     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
         T = 1;%mcmcInfo.tempGradVec(n);
@@ -28,11 +27,9 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         mcmcInfo.A_curr(:,:,n) = A_samp;
         
         % update pi0    
-%         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
-%         [~, mi] = max(real(diag(D)));
-%         mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));    
-        pi0_ct = pi0_counts(1,:,n) + sum(mcmcInfo.A_alpha(:,:,n),1);
-        mcmcInfo.pi0_curr(n,:) = drchrnd(pi0_ct,1);
+        [V, D] = eig(mcmcInfo.A_curr(:,:,n));
+        [~, mi] = max(real(diag(D)));
+        mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));    
         % check that pi0 values are pos
         if update_flag
             mcmcInfo.A_inf_array(:,:,update_index,n) = mcmcInfo.A_curr(:,:,n);

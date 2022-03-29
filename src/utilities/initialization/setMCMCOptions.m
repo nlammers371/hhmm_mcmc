@@ -9,7 +9,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.annealingSigmaFlag = 0;
     defaultOptions.ensembleInferenceFlag = 0;
     defaultOptions.mhResamplingFlag = 0;
-    defaultOptions.inferMemory = 0;
+    defaultOptions.inferNStepsFlag = 0;
     defaultOptions.n_chains = 25;
     defaultOptions.update_increment = 1; 
     fnamesDefault = fieldnames(defaultOptions);
@@ -63,7 +63,6 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     mcmcInfo.n_chains_eff = mcmcInfo.n_chains;%mcmcInfo.n_temps_per_chain*mcmcInfo.n_chains;
 
     % memory parameter
-    mcmcInfo.inferNStepsFlag = inferMemory;
     mcmcInfo.nStepsPropSize = 0.15;    
     mcmcInfo.nStep_tries_per_run = 10;
     mcmcInfo.nStepsGuess = 5 + rand()*3;
