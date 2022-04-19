@@ -77,26 +77,24 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     end
     for c = 1:n_chains   
         if c == 1 || ~mcmcInfo.ensembleInferenceFlag
-            T = 1;%mcmcInfo.tempGradVec(c);
-            M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
-            b = ((F_array(:,:,c)'*y_array(:,c)));
+          T = 1;%mcmcInfo.tempGradVec(c);
+          M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
+          b = ((F_array(:,:,c)'*y_array(:,c)));
 
-            % calculate mean and variance
-            v_lsq = M\b;
-            v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
-            v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
+          % calculate mean and variance
+          v_lsq = M\b;
+          v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
+          v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
 
-            % sample
-%             try
-            mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
-%             catch
-%                 v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
-%                 mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
-%                 mcmcInfo.err_flag_vec(c) = 1;
-%             end
-        else
-            mcmcInfo.v_curr(c,:) = mcmcInfo.v_curr(1,:);
-        end
+          % sample
+          try
+              mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
+          catch
+              v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
+              mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
+              mcmcInfo.err_flag_vec(c) = 1;
+          end
+
         if update_flag
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_curr(c,:);   
         end
@@ -112,23 +110,19 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
     
     % Update sigma
     for c = 1:n_chains
-        if c == 1 || ~mcmcInfo.ensembleInferenceFlag
-            T = 1;%mcmcInfo.tempGradVec(c);
-            % see: https://discdown.org/flexregression/bayesreg.html                        
-            if ~mcmcInfo.bootstrapFlag
-                a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
-                F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
-            else
-                F_diff = reshape(mcmcInfo.sample_fluo(:,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
-                a = (numel(mcmcInfo.observed_fluo(:,1,:))/2 + mcmcInfo.a0)./T;    
-            end
-            b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
-            b = (F_diff'*F_diff / 2 + b_prior_piece);
-
-            mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.trueParams.sigma
+        T = 1;%mcmcInfo.tempGradVec(c);
+        % see: https://discdown.org/flexregression/bayesreg.html                        
+        if ~mcmcInfo.bootstrapFlag
+            a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
+            F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
         else
-            mcmcInfo.sigma_curr(c) = mcmcInfo.sigma_curr(1);
+            F_diff = reshape(mcmcInfo.sample_fluo(:,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
+            a = (numel(mcmcInfo.observed_fluo(:,1,:))/2 + mcmcInfo.a0)./T;    
         end
+        b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
+        b = (F_diff'*F_diff / 2 + b_prior_piece);
+        
+        mcmcInfo.sigma_curr(c) = sqrt(1./gamrnd(a,1./b));%mcmcInfo.trueParams.sigma
         if update_flag
             mcmcInfo.sigma_inf_array(update_index,c) = mcmcInfo.sigma_curr(c);
         end

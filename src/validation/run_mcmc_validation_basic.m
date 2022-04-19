@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic_mh\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic\'];
 mkdir(outPath);
 
 iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -17,7 +17,7 @@ iter_size = 50; % parpool deleted and reinitiated every N iterations
 mcmcInfoInit = struct;
 
 % other key hyperparameters
-mcmcInfoInit.mhResamplingFlag = 1;
+mcmcInfoInit.mhResamplingFlag = 0;
 mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 2e3;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step

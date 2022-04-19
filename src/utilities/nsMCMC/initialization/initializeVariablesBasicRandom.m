@@ -16,6 +16,9 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.A_alpha(:,:,n) = alpha_temp;
         mcmcInfo.A_curr(:,:,n) = sample_A_dirichlet_par(mcmcInfo.A_alpha(:,:,n), zeros(mcmcInfo.nStates), 1) + 1e-2; % pseuodcounts to avooid underflow issues
         mcmcInfo.A_curr(:,:,n) = mcmcInfo.A_curr(:,:,n) ./ sum(mcmcInfo.A_curr(:,:,n),1);
+%         mcmcInfo.A_curr(:,:,n) = [0.7240    0.2662    0.1379;
+%                                   0.2535    0.6380    0.5591;
+%                                   0.0225    0.0958    0.3030];
         mcmcInfo.A_inf_array(:,:,1,n) = mcmcInfo.A_curr(:,:,n);
         
         % calculate pi0 
@@ -69,7 +72,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     for n = 1:n_chains_eff
         v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
-        mcmcInfo.v_curr(n,:) = sort(mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)');
+        mcmcInfo.v_curr(n,:) = sort(mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)'); %[0 2 5];%
         mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
     end      
     

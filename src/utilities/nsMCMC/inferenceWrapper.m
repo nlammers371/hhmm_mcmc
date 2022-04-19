@@ -36,12 +36,9 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
 
-        % use Gibbs sampling to update hyperparameters   
-        try
-            mcmcInfo = update_hmm_parameters_v3(mcmcInfo);   
-        catch
-            break
-        end
+        % use Gibbs sampling to update hyperparameters           
+        mcmcInfo = update_hmm_parameters_v3(mcmcInfo);   
+  
         % if desired, perform MH moves to sample "nSteps"
         if mcmcInfo.inferNStepsFlag
             mcmcInfo = mh_sample_nSteps(mcmcInfo);           

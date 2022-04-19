@@ -13,12 +13,23 @@ function trueParams = generateSimulatedData(trueParams)
     trueParams.true_states = NaN(trueParams.seq_length,trueParams.n_traces);    
     trueParams.masterSimStruct = struct;
     for n = 1:trueParams.n_traces
-        synthetic_data = synthetic_prob_frac(trueParams.seq_length, trueParams.alpha, trueParams.nStates, ...
-                              trueParams.nSteps, trueParams.A, trueParams.v', trueParams.sigma, ...
-                              trueParams.pi0);                                     
+        if trueParams.discrete_data_flag 
+            synthetic_data = synthetic_prob_frac(trueParams.seq_length, trueParams.alpha, trueParams.nStates, ...
+                                  trueParams.nSteps, trueParams.A, trueParams.v', trueParams.sigma, ...
+                                  trueParams.pi0);     
+        else
+            trueParams.r_emission = trueParams.v'/trueParams.tres;
+            synthetic_data = synthetic_rate_gillespie(trueParams.seq_length, trueParams.alpha, trueParams.nStates, ...
+                                 trueParams.nSteps, trueParams.R, trueParams.tres, trueParams.r_emission, trueParams.sigma,...
+                                 trueParams.pi0); 
+        end
 
         trueParams.observed_fluo(:,n) = synthetic_data.fluo_MS2;
-        trueParams.true_states(:,n) = synthetic_data.naive_states;
+        if trueParams.discrete_data_flag 
+            trueParams.true_states(:,n) = synthetic_data.naive_states;
+        else
+            trueParams.true_states(:,n) = interp1(synthetic_data.transition_times,synthetic_data.naive_states,0:trueParams.tres:trueParams.tres*(trueParams.seq_length-1),'previous');
+        end
         % record full simulation info
         fieldNames = fieldnames(synthetic_data);
         for f = 1:length(fieldNames)
