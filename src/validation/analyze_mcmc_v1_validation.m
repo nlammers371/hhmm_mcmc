@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-runName = 'run_mcmc_validation_v6_mh';
+runName = 'mcmc_validation_basic_mh';
 % runName = 'run_mcmc_validation_v2_bootstrapping_';
 outPath = [DropboxFolder 'hhmm_MCMC_data\' runName filesep];
 figPath = ['../../fig/validation/' runName filesep];
@@ -45,7 +45,7 @@ delete(wb)
 
 % Organize results into groups
 markerSize = 75;
-burn_in = 1e3;
+burn_in = 2.5e3;
 stat_array = [[master_struct.nStates]' [master_struct.n_traces]' [master_struct.nSteps]'];
 [stat_index,~,group_id_vec] = unique(stat_array,'rows');
 %%
