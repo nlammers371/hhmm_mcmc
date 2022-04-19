@@ -27,10 +27,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
         mcmcInfo.A_curr(:,:,n) = A_samp;
         
-        % update pi0    
-%         [V, D] = eig(mcmcInfo.A_curr(:,:,n));
-%         [~, mi] = max(real(diag(D)));
-%         mcmcInfo.pi0_curr(n,:) = V(:,mi)/sum(V(:,mi));    
+        % update pi0      
         pi0_ct = pi0_counts(1,:,n) + sum(mcmcInfo.A_alpha(:,:,n),1);
         mcmcInfo.pi0_curr(n,:) = drchrnd(pi0_ct,1);
         % check that pi0 values are pos
@@ -79,7 +76,7 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
         % calculate mean and variance
         v_lsq = M\b;
         v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
-        v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
+        v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
         
         % sample
         try
