@@ -2,7 +2,7 @@ function trueParams = setParamsBasic3state
 
 % mcmcInfo = struct;
 trueParams = struct;
-trueParams.discrete_data_flag = false;
+trueParams.discrete_data_flag = true;
 trueParams.tres = 20;
 trueParams.nStates = 3;
 % define parameters to be inferred

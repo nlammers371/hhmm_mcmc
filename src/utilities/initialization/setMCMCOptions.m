@@ -1,6 +1,6 @@
 function mcmcInfo = setMCMCOptions(mcmcInfo)
     
-    % Set defaults
+    % set defaults
     defaultOptions = struct;
     defaultOptions.ensembleInferenceFlag = 0;
     defaultOptions.strongAPriorFlag = 0;
@@ -12,6 +12,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.inferNStepsFlag = 0;
     defaultOptions.n_chains = 25;
     defaultOptions.update_increment = 1; 
+    defaultOptions.save_trace_results = 0; 
     fnamesDefault = fieldnames(defaultOptions);
     
     % check to see if any of the above options have been specified
@@ -66,7 +67,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     mcmcInfo.nStepsPropSize = 0.15;    
     mcmcInfo.nStep_tries_per_run = 10;
     mcmcInfo.nStepsGuess = 5 + rand()*3;
-    mcmcInfo.nStepsMax = 12; % set upper limit
+    mcmcInfo.nStepsMax = 14; % set upper limit
     mcmcInfo.nStepsMin = 3.5; % lower limit   
 
     % set curve if we are using sigma-mediated annealing 

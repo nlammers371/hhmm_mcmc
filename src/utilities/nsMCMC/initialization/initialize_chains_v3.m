@@ -34,3 +34,9 @@ function mcmcInfo = initialize_chains_v3(mcmcInfo)
             mcmcInfo.sample_chains(t,n,:) = sum(rand_array > A_array) + 1;
         end  
     end
+    
+    if mcmcInfo.save_trace_results
+        n_updates = size(mcmcInfo.v_inf_array,1);        
+        mcmcInfo.sample_fluo_inf_array = NaN([size(mcmcInfo.sample_chains,1) size(mcmcInfo.sample_chains,2) size(mcmcInfo.sample_chains,3) n_updates]);
+        mcmcInfo.sample_states_inf_array = NaN([size(mcmcInfo.sample_chains,1) size(mcmcInfo.sample_chains,2) size(mcmcInfo.sample_chains,3) n_updates]);
+    end
