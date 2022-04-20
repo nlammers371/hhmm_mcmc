@@ -18,7 +18,7 @@ mcmcInfoInit = struct;
 
 % other key hyperparameters
 mcmcInfoInit.mhResamplingFlag = 0;
-mcmcInfoInit.n_mcmc_steps = 5e1; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 2e3;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
@@ -46,7 +46,7 @@ n_blocks = ceil(size(combArray,1)/iter_size);
 
 wb = waitbar(0,'Running MCMC validations');
  
-for iter = 1%:size(combArray,1)
+for iter = 51:size(combArray,1)
     waitbar(iter/size(combArray,1),wb);
     % extract sim characteristics 
     n_reps = combArray(iter,1);
@@ -93,7 +93,7 @@ for iter = 1%:size(combArray,1)
         mcmcInfoTemp.n_traces_per_chain = n_traces;
         mcmcInfoTemp.seq_length = seq_length;
         mcmcInfoTemp.n_reps = n_reps;
-        
+        mcmcInfoTemp.n_chains = n_chains;
         % check and implement options
         mcmcInfoTemp = setMCMCOptions(mcmcInfoTemp);       
         
@@ -114,7 +114,11 @@ for iter = 1%:size(combArray,1)
         mcmcInfoTemp = inferenceWrapper(mcmcInfoTemp);      
         mcmcInfoTemp.duration = toc;
 
-        mcmcInfoFull(n).mcmcInfo = mcmcInfoTemp;        
+        fields = fieldnames(mcmcInfoTemp);
+        for k = 1:numel(fields)
+            aField = fields{k};
+            mcmcInfoFull(n).(aField)= mcmcInfoTemp.(aField);        
+        end
     end    
     
     % save results
@@ -122,14 +126,24 @@ for iter = 1%:size(combArray,1)
                   '_nrep' sprintf('%1d',n_reps) '_disc' sprintf('%1d',discrete_data_flag)  '_sim' sprintf('%03d',sim_num)];
 
     disp('saving...')
-    fields = fieldnames(mcmcInfoTemp);
+    fields = fieldnames(mcmcInfoFull);
+    mcmcInfo = struct;
     for k = 1:numel(fields)
       aField = fields{k}; % EDIT: changed to {}
-      S.(aField) = cat(dim, S.(aField), T.(aField));
+      dim = length(size(mcmcInfoFull(1).(aField)));
+%       if dim == 3
+%           cat_dim = 3;
+%       elseif dim == 4
+%           cat_dim = 4;
+%       else
+%           cat_dim = 2;
+%       end
+      mcmcInfo.(aField) = cat(dim, mcmcInfoFull.(aField));
     end
-    mcmcInfo = [mcmcInfoFull.mcmcInfo];
+%     mcmcInfo = [mcmcInfoFull.mcmcInfo];
     % strip unneccesarry fields            
-    mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr'});
+    mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_temp','step_ref'...
+                      'row_ref','step'});
     trueParams = rmfield(trueParams,{'masterSimStruct'});
     mcmcInfo.trueParams = trueParams;
     saveFun(mcmcInfo, outPath, saveString)

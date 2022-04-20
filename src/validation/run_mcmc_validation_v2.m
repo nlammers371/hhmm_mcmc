@@ -18,7 +18,7 @@ mcmcInfoInit = struct;
 
 % other key hyperparameters
 mcmcInfoInit.mhResamplingFlag = 0;
-mcmcInfoInit.n_mcmc_steps = 5e0; % number of MCMC steps (need to add convergence criteria)
+mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 2e3;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
 mcmcInfoInit.NumWorkers = 25;
@@ -31,11 +31,11 @@ n_mcmc_runs = total_chains_per_sim/n_chains;
 n_traces = 25;
 nSteps = 7;
 discrete_data_vec = [0 1];
-n_rep_vec = [1 2];
-nStates_vec = [3 2];
-simVec = 1:10;
+n_rep_vec = [2];
+nStates_vec = [3];
+simVec = 4:10;
 
-% get all possible combinations
+% get all possible cgitombinations
 elements = {n_rep_vec discrete_data_vec nStates_vec simVec};
 combCell = cell(1, numel(elements));
 [combCell{:}] = ndgrid(elements{:});
@@ -46,7 +46,7 @@ n_blocks = ceil(size(combArray,1)/iter_size);
 
 wb = waitbar(0,'Running MCMC validations');
  
-for iter = 1%:size(combArray,1)
+for iter = 8:14
     waitbar(iter/size(combArray,1),wb);
     % extract sim characteristics 
     n_reps = combArray(iter,1);
@@ -93,7 +93,7 @@ for iter = 1%:size(combArray,1)
         mcmcInfoTemp.n_traces_per_chain = n_traces;
         mcmcInfoTemp.seq_length = seq_length;
         mcmcInfoTemp.n_reps = n_reps;
-        
+        mcmcInfoTemp.n_chains = n_chains;
         % check and implement options
         mcmcInfoTemp = setMCMCOptions(mcmcInfoTemp);       
         
@@ -140,9 +140,10 @@ for iter = 1%:size(combArray,1)
 %       end
       mcmcInfo.(aField) = cat(dim, mcmcInfoFull.(aField));
     end
-    mcmcInfo = [mcmcInfoFull.mcmcInfo];
+%     mcmcInfo = [mcmcInfoFull.mcmcInfo];
     % strip unneccesarry fields            
-    mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr'});
+    mcmcInfo = rmfield(mcmcInfo,{'trace_logL_array','trace_logL_vec','state_ref','A_curr','v_curr','nStepsCurr','sample_chains_temp','step_ref'...
+                      'row_ref','step'});
     trueParams = rmfield(trueParams,{'masterSimStruct'});
     mcmcInfo.trueParams = trueParams;
     saveFun(mcmcInfo, outPath, saveString)
