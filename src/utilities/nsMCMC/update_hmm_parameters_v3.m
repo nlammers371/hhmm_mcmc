@@ -133,3 +133,8 @@ function mcmcInfo = update_hmm_parameters_v3(mcmcInfo)
             mcmcInfo.sigma_inf_array(update_index,c) = mcmcInfo.sigma_curr(c);
         end
     end   
+    
+    if update_flag && mcmcInfo.save_trace_results
+        mcmcInfo.sample_fluo_inf_array(:,:,:,update_index) = mcmcInfo.sample_fluo;
+        mcmcInfo.sample_states_inf_array(:,:,:,update_index) = mcmcInfo.sample_chains;
+    end

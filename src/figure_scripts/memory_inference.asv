@@ -1,0 +1,71 @@
+% Script to make illustrative inference figures for 2 state case
+clear 
+close all force
+
+addpath(genpath('../utilities'))
+
+% make path to write figures
+figPath = '../fig/illustrative_mcmc/';
+mkdir(figPath)
+
+% initialize info structure
+trueParams = setParamsBasic3state;
+trueParams.sigma = 1;
+
+%%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
+% basic inference params 
+rng(958)
+
+n_mcmc_steps = 250;
+mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
+mcmcInfo.burn_in = 100;
+n_chains = 25;
+mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
+mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
+
+% characteristics of simulated data
+mcmcInfo.n_traces = 20;
+mcmcInfo.seq_length = 120; % length of simulated traces in time steps
+
+% set vector of memories to infer
+mem_vec = [4.1 5.7 7.3 8.9 10.4]; 
+
+mem_array = NaN(n_
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set MCMC options
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+nSteps = 7.4;
+trueParams.nSteps = nSteps;
+mcmcInfo.inferNStepsFlag = true;
+mcmcInfo.annealingSigmaFlag = true;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% simulate data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+trueParams.n_traces = mcmcInfo.n_traces;
+trueParams.seq_length = mcmcInfo.seq_length;
+trueParams = generateSimulatedData(trueParams);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% initialize inference arrays and variables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mcmcInfo.nStates = trueParams.nStates;    
+mcmcInfo.alpha_frac = trueParams.alpha_frac;
+mcmcInfo.observed_fluo = trueParams.observed_fluo;
+
+mcmcInfo = setMCMCOptions(mcmcInfo);
+
+if ~mcmcInfo.inferNStepsFlag
+    mcmcInfo.nSteps = trueParams.nSteps;
+end    
+mcmcInfo = initializeInferenceArrays(mcmcInfo);
+mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+
+mcmcInfo.save_trace_results = true;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% conduct inference
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+tic
+mcmcInfo = inferenceWrapper(mcmcInfo);
+toc

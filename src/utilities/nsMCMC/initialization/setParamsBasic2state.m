@@ -3,7 +3,7 @@ function trueParams = setParamsBasic2state
 trueParams = struct;
 
 trueParams.tres = 20;
-trueParams.discrete_data_flag = false;
+trueParams.discrete_data_flag = true;
 % define parameters to be inferred
 trueParams.R = [-.02, .05 ; .02 -.05];
 trueParams.A = expm(trueParams.R*trueParams.tres);

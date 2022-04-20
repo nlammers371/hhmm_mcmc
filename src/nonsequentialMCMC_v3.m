@@ -21,8 +21,7 @@ mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference ste
 mcmcInfo.n_traces = 50;
 mcmcInfo.n_traces_per_chain = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
-mcmcInfo.bootstrapFlag = 0;
-mcmcInfo.bootstrapFlagPar = 0;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
@@ -30,7 +29,7 @@ mcmcInfo.bootstrapFlagPar = 0;
 
 nSteps = 5.1;
 trueParams.nSteps = nSteps;
-
+trueParams.discrete_data_flag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % simulate data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
