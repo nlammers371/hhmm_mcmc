@@ -31,11 +31,11 @@ n_mcmc_runs = total_chains_per_sim/n_chains;
 n_traces = 25;
 nSteps = 7;
 discrete_data_vec = [0 1];
-n_rep_vec = [2];
-nStates_vec = [3];
-simVec = 4:10;
+n_rep_vec = [1 2];
+nStates_vec = [3 2];
+simVec = 1:10;
 
-% get all possible cgitombinations
+% get all possible combinations
 elements = {n_rep_vec discrete_data_vec nStates_vec simVec};
 combCell = cell(1, numel(elements));
 [combCell{:}] = ndgrid(elements{:});
@@ -46,7 +46,7 @@ n_blocks = ceil(size(combArray,1)/iter_size);
 
 wb = waitbar(0,'Running MCMC validations');
  
-for iter = 8:14
+for iter = 51:size(combArray,1)
     waitbar(iter/size(combArray,1),wb);
     % extract sim characteristics 
     n_reps = combArray(iter,1);
