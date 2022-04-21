@@ -12,7 +12,7 @@ end
 outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic_v2\'];
 mkdir(outPath);
 
-iter_size = 50; % parpool deleted and reinitiated every N iterations
+% iter_size = 50; % parpool deleted and reinitiated every N iterations
 %%%%%%%%%%%%%%%%%%%%% Initialize sampling struct %%%%%%%%%%%%%%%%
 mcmcInfoInit = struct;
 
@@ -33,7 +33,7 @@ nSteps = 7;
 discrete_data_vec = [0 1];
 n_rep_vec = [2];
 nStates_vec = [3];
-simVec = 4:10;
+simVec = [3 5 6];
 
 % get all possible cgitombinations
 elements = {n_rep_vec discrete_data_vec nStates_vec simVec};
@@ -42,11 +42,11 @@ combCell = cell(1, numel(elements));
 combCell = cellfun(@(x) x(:), combCell,'uniformoutput',false); %there may be a better way to do this
 combArray = [combCell{:}]; 
 
-n_blocks = ceil(size(combArray,1)/iter_size);
+% n_blocks = ceil(size(combArray,1)/iter_size);
 
 wb = waitbar(0,'Running MCMC validations');
  
-for iter = 8:14
+for iter = 1:size(combArray,1)
     waitbar(iter/size(combArray,1),wb);
     % extract sim characteristics 
     n_reps = combArray(iter,1);
@@ -74,8 +74,7 @@ for iter = 8:14
     % initialize parallel pool
     initializePool(mcmcInfoInit, 1)
     mcmcInfoFull = struct;
-    
-   
+       
     parfor n = 1:n_mcmc_runs
                                                       
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
