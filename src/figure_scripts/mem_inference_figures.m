@@ -43,16 +43,17 @@ for temp = 0:1
     mem_fig = figure;
     hold on
     for m = 1:length(mem_vec)
-        [~, si] = sort(mem_data.logL_array(m,:), 'descend');
-        plot(step_axis, repelem(mem_vec(m),length(step_axis)),'-.','Color',color_cell{m}(4,:),'LineWidth',2)
+        [~, si] = sort(mem_data.logL_array(m,:), 'descend');        
+        p1 = plot(step_axis, repelem(mem_vec(m),length(step_axis)),'-.','Color',color_cell{m}(4,:),'LineWidth',2);
         for n = 1:n_plot
-            plot(step_axis, mem_data.mem_array(:,si(n),m),'-','Color',color_cell{m}(n+1,:),'LineWidth',1.5)
+            p2 = plot(step_axis, mem_data.mem_array(:,si(n),m),'-','Color',color_cell{m}(n+1,:),'LineWidth',2);
         end
     end
 
     xlabel('inference step')
     ylabel('memory (w)')
 
+    legend([p1 p2], 'ground truth', 'model inference','Location','southeast')
     set(gca,'Fontsize',14)
     ylim([2 12])
     xlim([0 max(step_axis)])
@@ -68,3 +69,36 @@ for temp = 0:1
     saveas(mem_fig,[figPath 'mem_fig_' num2str(temp) '.png'])
     saveas(mem_fig,[figPath 'mem_fig_' num2str(temp) '.pdf'])
 end
+
+%% Make temperature grad plot
+close all
+
+stepVec = 1:500;
+sg = 250;
+gradientVec = 2*exp(-stepVec/sg*5)+1;
+
+        
+grad_fig = figure;
+cmap = brewermap([],'Set2');
+hold on
+plot(stepVec, gradientVec, 'Color', cmap(2,:), 'LineWidth', 3)
+plot(stepVec, repelem(1,length(gradientVec)), '-.k', 'LineWidth', 3)
+
+xlabel('inference step')
+ylabel('tempurature (\sigma^*/\sigma)')
+
+legend('noise-based annealing','standard inference')
+set(gca,'Fontsize',14)
+ylim([0 3])
+% xlim([0 max(step_axis)])
+set(gca,'Color',bkg_color) 
+box on
+ax = gca;
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+grad_fig.InvertHardcopy = 'off';
+set(gcf,'color','w');
+
+saveas(grad_fig,[figPath 'temp_fig.png'])
+saveas(grad_fig,[figPath 'temp_fig.pdf'])
