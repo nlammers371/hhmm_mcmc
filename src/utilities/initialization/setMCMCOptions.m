@@ -13,6 +13,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.n_chains = 25;
     defaultOptions.update_increment = 1; 
     defaultOptions.save_trace_results = 0; 
+    defaultOptions.em_timer_flag = 0;
     fnamesDefault = fieldnames(defaultOptions);
     
     % check to see if any of the above options have been specified
@@ -69,7 +70,9 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     mcmcInfo.nStepsGuess = 5 + rand()*3;
     mcmcInfo.nStepsMax = 14; % set upper limit
     mcmcInfo.nStepsMin = 3.5; % lower limit   
-
+    if ~mcmcInfo.inferNStepsFlag 
+        mcmcInfo.nStepsMax = ceil(mcmcInfo.nSteps);
+    end
     % set curve if we are using sigma-mediated annealing 
     if mcmcInfo.annealingSigmaFlag
         stepVec = 1:mcmcInfo.n_mcmc_steps;

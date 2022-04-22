@@ -14,7 +14,7 @@ resultsPath = 'C:\Users\nlamm\Dropbox (Personal)\hhmm_MCMC_data\mcmc_validation_
 % specify type of inference to show
 nSteps = 7;
 n_traces = 25;
-n_reps = 1;
+n_reps = 2;
 nStates = 3;
 discrete_data_flag_vec = [0 1];
 master_struct = struct;
@@ -333,12 +333,11 @@ for k = 1:length(master_struct)
     for i = 1:size(ss_array,1)
         ss_vec = ss_array(i,:);
         % transition rates
-        freq = -1./R_array(1,1,i);
+        freq = -R_array(1,1,i);
         dur = freq * (1/ss_vec(1) - 1);
         effective_transition_rates(i,:) = [freq dur];
         % emission rates
         r = r_inf_array(i,:);
-
         r2 = (r(2) * ss_vec(2) + r(3) * ss_vec(3)) / (ss_vec(2)+ss_vec(3));
         r2_array(i,:) = [r(1) r2];
     end
@@ -348,72 +347,5 @@ for k = 1:length(master_struct)
     master_struct(k).R_eff_ste = nanstd(effective_transition_rates,[],1);
 end
 
-R_true = trueParams.R*60;
-freq_true = -1./R_true(1,1);
+freq_true = -1./trueParams.R(1,1)/60;
 dur_true = freq_true * (1/ss_true_vec(1) - 1);
-r2_true = (r_true_vec(2) * ss_true_vec(2) + r_true_vec(3) * ss_true_vec(3)) / (ss_true_vec(2)+ss_true_vec(3));
-
-
-R_eff_fig = figure;
-hold on
-
-s(1) = scatter(1:2,[freq_true dur_true],markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
-% results for rate simulations
-errorbar(1:2,master_struct(1).R_eff_mean,master_struct(1).R_eff_ste,'.','Color','k','LineWidth',1.5)
-% results for prob simulations
-errorbar(1:2,master_struct(2).R_eff_mean,master_struct(2).R_eff_ste,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
-% results for rate simulations
-s(3) = scatter(1:2,master_struct(2).R_eff_mean,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
-% results for prob simulations
-s(2) = scatter(1:2,master_struct(1).R_eff_mean,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
-
-ylabel('transition rate (events per minute)')
-
-set(gca,'Fontsize',14)
-ylim([-0.25 2])
-xlim([0.75 2.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
-set(gca,'Color',[228,221,209]/255) 
-box on
-grid on
-ax = gca;
-ax.YAxis(1).Color = 'k';
-ax.XAxis(1).Color = 'k';
-
-R_eff_fig.InvertHardcopy = 'off';
-set(gcf,'color','w');
-
-saveas(R_eff_fig,[figPath 'R_eff_validation_fig.png'])
-saveas(R_eff_fig,[figPath 'R_eff_validation_fig.pdf'])
-
-r_eff_fig = figure;
-hold on
-
-s(1) = scatter(1:2,[0 r2_true],markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
-% results for rate simulations
-errorbar(1:2,master_struct(1).r_eff_mean,master_struct(1).r_eff_ste,'.','Color','k','LineWidth',1.5)
-% results for prob simulations
-errorbar(1:2,master_struct(2).r_eff_mean,master_struct(2).r_eff_ste,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
-% results for rate simulations
-s(3) = scatter(1:2,master_struct(2).r_eff_mean,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
-% results for prob simulations
-s(2) = scatter(1:2,master_struct(1).r_eff_mean,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
-
-ylabel('emission rate (au/min)')
-
-set(gca,'Fontsize',14)
-ylim([-0.25 8])
-xlim([0.75 2.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
-set(gca,'Color',[228,221,209]/255) 
-box on
-grid on
-ax = gca;
-ax.YAxis(1).Color = 'k';
-ax.XAxis(1).Color = 'k';
-
-r_eff_fig.InvertHardcopy = 'off';
-set(gcf,'color','w');
-
-saveas(r_eff_fig,[figPath 'r_eff_validation_fig.png'])
-saveas(r_eff_fig,[figPath 'r_eff_validation_fig.pdf'])

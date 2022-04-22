@@ -22,5 +22,9 @@ function mcmcInfo = initializeInferenceArrays(mcmcInfo)
     mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
     mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);   
     mcmcInfo.sigma_curr = NaN(mcmcInfo.n_chains_eff,1);
+    
+    if mcmcInfo.em_timer_flag
+        mcmcInfo.em_time_vec = NaN(mcmcInfo.n_mcmc_steps,1);
+    end
    
       
