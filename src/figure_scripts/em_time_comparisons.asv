@@ -113,11 +113,11 @@ end
 %% Make figures 
 
 % perform simple fit to extrapoltate cpHMM performance
-time_fun = @(x) x(1)*x(2).^mem_vec(1:6);
+time_fun = @(x) x(1)*3.^mem_vec(1:6);
 loss_fun = @(x) time_fun(x) - em_time_vec_cpHMM(1:6);
-x_fit = lsqnonlin(loss_fun,[0.01 3],[0 3],[10 3]);
-cpHMM_time_extrap = x_fit(1)*x_fit(2).^mem_vec;
-
+x_fit = lsqnonlin(loss_fun,[0.01],[0],[10]);
+cpHMM_time_extrap = x_fit(1)*3.^mem_vec;
+%%
 close all
 bkg_color = [228,221,209]/255;
 
@@ -133,7 +133,7 @@ em_fig = figure;
 cmap = brewermap([],'Set2');
 hold on
 
-p = plot(mem_vec,cpHMM_time_extrap,'-.','Color',cmap(4,:),'LineWidth',2);
+plot(mem_vec,cpHMM_time_extrap,'--','Color')
 errorbar(mem_vec,em_time_vec,em_time_std,'Color','k','CapSize',0)
 errorbar(mem_vec,em_time_vec_cpHMM,em_time_std_cpHMM,'Color','k','CapSize',0)
 
@@ -145,7 +145,7 @@ ylabel('EM step time (seconds)')
 xlim([3 12])
 set(gca,'Fontsize',14)
 % ylim([-0.1 4.5])
-legend([s p],'MCMC','cpHMM','cpHMM (extrapolation)','Location','northwest')
+legend(s,'MCMC','cpHMM','Location','northwest')
 set(gca,'Color',bkg_color) 
 box on
 grid on

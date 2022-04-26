@@ -2,7 +2,7 @@ function trueParams = generateSimulatedData(trueParams)
     
     % calculate MS2 convolution kernel
     trueParams.alpha = trueParams.alpha_frac*trueParams.nSteps;
-    coeff_MS2 = ms2_loading_coeff_frac(trueParams.alpha, trueParams.nSteps, 12)';
+%     coeff_MS2 = ms2_loading_coeff_frac(trueParams.alpha, trueParams.nSteps, 12)';
     
     % calculate scaled noise
 %     f_mean = (trueParams.pi0'*trueParams.v)*sum(coeff_MS2);   

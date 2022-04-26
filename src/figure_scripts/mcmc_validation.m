@@ -14,7 +14,7 @@ resultsPath = 'C:\Users\nlamm\Dropbox (Personal)\hhmm_MCMC_data\mcmc_validation_
 % specify type of inference to show
 nSteps = 7;
 n_traces = 25;
-n_reps = 1;
+n_reps = 2;
 nStates = 3;
 discrete_data_flag_vec = [0 1];
 master_struct = struct;
