@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic_v2\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic_v3\'];
 mkdir(outPath);
 
 % iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -31,9 +31,9 @@ n_mcmc_runs = total_chains_per_sim/n_chains;
 n_traces = 25;
 n_step_vec = 7;
 discrete_data_vec = [0 1];
-n_rep_vec = [1];
+n_rep_vec = [2];
 nStates_vec = [3];
-simVec = 11:20;
+simVec = 1:5;
 
 % get all possible cgitombinations
 elements = {n_rep_vec discrete_data_vec nStates_vec simVec n_step_vec};
@@ -93,12 +93,14 @@ for iter = 1:size(combArray,1)
         mcmcInfoTemp.n_traces_per_chain = n_traces;
         mcmcInfoTemp.seq_length = seq_length;
         mcmcInfoTemp.n_reps = n_reps;
-        mcmcInfoTemp.n_chains = n_chains;
+        mcmcInfoTemp.n_chains = n_chains;                
+        
         % check and implement options
-        mcmcInfoTemp = setMCMCOptions(mcmcInfoTemp);       
+        mcmcInfoTemp = setMCMCOptions(mcmcInfoTemp);                       
         
         if ~mcmcInfoTemp.inferNStepsFlag
             mcmcInfoTemp.nSteps = nSteps;
+            mcmcInfoTemp.nStepsMax = ceil(mcmcInfoTemp.nSteps);
         end    
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

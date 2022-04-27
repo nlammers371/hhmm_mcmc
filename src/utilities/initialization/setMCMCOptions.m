@@ -70,9 +70,9 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     mcmcInfo.nStepsGuess = 5 + rand()*3;
     mcmcInfo.nStepsMax = 14; % set upper limit
     mcmcInfo.nStepsMin = 3.5; % lower limit   
-    if ~mcmcInfo.inferNStepsFlag 
-        mcmcInfo.nStepsMax = ceil(mcmcInfo.nSteps);
-    end
+%     if ~mcmcInfo.inferNStepsFlag 
+%         mcmcInfo.nStepsMax = ceil(mcmcInfo.nSteps);
+%     end
     % set curve if we are using sigma-mediated annealing 
     if mcmcInfo.annealingSigmaFlag
         stepVec = 1:mcmcInfo.n_mcmc_steps;
