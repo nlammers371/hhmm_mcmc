@@ -8,9 +8,9 @@ addpath(genpath('../utilities'))
 % basic inference params 
 rng(958)
 
-n_mcmc_steps = 500;
+n_mcmc_steps = 750;
 mcmcInfoInit.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
-burn_in = 250;
+burn_in = 500;
 mcmcInfoInit.burn_in = burn_in;
 n_chains = 100;
 mcmcInfoInit.n_chains = n_chains; % number of parallel MCMC chains to run
@@ -26,12 +26,12 @@ mem_vec = [4.1 5.7 7.3 8.9 10.4];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-initializePool(mcmcInfoInit, 1)
+% initializePool(mcmcInfoInit, 1)
 
 for temp_flag = 1
     mem_array = NaN(n_mcmc_steps+1, n_chains, length(mem_vec));
     logL_array = NaN(length(mem_vec), n_chains);
-    parfor n = 1:length(mem_vec)
+    for n = 1:length(mem_vec)
         % initialize info structure
         trueParams = setParamsBasic3state;
         trueParams.sigma = 1;
