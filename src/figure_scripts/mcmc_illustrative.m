@@ -10,16 +10,16 @@ mkdir(figPath)
 
 % initialize info structure
 trueParams = setParamsBasic2state;
-trueParams.sigma = 1;
+trueParams.sigma = 2;
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
 rng(458)
 
-n_mcmc_steps = 5e2;
+n_mcmc_steps = 1e3;
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 100;
-n_chains = 1;
+n_chains = 10;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference step
 

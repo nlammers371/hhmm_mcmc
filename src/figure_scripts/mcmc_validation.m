@@ -88,11 +88,11 @@ hold on
 cmap = brewermap([],'Set2');
 s(1) = scatter(1:3,r_true_vec,markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
 % results for rate simulations
-errorbar(1:3,master_struct(1).r_mean_vec,master_struct(1).r_ste_vec,'.','Color','k','LineWidth',1.5)
-s(2) = scatter(1:3,master_struct(1).r_mean_vec,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+errorbar((1:3)-0.1,master_struct(1).r_mean_vec,master_struct(1).r_ste_vec,'.','Color','k','LineWidth',1.5)
+s(2) = scatter((1:3)-0.1,master_struct(1).r_mean_vec,markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 % results for prob simulations
-errorbar(1:3,master_struct(2).r_mean_vec,master_struct(2).r_ste_vec,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
-s(3) = scatter(1:3,master_struct(2).r_mean_vec,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+errorbar((1:3)+0.1,master_struct(2).r_mean_vec,master_struct(2).r_ste_vec,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+s(3) = scatter((1:3)+0.1,master_struct(2).r_mean_vec,markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 
 
 % xlabel('inference step')
@@ -180,16 +180,16 @@ lin_inds = [2 3 4 6 7 8];
 R_fig = figure;
 cmap = brewermap([],'Set2');
 hold on
-
-s(1) = scatter(1:6,R_true_array(lin_inds),markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
+x_vec = 1:6;
+s(1) = scatter(x_vec,R_true_array(lin_inds),markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
 % results for rate simulations
-errorbar(1:6,master_struct(1).R_mean(lin_inds),master_struct(1).R_ste(lin_inds),'.','Color','k','LineWidth',1.5)
+errorbar(x_vec-0.1,master_struct(1).R_mean(lin_inds),master_struct(1).R_ste(lin_inds),'.','Color','k','LineWidth',1.5)
 % results for prob simulations
-errorbar(1:6,master_struct(2).R_mean(lin_inds),master_struct(2).R_ste(lin_inds),'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+errorbar(x_vec+0.1,master_struct(2).R_mean(lin_inds),master_struct(2).R_ste(lin_inds),'.','Color','k','LineWidth',1.5)
 % results for rate simulations
-s(3) = scatter(1:6,master_struct(2).R_mean(lin_inds),markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+s(3) = scatter(x_vec+0.1,master_struct(2).R_mean(lin_inds),markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 % results for prob simulations
-s(2) = scatter(1:6,master_struct(1).R_mean(lin_inds),markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+s(2) = scatter(x_vec-0.1,master_struct(1).R_mean(lin_inds),markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 
 ylabel('transition rate (events per minute)')
 
