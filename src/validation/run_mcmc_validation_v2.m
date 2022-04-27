@@ -9,7 +9,7 @@ DropboxFolder = 'S:\Nick\Dropbox (Personal)\';
 if ~exist(DropboxFolder)
     DropboxFolder = 'C:\Users\nlamm\Dropbox (Personal)\';
 end    
-outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic_v3\'];
+outPath = [DropboxFolder 'hhmm_MCMC_data\mcmc_validation_basic_9000\'];
 mkdir(outPath);
 
 % iter_size = 50; % parpool deleted and reinitiated every N iterations
@@ -28,12 +28,12 @@ seq_length = 120; % length of simulated traces in time steps
 total_chains_per_sim = 125;
 n_chains = 5;
 n_mcmc_runs = total_chains_per_sim/n_chains;
-n_traces = 25;
+n_traces = 75;
 n_step_vec = 7;
 discrete_data_vec = [0 1];
 n_rep_vec = [2];
 nStates_vec = [3];
-simVec = 1:5;
+simVec = 1:10;
 
 % get all possible cgitombinations
 elements = {n_rep_vec discrete_data_vec nStates_vec simVec n_step_vec};
