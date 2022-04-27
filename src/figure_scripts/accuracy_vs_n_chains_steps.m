@@ -5,7 +5,7 @@ close all
 addpath(genpath('../utilities'))
 
 % make path to write figures
-figPath = '../../fig/mcmc_validation/';
+figPath = '../../fig/mcmc_validation_low_noise/';
 mkdir(figPath)
 
 % specify path to read inference results from
@@ -14,7 +14,7 @@ resultsPath = 'C:\Users\nlamm\Dropbox (Personal)\hhmm_MCMC_data\mcmc_validation_
 % specify type of inference to show
 nSteps = 7;
 n_traces = 25;
-n_reps = 1;
+n_reps = 2;
 nStates = 3;
 discrete_data_flag_vec = [0 1];
 master_struct = struct;
@@ -43,7 +43,7 @@ end
 %% 
 
 
-avg_window = 500;
+avg_window = 250;
 start_vec = 1:250:4501;
 
 close all
@@ -76,7 +76,7 @@ for k = 1:length(master_struct)
     
 end
 
-%%
+
 % Use bootstrap resampling to estimate model error as a function of the
 % number of mcmc steps and the number of unique inference chains
 trueParams = mcmc_results(1).trueParams;

@@ -248,6 +248,7 @@ set(gcf,'color','w');
 saveas(state_fit_fig,[figPath 'state_fit_fig_3state.png'])
 saveas(state_fit_fig,[figPath 'state_fit_fig_3state.pdf'])
 
+%% Make heatma
 %% Make bivariate plots (just kon)
 % cmap_gra_short = brewermap(8,'Greys');
 burn_in = 4000;

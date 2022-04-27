@@ -9,7 +9,7 @@ figPath = '../../fig/mcmc_validation/';
 mkdir(figPath)
 
 % specify path to read inference results from
-resultsPath = 'C:\Users\nlamm\Dropbox (Personal)\hhmm_MCMC_data\mcmc_validation_basic_v2\';
+resultsPath = 'C:\Users\nlamm\Dropbox (Personal)\hhmm_MCMC_data\mcmc_validation_basic_v3\';
 
 % specify type of inference to show
 nSteps = 7;
@@ -91,7 +91,7 @@ s(1) = scatter(1:3,r_true_vec,markerSize,'o','MarkerFaceColor',brighten(cmap(6,:
 errorbar((1:3)-0.1,master_struct(1).r_mean_vec,master_struct(1).r_ste_vec,'.','Color','k','LineWidth',1.5)
 s(2) = scatter((1:3)-0.1,master_struct(1).r_mean_vec,markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 % results for prob simulations
-errorbar((1:3)+0.1,master_struct(2).r_mean_vec,master_struct(2).r_ste_vec,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+errorbar((1:3)+0.1,master_struct(2).r_mean_vec,master_struct(2).r_ste_vec,'.','Color','k','LineWidth',1.5)
 s(3) = scatter((1:3)+0.1,master_struct(2).r_mean_vec,markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 
 
@@ -250,13 +250,13 @@ hold on
 
 s(1) = scatter(1:3,ss_true_vec,markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
 % results for rate simulations
-errorbar(1:3,master_struct(1).ss_mean,master_struct(1).ss_ste,'.','Color','k','LineWidth',1.5)
+errorbar((1:3)-0.1,master_struct(1).ss_mean,master_struct(1).ss_ste,'.','Color','k','LineWidth',1.5)
 % results for prob simulations
-errorbar(1:3,master_struct(2).ss_mean,master_struct(2).ss_ste,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+errorbar((1:3)+0.1,master_struct(2).ss_mean,master_struct(2).ss_ste,'.','Color','k','LineWidth',1.5)
 % results for rate simulations
-s(3) = scatter(1:3,master_struct(2).ss_mean,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+s(3) = scatter((1:3)+0.1,master_struct(2).ss_mean,markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 % results for prob simulations
-s(2) = scatter(1:3,master_struct(1).ss_mean,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+s(2) = scatter((1:3)-0.1,master_struct(1).ss_mean,markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 
 % xlabel('inference step')
 ylabel('state probability')
@@ -289,13 +289,13 @@ hold on
 
 s(1) = scatter(1:3,dwell_vec_true,markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
 % results for rate simulations
-errorbar(1:3,master_struct(1).dwell_mean,master_struct(1).dwell_ste,'.','Color','k','LineWidth',1.5)
+errorbar((1:3)-0.1,master_struct(1).dwell_mean,master_struct(1).dwell_ste,'.','Color','k','LineWidth',1.5)
 % results for prob simulations
-errorbar(1:3,master_struct(2).dwell_mean,master_struct(2).dwell_ste,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+errorbar((1:3)+0.1,master_struct(2).dwell_mean,master_struct(2).dwell_ste,'.','Color','k','LineWidth',1.5)
 % results for rate simulations
-s(3) = scatter(1:3,master_struct(2).dwell_mean,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+s(3) = scatter((1:3)+0.1,master_struct(2).dwell_mean,markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 % results for prob simulations
-s(2) = scatter(1:3,master_struct(1).dwell_mean,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+s(2) = scatter((1:3)-0.1,master_struct(1).dwell_mean,markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 
 % xlabel('inference step')
 ylabel('state dwell time (minutes)')
@@ -319,7 +319,7 @@ saveas(ss_fig,[figPath 'dwell_time_validation_fig.png'])
 saveas(ss_fig,[figPath 'dwell_time_validation_fig.pdf'])
 
 %% Validation for effective 2 state system
-
+close all
 for k = 1:length(master_struct)
     mcmc_results = master_struct(k).mcmc_results;
      
@@ -359,18 +359,18 @@ hold on
 
 s(1) = scatter(1:2,[freq_true dur_true],markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
 % results for rate simulations
-errorbar(1:2,master_struct(1).R_eff_mean,master_struct(1).R_eff_ste,'.','Color','k','LineWidth',1.5)
+errorbar((1:2)-0.05,master_struct(1).R_eff_mean,master_struct(1).R_eff_ste,'.','Color','k','LineWidth',1.5)
 % results for prob simulations
-errorbar(1:2,master_struct(2).R_eff_mean,master_struct(2).R_eff_ste,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+errorbar((1:2)+0.05,master_struct(2).R_eff_mean,master_struct(2).R_eff_ste,'.','Color','k','LineWidth',1.5)
 % results for rate simulations
-s(3) = scatter(1:2,master_struct(2).R_eff_mean,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+s(3) = scatter((1:2)+0.05,master_struct(2).R_eff_mean,markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 % results for prob simulations
-s(2) = scatter(1:2,master_struct(1).R_eff_mean,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+s(2) = scatter((1:2)-0.05,master_struct(1).R_eff_mean,markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 
 ylabel('transition rate (events per minute)')
 
 set(gca,'Fontsize',14)
-ylim([-0.25 2])
+ylim([-0.25 1.5])
 xlim([0.75 2.25])
 legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
 set(gca,'Color',[228,221,209]/255) 
@@ -391,13 +391,13 @@ hold on
 
 s(1) = scatter(1:2,[0 r2_true],markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
 % results for rate simulations
-errorbar(1:2,master_struct(1).r_eff_mean,master_struct(1).r_eff_ste,'.','Color','k','LineWidth',1.5)
+errorbar((1:2)-0.05,master_struct(1).r_eff_mean,master_struct(1).r_eff_ste,'.','Color','k','LineWidth',1.5)
 % results for prob simulations
-errorbar(1:2,master_struct(2).r_eff_mean,master_struct(2).r_eff_ste,'.','Color',brighten(cmap(8,:),-0.5),'LineWidth',1.5)
+errorbar((1:2)+0.05,master_struct(2).r_eff_mean,master_struct(2).r_eff_ste,'.','Color','k','LineWidth',1.5)
 % results for rate simulations
-s(3) = scatter(1:2,master_struct(2).r_eff_mean,markerSize*0.5,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
+s(3) = scatter((1:2)+0.05,master_struct(2).r_eff_mean,markerSize*0.75,'d','MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k');
 % results for prob simulations
-s(2) = scatter(1:2,master_struct(1).r_eff_mean,markerSize*0.5,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
+s(2) = scatter((1:2)-0.05,master_struct(1).r_eff_mean,markerSize*0.75,'s','MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k');
 
 ylabel('emission rate (au/min)')
 
