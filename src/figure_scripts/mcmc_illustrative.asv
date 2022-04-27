@@ -206,7 +206,6 @@ saveas(fluo_fit_fig2,[figPath 'trace_fit_fig2.pdf'])
 
 
 %% Look at naive state decoding
-close all
 sample_state_array = permute(mcmcInfo.sample_states_inf_array(:,si(1),:,:),[1 3 4 2])-1;
 % gind the most likely iteration within selected chain 
 [~,si_chain] = sort(mcmcInfo.logL_vec(:,si(1)),'descend');
@@ -214,12 +213,11 @@ state_pd_mean = nanmean(sample_state_array(:,:,burn_in:end),3);
 state_95 = prctile(sample_state_array(:,:,burn_in:end),95,3);
 state_05 = prctile(sample_state_array(:,:,burn_in:end),5,3);
 
-state_pd_ml = sample_state_array(:,:,si_chain(1));
+state_ml = sample_state_array(:,:,si_chain(1));
 
 true_state_vec = trueParams.true_states-1;
 
 state_fit_fig = figure;
-cmap4 = brewermap([],'set1');
 hold on
 cmap3 = (brewermap(length(plot_frames)+2,'set2'));
 
@@ -233,13 +231,13 @@ f = fill([x,fliplr(x)],[y,bottom*ones(size(y))], cmap3(6,:),'FaceAlpha',0.55,'Ed
 delete(sh);
 
 s2 = stairs(time_axis, state_pd_ml,'-','Color',cmap4(1,:),'LineWidth',1.5);
-s1 = stairs(time_axis, state_pd_mean,'-.','Color','k','LineWidth',1.5);
+s1 = stairs(time_axis, state_pd_mean,'-','Color','k','LineWidth',1.5);
 
 xlabel('time (minutes)')
 ylabel('fluorescence (au)')
 
 set(gca,'Fontsize',14)
-ylim([-0.05 1.4])
+ylim([-0.05 1.3])
 xlim([0 40])
 % legend([f,s],'simulation','fit')
 legend([f,s1,s2],'simulation','fit (posterior)','fit (ML)','Location','northwest')
@@ -255,11 +253,11 @@ set(gcf,'color','w');
 saveas(state_fit_fig,[figPath 'state_fit_fig.png'])
 saveas(state_fit_fig,[figPath 'state_fit_fig.pdf'])
 
-%% Make bivariate plots (just kon
+%% Make bivariate plots (just kon)
 % cmap_gra_short = brewermap(8,'Greys');
 p_dim = 4;
-param_min_vec = [-0.1 3.25 0.15 0.35];% -5  5  0.75];
-param_max_vec = [ 0.1 4.5 0.35 0.75];%  0  6.5  0.77];
+param_min_vec = [-0.1 3.5 0.15   0.4];% -5  5  0.75];
+param_max_vec = [ 0.1 4.5 0.35   0.8];%  0  6.5  0.77];
 true_val_vec = [trueParams.v' trueParams.A(2,1) trueParams.A(1,2)];
 % tickCell = {-10:2:-4, 3:5, 3:4};%, -5:2:0, 5:0.5:6.5,[.75 .76 0.77]};
 labelCell = {'v_1', 'v_2', 'a_{21}', 'a_{12}' };%, 'H (k_{off})', 'k_{off} max','r'};
@@ -320,7 +318,6 @@ for i = 1:p_dim
     end
     
     % make histogram plot
-    
     s_ind = (i-1)*p_dim + i;
     subplot(p_dim,p_dim,s_ind);
     histogram(master_param_array(:,i),x_axis,'FaceColor',cmap_hist(i,:),'EdgeAlpha',0,'Normalization','probability')
@@ -357,26 +354,3 @@ hist_fig.Renderer = 'Painters';
 set(gcf,'color','w');
 saveas(hist_fig,[figPath 'mcmc_results_kon.png'])
 saveas(hist_fig,[figPath 'mcmc_results_kon.pdf'])
-
-%% Make heatmap of promoter states over time
-plot_array = permute(sample_state_array,[3 1 2]);
-close all
-
-hm_fig = figure;
-cmap_cm = brewermap([],'YlOrRd');
-colormap(cmap_cm);
-p = pcolor(imgaussfilt(plot_array,1));
-% p = pcolor(flipud(plot_array));
-p.EdgeAlpha = 0.01;
-p.FaceAlpha = 0.5;
-
-ylabel('MCMC inference step')
-xlabel('time')
-set(gca,'Fontsize',14)
-set(gca,'YDir','reverse')
-
-h = colorbar;
-ylabel(h,'promoter state')
-
-saveas(hm_fig,[figPath 'promoter_state_hm.png'])
-saveas(hm_fig,[figPath 'promoter_state_hm.pdf'])
