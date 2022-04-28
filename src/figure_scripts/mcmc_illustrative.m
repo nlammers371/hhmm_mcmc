@@ -129,45 +129,71 @@ set(gcf,'color','w');
 saveas(a_fig,[figPath 'a2_fig.png'])
 saveas(a_fig,[figPath 'a2_fig.pdf'])
 
-%% Make trace plots
-close all
-
-sample_fluo_array = permute(mcmcInfo.sample_fluo_inf_array(:,si(1),:,:),[1 3 4 2]);
-plot_frames = [1:10 10:10:1e3];
-
-time_axis = (0:mcmcInfo.seq_length-1)*trueParams.tres/60;
-
-fluo_fit_fig = figure;
+%% Sigma plot
+sigma_fig = figure;
+cmap = brewermap([],'Set2');
 hold on
-cmap2 = (brewermap(length(plot_frames)+2,'Reds'));
 
-plot(time_axis, mcmcInfo.observed_fluo(:,1),'-k','LineWidth',3);
-
-for p = 1:length(plot_frames)
-    plot(time_axis, sample_fluo_array(:,1,plot_frames(p)),'Color',[cmap2(p,:) 0.75], 'LineWidth',1.5);
-end    
-  
+plot(mcmcInfo.sigma_inf_array(:,si(1)),'Color',[cmap(8,:) 0.6],'LineWidth',3)
+plot(repelem(trueParams.sigma,n_mcmc_steps),'-.','Color',brighten(cmap(8,:),-0.5),'LineWidth',2)
 
 
-xlabel('time (minutes)')
-ylabel('fluorescence (au)')
+xlabel('inference step')
+ylabel('fluorescence noise (\sigma)')
 
 set(gca,'Fontsize',14)
-ylim([-0.5 20])
-xlim([0 40])
-% set(gca,'Color',[228,221,209]/255) 
+ylim([1 3])
+set(gca,'Color',[228,221,209]/255) 
 box on
 ax = gca;
 ax.YAxis(1).Color = 'k';
 ax.XAxis(1).Color = 'k';
 
-fluo_fit_fig.InvertHardcopy = 'off';
+sigma_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-saveas(fluo_fit_fig,[figPath 'trace_fit_fig.png'])
-saveas(fluo_fit_fig,[figPath 'trace_fit_fig.pdf'])
+saveas(sigma_fig,[figPath 'sigma_fig.png'])
+saveas(sigma_fig,[figPath 'sigma_fig.pdf'])
 
-%% get average predictions and bounds
+%% Make trace plots
+close all
+
+sample_fluo_array = permute(mcmcInfo.sample_fluo_inf_array(:,si(1),:,:),[1 3 4 2]);
+% plot_frames = [1:10 10:10:1e3];
+% 
+time_axis = (0:mcmcInfo.seq_length-1)*trueParams.tres/60;
+% 
+% fluo_fit_fig = figure;
+% hold on
+% cmap2 = (brewermap(length(plot_frames)+2,'Reds'));
+% 
+% plot(time_axis, mcmcInfo.observed_fluo(:,1),'-k','LineWidth',3);
+% 
+% for p = 1:length(plot_frames)
+%     plot(time_axis, sample_fluo_array(:,1,plot_frames(p)),'Color',[cmap2(p,:) 0.75], 'LineWidth',1.5);
+% end    
+%   
+% 
+% 
+% xlabel('time (minutes)')
+% ylabel('fluorescence (au)')
+% 
+% set(gca,'Fontsize',14)
+% ylim([-0.5 20])
+% xlim([0 40])
+% % set(gca,'Color',[228,221,209]/255) 
+% box on
+% ax = gca;
+% ax.YAxis(1).Color = 'k';
+% ax.XAxis(1).Color = 'k';
+% 
+% fluo_fit_fig.InvertHardcopy = 'off';
+% set(gcf,'color','w');
+% 
+% saveas(fluo_fit_fig,[figPath 'trace_fit_fig.png'])
+% saveas(fluo_fit_fig,[figPath 'trace_fit_fig.pdf'])
+
+% get average predictions and bounds
 burn_in = 250;
 close all
 
@@ -175,13 +201,13 @@ fluo_pd_mean = nanmean(sample_fluo_array(:,:,burn_in:end),3);
 fluo_95 = prctile(sample_fluo_array(:,:,burn_in:end),95,3);
 fluo_05 = prctile(sample_fluo_array(:,:,burn_in:end),5,3);
 
-fluo_fit_fig2 = figure;
+fluo_fit_fig2 = figure('Position',[100 100 768 256]);
 hold on
-cmap3 = (brewermap(length(plot_frames)+2,'set2'));
+cmap3 = (brewermap([],'set2'));
 
-fill([time_axis fliplr(time_axis)], [fluo_95' fliplr(fluo_05')], brighten(cmap3(5,:),0.35),'FaceAlpha',1,'EdgeAlpha',0,'EdgeColor','k')
-p1 = plot(time_axis, mcmcInfo.observed_fluo(:,1),'-k','LineWidth',2);
-p2 = plot(time_axis, fluo_pd_mean,'-','Color',brighten(cmap3(5,:),-0.5),'LineWidth',2);
+fill([time_axis fliplr(time_axis)], [fluo_95' fliplr(fluo_05')], brighten(cmap3(5,:),0.35),'FaceAlpha',0.5,'EdgeAlpha',0.5,'EdgeColor','k')
+p1 = plot(time_axis, mcmcInfo.observed_fluo(:,1),'-k','LineWidth',2.5);
+p2 = plot(time_axis, fluo_pd_mean,'-','Color',brighten(cmap3(5,:),-0.5),'LineWidth',1.5);
 
   
 xlabel('time (minutes)')
@@ -190,7 +216,7 @@ ylabel('fluorescence (au)')
 set(gca,'Fontsize',14)
 ylim([-1.5 20])
 xlim([0 40])
-legend([p1 p2], 'simulation', 'inference')
+legend([p1 p2], 'simulation', 'fit')
 % set(gca,'Color',[228,221,209]/255) 
 box on
 ax = gca;
@@ -218,31 +244,30 @@ state_pd_ml = sample_state_array(:,:,si_chain(1));
 
 true_state_vec = trueParams.true_states-1;
 
-state_fit_fig = figure;
+state_fit_fig = figure('Position',[100 100 768 256]);
 cmap4 = brewermap([],'set1');
 hold on
-cmap3 = (brewermap(length(plot_frames)+2,'set2'));
 
 % fill([time_axis fliplr(time_axis)], [state_95' fliplr(state_05')], brighten(cmap3(2,:),0.35),'FaceAlpha',1,'EdgeAlpha',0.5,'EdgeColor','k')
 
-sh = stairs(time_axis, true_state_vec,'-k','LineWidth',2);
+sh = stairs(time_axis, state_pd_ml,'-k','LineWidth',2);
 bottom = 0;
 x = [sh.XData(1),repelem(sh.XData(2:end),2)];
 y = [repelem(sh.YData(1:end-1),2),sh.YData(end)];
-f = fill([x,fliplr(x)],[y,bottom*ones(size(y))], cmap3(6,:),'FaceAlpha',0.55,'EdgeAlpha',0);
+f = fill([x,fliplr(x)],[y,bottom*ones(size(y))], cmap_s2(5,:),'FaceAlpha',0.65,'EdgeAlpha',0);
 delete(sh);
 
-s2 = stairs(time_axis, state_pd_ml,'-','Color',cmap4(1,:),'LineWidth',1.5);
-s1 = stairs(time_axis, state_pd_mean,'-.','Color','k','LineWidth',1.5);
+s2 = stairs(time_axis, true_state_vec,'-','Color','k','LineWidth',1.5);
+% s1 = stairs(time_axis, state_pd_mean,'-.','Color','k','LineWidth',1.5);
 
 xlabel('time (minutes)')
-ylabel('fluorescence (au)')
+ylabel('promoter state')
 
 set(gca,'Fontsize',14)
-ylim([-0.05 1.4])
+ylim([-0.05 1.1])
 xlim([0 40])
-% legend([f,s],'simulation','fit')
-legend([f,s1,s2],'simulation','fit (posterior)','fit (ML)','Location','northwest')
+legend([s2,f],'simulation','fit','Location','southeast')
+% legend([f,s1,s2],'simulation','fit (posterior)','fit (ML)','Location','northwest')
 % set(gca,'Color',[228,221,209]/255) 
 box on
 ax = gca;
@@ -257,25 +282,25 @@ saveas(state_fit_fig,[figPath 'state_fit_fig.pdf'])
 
 %% Make bivariate plots (just kon
 % cmap_gra_short = brewermap(8,'Greys');
-p_dim = 4;
-param_min_vec = [-0.1 3.25 0.15 0.35];% -5  5  0.75];
-param_max_vec = [ 0.1 4.5 0.35 0.75];%  0  6.5  0.77];
-true_val_vec = [trueParams.v' trueParams.A(2,1) trueParams.A(1,2)];
+p_dim = 5;
+param_min_vec = [-0.1 3.25 0.15 0.35 1.5];% -5  5  0.75];
+param_max_vec = [ 0.1 4.5 0.35 0.75 2.5];%  0  6.5  0.77];
+true_val_vec = [trueParams.v' trueParams.A(2,1) trueParams.A(1,2) trueParams.sigma];
 % tickCell = {-10:2:-4, 3:5, 3:4};%, -5:2:0, 5:0.5:6.5,[.75 .76 0.77]};
-labelCell = {'v_1', 'v_2', 'a_{21}', 'a_{12}' };%, 'H (k_{off})', 'k_{off} max','r'};
+labelCell = {'v_1', 'v_2', 'a_{21}', 'a_{12}','\sigma' };%, 'H (k_{off})', 'k_{off} max','r'};
 close all
 % colormap_cell = {cmap_bu,cmap_gra_short,cmap_bu,cmap_gr,cmap_gr,cmap_rd};
 
 % concatneate results into a master array
 master_param_array = [mcmcInfo.v_inf_array(:,1,si(1)) mcmcInfo.v_inf_array(:,2,si(1))...
-            reshape(mcmcInfo.A_inf_array(2,1,:,si(1)),[],1) reshape(mcmcInfo.A_inf_array(1,2,:,si(1)),[],1)];
+            reshape(mcmcInfo.A_inf_array(2,1,:,si(1)),[],1) reshape(mcmcInfo.A_inf_array(1,2,:,si(1)),[],1) mcmcInfo.sigma_inf_array(:,si(1))];
           
 grid_size = 75;
 
 hist_fig = figure;
 cmap_gra = brewermap(128,'Greys');
 cmap_s2 = brewermap([],'Set2');
-cmap_hist = [cmap_s2(3,:) ; cmap_s2(2,:) ; cmap_s2(2,:) ; cmap_s2(3,:)];
+cmap_hist = [cmap_s2(3,:) ; cmap_s2(2,:) ; cmap_s2(2,:) ; cmap_s2(3,:) ; cmap_s2(8,:)];
 cmap_gra(1,:) = bkg_color;
 
 for i = 1:p_dim
@@ -380,3 +405,109 @@ ylabel(h,'promoter state')
 
 saveas(hm_fig,[figPath 'promoter_state_hm.png'])
 saveas(hm_fig,[figPath 'promoter_state_hm.pdf'])
+
+%% Make illustrative sampling plots
+red = brighten([232 177 157]/256,-0.25);
+green = brighten([220 236 203]/256,-0.25);
+blue = brighten([169 191 227]/256,-0.25);
+
+close all
+
+promoter_state_hm = figure('Position',[100 100 1024 128]);
+cmap_s2 = brewermap([],'Set2');
+colormap([blue ; green]);
+pcolor(repmat(state_pd_ml(1:120)',2,1))
+
+% set(gca,'xticklabels',[round(20/3),round(40/3), 20, round(80/3), round(100/3), 40])
+xlabel('time steps')
+h = colorbar;
+ylabel(h,'promoter state')
+set(gca,'Fontsize',14)
+set(gca,'ytick',[]);
+
+saveas(promoter_state_hm,[figPath 'promoter_state_series_hm.png'])
+saveas(promoter_state_hm,[figPath 'promoter_state_series_hm.pdf'])
+
+%%
+close all
+toggle_ind = 79;
+e_vec_1 = v_true(true_state_vec+1);
+e_vec_1(toggle_ind) = v_true(1);
+e_vec_2 = v_true(true_state_vec+1);
+e_vec_2(toggle_ind) = v_true(2);
+
+v_true = trueParams.v;
+
+e_fig = figure('Position',[100 100 1024 128]);
+hold on
+
+% fill([time_axis fliplr(time_axis)], [state_95' fliplr(state_05')], brighten(cmap3(2,:),0.35),'FaceAlpha',1,'EdgeAlpha',0.5,'EdgeColor','k')
+stairs(1:length(state_pd_ml), e_vec_2,'-','Color',green,'LineWidth',2);
+stairs(1:length(state_pd_ml), e_vec_1,'-.','Color',blue,'LineWidth',2);
+% bottom = 0;
+% x = [sh.XData(1),repelem(sh.XData(2:end),2)];
+% y = [repelem(sh.YData(1:end-1),2),sh.YData(end)];
+% f = fill([x,fliplr(x)],[y,bottom*ones(size(y))], green,'FaceAlpha',1,'EdgeAlpha',0);
+% delete(sh);
+
+% s2 = stairs(1:length(state_pd_ml), state_pd_ml,'-','Color','k','LineWidth',1.5);
+% s1 = stairs(time_axis, state_pd_mean,'-.','Color','k','LineWidth',1.5);
+
+xlabel('time steps')
+ylabel('emission rate (e)')
+% ylabel(vertcat({'emission'},{'rate (e)'}))
+
+set(gca,'Fontsize',14)
+ylim([-0.2 4.3])
+xlim([0 120])
+% legend([f,s2],'simulation','fit')
+% legend([f,s1,s2],'simulation','fit (posterior)','fit (ML)','Location','northwest')
+% set(gca,'Color',[228,221,209]/255) 
+box on
+ax = gca;
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+e_fig.InvertHardcopy = 'off';
+set(gcf,'color','w');
+
+saveas(e_fig,[figPath 'e_fig.png'])
+saveas(e_fig,[figPath 'e_fig.pdf'])
+
+%% Now look at what differences this leads to in fluo
+coeff_MS2 = mcmcInfo.coeff_MS2;     
+f_vec_1 = fluo_conv_fun(e_vec_1,coeff_MS2);
+f_vec_2 = fluo_conv_fun(e_vec_2,coeff_MS2);
+
+close all
+
+f_fig = figure('Position',[100 100 1024 412]);
+hold on
+
+% fill([time_axis fliplr(time_axis)], [state_95' fliplr(state_05')], brighten(cmap3(2,:),0.35),'FaceAlpha',1,'EdgeAlpha',0.5,'EdgeColor','k')
+p1 = plot(1:length(state_pd_ml), mcmcInfo.observed_fluo(:,1),'-k','LineWidth',2);
+plot(1:length(state_pd_ml), f_vec_2,'-','Color',green,'LineWidth',3);
+plot(1:length(state_pd_ml), f_vec_1,'-.','Color',blue,'LineWidth',3);
+
+
+xlabel('time steps')
+ylabel('emission rate (e)')
+% ylabel(vertcat({'emission'},{'rate (e)'}))
+
+set(gca,'Fontsize',14)
+ylim([-3 20])
+xlim([0 120])
+
+box on
+ax = gca;
+ax.YAxis(1).Color = 'k';
+ax.XAxis(1).Color = 'k';
+
+f_fig.InvertHardcopy = 'off';
+set(gcf,'color','w');
+
+saveas(f_fig,[figPath 'f_fig.png'])
+saveas(f_fig,[figPath 'f_fig.pdf'])
+
+
+

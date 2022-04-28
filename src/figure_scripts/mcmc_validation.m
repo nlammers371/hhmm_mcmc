@@ -18,12 +18,15 @@ n_reps = 2;
 nStates = 3;
 discrete_data_flag_vec = [0 1];
 master_struct = struct;
+
+% specify other key parameters
+burn_in = 4e3;
+
 for discrete_data_flag = 0:1
     readString = ['K' sprintf('%01d',nStates) '_W' sprintf('%03d',10*round(nSteps,1)) '_nt' sprintf('%03d',n_traces) ...
                       '_nrep' sprintf('%1d',n_reps) '_disc' sprintf('%1d',discrete_data_flag) ];
 
-    % specify other key parameters
-    burn_in = 4e3;
+   
 
     % get list of matching inference files
     inf_files = dir([resultsPath '*' readString '*']);
@@ -83,7 +86,7 @@ end
 bkg_color = [228,221,209]/255;
 markerSize = 100;
 
-v_fig = figure;
+v_fig = figure('Position', [360   198   280   420]);
 hold on
 cmap = brewermap([],'Set2');
 s(1) = scatter(1:3,r_true_vec,markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
@@ -101,7 +104,7 @@ ylabel('emission rate (au/min)')
 set(gca,'Fontsize',14)
 ylim([-0.5 15])
 xlim([0.75 3.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
+% legend(s,'ground truth','estimates (continuous)','estimates (discrete)','Location','northwest')
 set(gca,'Color',bkg_color) 
 box on
 grid on
@@ -177,7 +180,7 @@ end
 R_true_array = trueParams.R * 60;
 lin_inds = [2 3 4 6 7 8];
 
-R_fig = figure;
+R_fig = figure('Position', [360 198 560 420]);
 cmap = brewermap([],'Set2');
 hold on
 x_vec = 1:6;
@@ -244,7 +247,7 @@ end
 
 ss_true_vec = trueParams.pi0;
 
-ss_fig = figure;
+ss_fig = figure('Position', [360   198   280   420]);
 cmap = brewermap([],'Set2');
 hold on
 
@@ -263,9 +266,9 @@ ylabel('state probability')
 
 set(gca,'Fontsize',14)
 set(gca,'xtick',1:3)
-ylim([0 0.8])
+ylim([0 0.6])
 xlim([0.75 3.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
+% legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
 set(gca,'Color',[228,221,209]/255) 
 box on
 grid on
@@ -279,11 +282,9 @@ set(gcf,'color','w');
 saveas(ss_fig,[figPath 'ss_validation_fig.png'])
 saveas(ss_fig,[figPath 'ss_validation_fig.pdf'])
 
-%%
-
 dwell_vec_true = -1./(diag(trueParams.R)*60);
 
-dwell_time_fig = figure;
+dwell_time_fig = figure('Position', [360   198   280   420]);
 cmap = brewermap([],'Set2');
 hold on
 
@@ -302,9 +303,9 @@ ylabel('state dwell time (minutes)')
 
 set(gca,'Fontsize',14)
 set(gca,'xtick',1:3)
-ylim([0 1.2])
+ylim([0 1])
 xlim([0.75 3.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northeast')
+% legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northeast')
 set(gca,'Color',[228,221,209]/255) 
 box on
 grid on
@@ -354,7 +355,7 @@ dur_true = freq_true * (1/ss_true_vec(1) - 1);
 r2_true = (r_true_vec(2) * ss_true_vec(2) + r_true_vec(3) * ss_true_vec(3)) / (ss_true_vec(2)+ss_true_vec(3));
 
 
-R_eff_fig = figure;
+R_eff_fig = figure('Position', [360   198   280   420]);
 hold on
 
 s(1) = scatter(1:2,[freq_true dur_true],markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
@@ -370,9 +371,9 @@ s(2) = scatter((1:2)-0.05,master_struct(1).R_eff_mean,markerSize*0.75,'s','Marke
 ylabel('transition rate (events per minute)')
 
 set(gca,'Fontsize',14)
-ylim([-0.25 1.5])
+ylim([0 1.2])
 xlim([0.75 2.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
+% legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
 set(gca,'Color',[228,221,209]/255) 
 box on
 grid on
@@ -386,7 +387,7 @@ set(gcf,'color','w');
 saveas(R_eff_fig,[figPath 'R_eff_validation_fig.png'])
 saveas(R_eff_fig,[figPath 'R_eff_validation_fig.pdf'])
 
-r_eff_fig = figure;
+r_eff_fig = figure('Position', [360 198 280 420]);
 hold on
 
 s(1) = scatter(1:2,[0 r2_true],markerSize,'o','MarkerFaceColor',brighten(cmap(6,:),-0.5),'MarkerEdgeColor','k');
@@ -404,7 +405,7 @@ ylabel('emission rate (au/min)')
 set(gca,'Fontsize',14)
 ylim([-0.25 8])
 xlim([0.75 2.25])
-legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
+% legend(s,'ground truth','estimates (continuous data)','estimates (discrete data)','Location','northwest')
 set(gca,'Color',[228,221,209]/255) 
 box on
 grid on
@@ -415,5 +416,5 @@ ax.XAxis(1).Color = 'k';
 r_eff_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
 
-saveas(r_eff_fig,[figPath 'r_eff_validation_fig.png'])
-saveas(r_eff_fig,[figPath 'r_eff_validation_fig.pdf'])
+saveas(r_eff_fig,[figPath 'r2_eff_validation_fig.png'])
+saveas(r_eff_fig,[figPath 'r2_eff_validation_fig.pdf'])

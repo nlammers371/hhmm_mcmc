@@ -32,7 +32,7 @@ color_cell = {cmap_gra cmap_pu cmap_gr cmap_bu cmap_rd};
 
 % v and A inference over time
 mem_vec = mem_data_1.mem_vec;
-step_axis = 1:size(mem_data_1.mem_array,1);
+
 
 for temp = 0:1
     if ~temp
@@ -40,6 +40,7 @@ for temp = 0:1
     else
         mem_data = mem_data_1;
     end
+    step_axis = 1:size(mem_data.mem_array,1);
     mem_fig = figure;
     hold on
     for m = 1:length(mem_vec)

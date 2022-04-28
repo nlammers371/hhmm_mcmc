@@ -97,7 +97,7 @@ v = trueParams.v';
 em_time_vec_cpHMM = NaN(size(mem_vec));
 
 % should take ~20 minutes total to run
-for m = 1:find(mem_vec<10,1,'last') % NL: getting an error past 9...
+for m = 1:length(mem_vec)-3 % NL: getting an error past 9...
     n_steps_max = n_steps_max_vec(m);
     tic
     nSteps = mem_vec(m);
@@ -113,8 +113,8 @@ end
 
 % perform simple fit to extrapoltate cpHMM performance
 last_ind = find(~isnan(em_time_vec_cpHMM),1,'last');
-time_fun = @(x) x(1)*x(2).^mem_vec(2:last_ind);
-loss_fun = @(x) log10(time_fun(x)) - log10(em_time_vec_cpHMM(2:last_ind));
+time_fun = @(x) x(1)*x(2).^mem_vec(1:last_ind);
+loss_fun = @(x) log10(time_fun(x)) - log10(em_time_vec_cpHMM(1:last_ind));
 x_fit = lsqnonlin(loss_fun,[0.01 3],[0 3],[10 3]);
 cpHMM_time_extrap = x_fit(1)*x_fit(2).^mem_vec;
 
@@ -142,10 +142,10 @@ s(2) = scatter(mem_vec,em_time_vec_cpHMM,'MarkerEdgeColor','k','MarkerFaceColor'
 
 xlabel('memory (N time steps)')
 ylabel('EM step time (seconds)')
-xlim([3 15])
+xlim([3 12])
 set(gca,'Fontsize',14)
 % ylim([-0.1 4.5])
-legend([s p],'MCMC','cpHMM','extrapolation','Location','northwest')
+legend([s p],'MCMC','cpHMM','cpHMM (extrapolation)','Location','northwest')
 set(gca,'Color',bkg_color) 
 box on
 grid on
