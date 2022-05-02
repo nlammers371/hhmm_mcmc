@@ -158,22 +158,19 @@ dim = sqrt(length(point_density));
 % colormap(cmap);
 
 plot(a21_vec,a12_vec,'Color',[0 0 0 0.1],'LineWidth',1)
-scatter(a21_vec,a12_vec,50,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','LineWidth',1,'MarkerFaceAlpha',0.25,'MarkerEdgeAlpha',0.1);
-s = scatter(0,0,100,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','LineWidth',1,'MarkerFaceAlpha',1,'MarkerEdgeAlpha',1);
+s = scatter(a21_vec,a12_vec,50,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','LineWidth',1,'MarkerFaceAlpha',0.25,'MarkerEdgeAlpha',0.1);
+  
 
-xlim([0.1 0.5]*3)
-ylim([0.25 1]*3)
+xlim([0.1 0.5])
+ylim([0.3 1])
 
 yl = get(gca,'Ylim');
 xl = get(gca,'Xlim');
 
 p1 = plot(repelem(trueParams.A(2,1),n_mcmc_steps)*3,linspace(yl(1),yl(2),n_mcmc_steps),'-.k','LineWidth',2);
-plot(linspace(xl(1),xl(2),n_mcmc_steps),repelem(trueParams.A(1,2),n_mcmc_steps)*3,'-.k','LineWidth',2)
+plot(linspace(xl(1),xl(2),n_mcmc_steps),repelem(trueParams.A(1,2),n_mcmc_steps),'-.k','LineWidth',2)
 
-
-legend([s p1],'burstMCMC samples','true values','Location','southeast')
-
-% grid on
+grid on
 set(gca,'Fontsize',14)
 set(gca,'Color',[228,221,209]/255) 
 box on
@@ -184,12 +181,10 @@ ax.XAxis(1).Color = 'k';
 xlabel('on rate (k_{on})')
 ylabel('off rate (k_{off})')
 
+legend([s p1],'burstMCMC samples','true values')
 
 param_space_fig.InvertHardcopy = 'off';
 set(gcf,'color','w');
-
-saveas(param_space_fig,[figPath 'param_space_fig.png'])
-saveas(param_space_fig,[figPath 'param_space_fig.pdf'])
 
 %% Sigma plot
 sigma_fig = figure;
