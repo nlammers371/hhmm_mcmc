@@ -21,7 +21,7 @@ mcmcInfoInit.n_traces = 20;
 mcmcInfoInit.seq_length = 120; % length of simulated traces in time steps
 mcmcInfoInit.NumWorkers = 5;
 % set vector of memories to infer
-mem_vec = [4.1 5.7 7.3 8.9 10.4]; 
+mem_vec = [4.1 5.7 7.3 8.9 10.5]; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
