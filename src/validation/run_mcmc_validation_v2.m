@@ -21,7 +21,7 @@ mcmcInfoInit.mhResamplingFlag = 0;
 mcmcInfoInit.n_mcmc_steps = 5e3; % number of MCMC steps (need to add convergence criteria)
 mcmcInfoInit.burn_in = 2e3;
 mcmcInfoInit.n_reps = 1; % number of chain state resampling passes per inference step
-mcmcInfoInit.NumWorkers = 25;
+mcmcInfoInit.NumWorkers = 15;
 
 % Set the parameter options to explore
 seq_length = 120; % length of simulated traces in time steps
@@ -35,7 +35,7 @@ n_rep_vec = [2];
 nStates_vec = [3];
 simVec = 1:10;
 
-% get all possible cgitombinations
+% get all possible cgitombinationsedi
 elements = {n_rep_vec discrete_data_vec nStates_vec simVec n_step_vec};
 combCell = cell(1, numel(elements));
 [combCell{:}] = ndgrid(elements{:});
