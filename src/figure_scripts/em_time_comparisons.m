@@ -38,7 +38,7 @@ master_struct = struct;
 %%
 initializePool(mcmcInfo,0);
 
-parfor m = 1:length(mem_vec)
+for m = 1:length(mem_vec)
   
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Set MCMC options

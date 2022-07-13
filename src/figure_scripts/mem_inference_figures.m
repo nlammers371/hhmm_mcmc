@@ -15,7 +15,7 @@ load('mem_data_1.mat')
 mem_data_1 = mem_data;
 clear mem_data
 %% Make figures 
-n_plot = 3; % plot best N for each mem value
+n_plot = 1; % plot best N for each mem value
 
 close all
 bkg_color = [228,221,209]/255;
@@ -45,7 +45,7 @@ for temp = 0:1
     hold on
     for m = 1:length(mem_vec)
         [~, si] = sort(mem_data.logL_array(m,:), 'descend');        
-        p1 = plot(step_axis, repelem(mem_vec(m),length(step_axis)),'-.','Color',color_cell{m}(4,:),'LineWidth',2);
+        p1 = plot(step_axis, repelem(mem_vec(m),length(step_axis)),'-.','Color',color_cell{m}(end,:),'LineWidth',2);
         for n = 1:n_plot
             p2 = plot(step_axis, mem_data.mem_array(:,si(n),m),'-','Color',color_cell{m}(n+1,:),'LineWidth',2);
         end

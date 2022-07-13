@@ -92,7 +92,7 @@ for i = 1:seq_length*n_reps
 end 
 
 mcmcInfo.sample_chains = sample_chains_temp(2:end-1,:,:);
-em_time = toc;
+em_time = toc
 if mcmcInfo.em_timer_flag
     mcmcInfo.em_time_vec(mcmcInfo.step) = em_time;
 end

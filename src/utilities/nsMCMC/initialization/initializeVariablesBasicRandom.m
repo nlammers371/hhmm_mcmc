@@ -3,6 +3,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     % initialize transition probabilities
     n_scale = numel(mcmcInfo.observed_fluo)/50;
     n_chains_eff = mcmcInfo.n_chains_eff;
+    
     for n = 1:n_chains_eff    
         alpha_temp = abs(normrnd(n_scale,n_scale/3,mcmcInfo.nStates,mcmcInfo.nStates));        
 
@@ -30,9 +31,9 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     end
 
     % initialize sigma as inverse gamma (see: http://ljwolf.org/teaching/gibbs.html)    
-    mcmcInfo.a0 = numel(mcmcInfo.observed_fluo)/100;
+    mcmcInfo.a0 = numel(mcmcInfo.observed_fluo)/2;
     fluo_vec = mcmcInfo.observed_fluo(:);
-    mcmcInfo.b0 = 0.3*mean(fluo_vec).^2;
+    mcmcInfo.b0 = numel(mcmcInfo.observed_fluo)*(0.25*mean(fluo_vec)).^2;
     
     for n = 1:n_chains_eff
         mcmcInfo.sigma_curr(n) = sqrt(1./gamrnd(mcmcInfo.a0,1./mcmcInfo.b0));%trandn(-1,Inf)*f_factor/2 + f_factor;%sqrt(1./gamrnd(100*mcmcInfo.seq_length*mcmcInfo.n_traces/2,1./(fluo_vec'*fluo_vec)));
@@ -72,7 +73,10 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     
     for n = 1:n_chains_eff
         v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
-        mcmcInfo.v_curr(n,:) = sort(mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)'); %[0 2 5];%
+        v_temp = sort(mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)');        
+        v_temp(v_temp<0) = 0;
+        
+        mcmcInfo.v_curr(n,:) = v_temp; %[0 2 5];%
         mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
     end      
     

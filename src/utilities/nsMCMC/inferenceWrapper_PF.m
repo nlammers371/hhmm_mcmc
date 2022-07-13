@@ -1,4 +1,4 @@
-function mcmcInfo = inferenceWrapper(mcmcInfo)
+function mcmcInfo = inferenceWrapper_PF(mcmcInfo)
     
     % initialize step
     mcmcInfo.step = 1;
@@ -27,11 +27,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         end
         
         % resample chains  promoter state sequences        
-        if mcmcInfo.mhResamplingFlag
-            mcmcInfo = resample_chains_v4_mh(mcmcInfo);
-        elseif mcmcInfo.PFResamplingFlag
-            mcmcInfo = resample_chains_PF(mcmcInfo);    % "Expectation Step"                 
-        end
+        mcmcInfo = resample_chains_PF(mcmcInfo);
 
         % get empirical transition and occupancy counts    
         mcmcInfo = get_empirical_counts_v3(mcmcInfo);
