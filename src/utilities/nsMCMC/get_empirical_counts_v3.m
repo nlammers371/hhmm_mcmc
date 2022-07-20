@@ -5,7 +5,6 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     nStates = size(A_curr,1);
     n_chains = mcmcInfo.n_chains_eff;
 
-
     % initialize count arrays 
     mcmcInfo.transition_count_array = zeros(size(A_curr,1),size(A_curr,2),n_chains);    
     mcmcInfo.initial_state_array = zeros(nStates,n_chains);   
@@ -15,7 +14,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     % get linear indices
     from_array = mcmcInfo.sample_chains(1:end-1,:,:);
     to_array = mcmcInfo.sample_chains(2:end,:,:);        
-    row_col_array = (from_array-1)*nStates+ to_array;% + nStates^2*mcmcInfo.chain_id_ref;
+    row_col_array = (from_array-1)*nStates + to_array;% + nStates^2*mcmcInfo.chain_id_ref;
     lin_index_array = row_col_array;
     
     % get state counts

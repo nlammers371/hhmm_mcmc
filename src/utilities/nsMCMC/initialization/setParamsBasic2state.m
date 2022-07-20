@@ -1,8 +1,8 @@
-function trueParams = setParamsBasic2state
+function trueParams = setParamsBasic2state(tres)
 
 trueParams = struct;
 
-trueParams.tres = 20;
+trueParams.tres = tres;
 trueParams.discrete_data_flag = true;
 % define parameters to be inferred
 trueParams.R = [-.02, .05 ; .02 -.05];

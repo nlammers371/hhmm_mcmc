@@ -18,18 +18,16 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
 
     for step = 2:mcmcInfo.n_mcmc_steps    
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
+%         tic
         mcmcInfo.step = step;       
         
         if mcmcInfo.resampleTracesFlag && step >= mcmcInfo.burn_in && mod(step,mcmcInfo.rs_freq) == 0
             % resample using total likelihood
-            logL_vec = mcmcInfo.logL_vec(step-10:step-1,:)-logsumexp(mcmcInfo.logL_vec(step-10:step-1,:),2);
-            prob_vec = mean(exp(logL_vec),1);
-            rs_ids = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,prob_vec);
+            logL_vec = mcmcInfo.logL_vec(step-1,:)-logsumexp(mcmcInfo.logL_vec(step-1,:));
+            rs_ids = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,exp(logL_vec));
             % resample latent states and fluo predictions
-            mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,rs_ids,:);
-            mcmcInfo.sample_fluo = mcmcInfo.sample_fluo(:,rs_ids,:);
+            mcmcInfo.sample_chains = sample_chains(:,rs_ids,:)
         end
-        
         % if tempering, artificially raise sigma values
         if mcmcInfo.annealingSigmaFlag
             mcmcInfo.sigma_curr = mcmcInfo.sigma_curr .* mcmcInfo.tempGradArray(mcmcInfo.step,:)';

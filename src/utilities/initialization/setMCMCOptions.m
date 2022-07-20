@@ -68,8 +68,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     mcmcInfo.nStepsPropSize = 0.15;    
     mcmcInfo.nStep_tries_per_run = 10;
     mcmcInfo.nStepsGuess = 5 + rand()*3;
-    mcmcInfo.nStepsMax = 14; % set upper limit
-    mcmcInfo.nStepsMin = 3.5; % lower limit   
+    mcmcInfo.nStepsMax = 20; % set upper limit
+    mcmcInfo.nStepsMin = 3; % lower limit   
 %     if ~mcmcInfo.inferNStepsFlag 
 %         mcmcInfo.nStepsMax = ceil(mcmcInfo.nSteps);
 %     end

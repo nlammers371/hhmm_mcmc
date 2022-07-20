@@ -69,7 +69,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.v0(:,2) = 2*v2;
     end
     mcmcInfo.M0 = eye(mcmcInfo.nStates)*1;    
-    mcmcInfo.M0(1,1) = 1e5; % add extra weight to "OFF" state
+    mcmcInfo.M0(1,1) = 1e4; % add extra weight to "OFF" state
     
     for n = 1:n_chains_eff
         v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);

@@ -1,16 +1,19 @@
-function mcmcInfo = resample_chains_v4(mcmcInfo)
+function mcmcInfo = resample_chains_v5(mcmcInfo)
 
 % This script resamples the microscopic promoter state for each extant
 % chain in an asynchronous manner. 
 tic
+
 % extract parameters
 A_log = log(mcmcInfo.A_curr);
 pi0 = mcmcInfo.pi0_curr;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains_eff;
+
+
 % nStepsMax = mcmcInfo.nStepsMax;
-seq_length = mcmcInfo.seq_length;
+seq_len = mcmcInfo.seq_length;
 
 % generate lookup table with ms2 kernel values
 nStepsMax = 0;
@@ -18,17 +21,19 @@ for n = 1:n_chains
     nStepsMax = max([nStepsMax find(mcmcInfo.coeff_MS2(:,n)>0,1,'last')]);
 end    
 mcmcInfo.max_w = nStepsMax;
-mcmcInfo.MS2_kernel = flipud(mcmcInfo.coeff_MS2(1:nStepsMax,:));
+mcmcInfo.MS2_kernel = mcmcInfo.coeff_MS2(1:nStepsMax,:);
+
+% note that this version uses normal array indexing
+mcmcInfo.v_curr_long = repmat(permute(mcmcInfo.v_curr',[3 2 1]),nStepsMax,1,1);
 
 % generate reference vector
 mcmcInfo.chain_id_ref = 0:n_chains-1;
 mcmcInfo.trace_id_ref = reshape(0:n_traces-1,1,1,[]);
 mcmcInfo.row_ref = (1:nStates)';
-mcmcInfo.step_ref = (-nStepsMax+1:nStepsMax-1)';
 
 % generate random sampling orders
 n_reps = mcmcInfo.n_reps;
-sample_indices = randsample(repelem(1:seq_length,n_reps),n_reps*seq_length,false);
+sample_indices = randsample(repelem(1:seq_len,n_reps),n_reps*seq_len,false);
 
 % generate temporary chain array that includes post and prior states to
 % make resampling easier below
@@ -43,17 +48,18 @@ end
 
 % a initialize dummy chain variable
 mcmcInfo.sample_chains_temp = sample_chains_temp;
+sample_fluo_temp = mcmcInfo.sample_fluo;
+mcmcInfo.sample_fluo_temp = sample_fluo_temp;
 
 % preallocate helper array for indexing
-% index_helper1 = mcmcInfo.chain_id_ref*seq_len_temp + mcmcInfo.trace_id_ref*seq_len_temp*n_chains;
 index_helper2 = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates;
-% index_helper3 = mcmcInfo.chain_id_ref*seq_len_dummy + mcmcInfo.trace_id_ref*seq_len_dummy*n_chains;
 
+% sample_indices = 
 % iterate through indices to sample
-for i = 1:seq_length*n_reps  
+for i = [(1:seq_len) ((seq_len-1):-1:1)]
     
-    mcmcInfo.samp_index = sample_indices(i);        
-    prev_time_index = sample_indices(i);    
+    mcmcInfo.samp_index = i;%sample_indices(i);        
+    prev_time_index = i;%sample_indices(i);    
     post_time_index = prev_time_index + 2;
     
     %%% previous state %%%
@@ -77,24 +83,26 @@ for i = 1:seq_length*n_reps
     logL_tr = prev_probs_log + post_probs_log;
     
     %%% calculate fluorescence probability component
-    % calculate fluo error term    
-
-    logL_fluo = calculate_fluo_logL_v4(mcmcInfo);              
-    
+    % calculate fluo error term        
+    [logL_fluo, new_fluo_array, comp_indices] = calculate_fluo_logL_v5(mcmcInfo);       
+ 
     %%% put everything together
-    total_log_likelihoods = logL_tr + logL_fluo;    
+    total_log_likelihoods = logL_tr + logL_fluo/mcmcInfo.upsample_factor;    
     
-    % apply differential temperature correction if appropirate
-%     if mcmcInfo.temperingFlag 
-%         total_log_likelihoods = total_log_likelihoods ./ mcmcInfo.tempGradVec;
-%     end
     total_log_likelihoods = total_log_likelihoods - logsumexp(total_log_likelihoods,1);
     total_likelihoods = exp(total_log_likelihoods);    
 
     %%% draw new samples
     option_array = cumsum(total_likelihoods);
     rand_array = repmat(rand(1,n_chains,n_traces),nStates,1);
-    sample_chains_temp(prev_time_index+1,:,:) = sum(rand_array > option_array) + 1;
+    new_states = sum(rand_array > option_array) + 1;
+    sample_chains_temp(prev_time_index+1,:,:) = new_states;
+    
+    % update fluo_array
+    fluo_update_indices_to = comp_indices + seq_len*mcmcInfo.chain_id_ref + n_chains*seq_len*mcmcInfo.trace_id_ref;
+    n_indices = length(comp_indices);
+    fluo_update_indices_from = (1:n_indices)' + n_indices*mcmcInfo.chain_id_ref + n_chains*n_indices*mcmcInfo.trace_id_ref + n_chains*n_indices*n_traces*(new_states-1);    
+    mcmcInfo.sample_fluo_temp(fluo_update_indices_to) = new_fluo_array(fluo_update_indices_from);
     
     % pass along to dummy array    
     mcmcInfo.sample_chains_temp = sample_chains_temp;
@@ -102,7 +110,10 @@ for i = 1:seq_length*n_reps
 end 
 
 mcmcInfo.sample_chains = sample_chains_temp(2:end-1,:,:);
-em_time = toc
-if mcmcInfo.em_timer_flag
+mcmcInfo.sample_fluo = mcmcInfo.sample_fluo_temp;
+mcmcInfo = rmfield(mcmcInfo,{'sample_chains_temp','sample_chains_temp','sample_chains_temp'});
+
+em_time = toc;
+if true%mcmcInfo.em_timer_flag
     mcmcInfo.em_time_vec(mcmcInfo.step) = em_time;
 end

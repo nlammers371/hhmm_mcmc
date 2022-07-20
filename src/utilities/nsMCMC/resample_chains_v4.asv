@@ -57,7 +57,6 @@ for i = 1:seq_length*n_reps
     post_time_index = prev_time_index + 2;
     
     %%% previous state %%%
-    
     % calculate linear indices 
     prev_state_array = sample_chains_temp(prev_time_index,:,:);
     row_col_array_from = mcmcInfo.chain_id_ref*nStates^2 + (prev_state_array-1)*nStates+mcmcInfo.row_ref;    
