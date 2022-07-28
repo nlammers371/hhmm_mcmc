@@ -9,6 +9,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.annealingSigmaFlag = 0;
     defaultOptions.ensembleInferenceFlag = 0;
     defaultOptions.mhResamplingFlag = 0;
+    defaultOptions.PFResamplingFlag = 0;
     
     defaultOptions.mhInferenceFlag = 0;
     defaultOptions.reducedModelFlag = 0;

@@ -24,17 +24,12 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
             % resample using total likelihood
             logL_vec = mean(mcmcInfo.logL_vec(step-10:step-1,:),1)*numel(mcmcInfo.observed_fluo);
             logL_vec = logL_vec-logsumexp(logL_vec,2);
-%             [~,si_vec] = sort(logL_vec,'descend');
-            prob_vec = mean(exp(logL_vec),1)+0.05; % inject pseudocounts to avoid sparsity issues
-%             rs_ids = repelem(si_vec(1:5),5);
+            [~,si_vec] = sort(logL_vec
+            prob_vec = mean(exp(logL_vec),1);
             rs_ids = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,prob_vec);
             % resample latent states and fluo predictions
             mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,rs_ids,:);
             mcmcInfo.sample_fluo = mcmcInfo.sample_fluo(:,rs_ids,:);
-            mcmcInfo.A_curr = mcmcInfo.A_curr(:,:,rs_ids);
-            mcmcInfo.v_curr = mcmcInfo.v_curr(rs_ids,:);
-            mcmcInfo.pi0_curr = mcmcInfo.pi0_curr(rs_ids,:);
-            mcmcInfo.sigma_curr = mcmcInfo.sigma_curr(rs_ids);
         end
         
         % if tempering, artificially raise sigma values
@@ -52,8 +47,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         end
         
         % get empirical transition and occupancy counts          
-        mcmcInfo = get_empirical_counts_v3(mcmcInfo);   
-        
+        mcmcInfo = get_empirical_counts_v3(mcmcInfo);        
         % use Gibbs sampling to update hyperparameters           
         mcmcInfo = update_hmm_parameters_v4(mcmcInfo);          
         
