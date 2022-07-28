@@ -17,9 +17,9 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     lin_index_array = row_col_array;
 
     % get state counts
-    for k = 1:nStates
-        mcmcInfo.initial_state_array(k,:) = sum(mcmcInfo.sample_chains(1,:,:)==k,3);% / n_chains;
-    end
+%     for k = 1:nStates
+%         mcmcInfo.initial_state_array(k,:) = sum(mcmcInfo.sample_chains(1,:,:)==k,3);% / n_chains;
+%     end
 
     % get transition counts
     unique_indices = unique(lin_index_array(:));    

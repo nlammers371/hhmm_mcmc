@@ -9,6 +9,10 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.annealingSigmaFlag = 0;
     defaultOptions.ensembleInferenceFlag = 0;
     defaultOptions.mhResamplingFlag = 0;
+    
+    defaultOptions.mhInferenceFlag = 0;
+    defaultOptions.reducedModelFlag = 0;
+    
     defaultOptions.inferNStepsFlag = 0;
     defaultOptions.n_chains = 25;
     defaultOptions.update_increment = 1; 
