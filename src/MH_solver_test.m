@@ -20,7 +20,7 @@ inferMemory = 0;
 mcmcInfo.n_mcmc_steps = 50; 
 mcmcInfo.burn_in = 50;
 mcmcInfo.resampleTracesFlag = 1;
-mcmcInfo.rs_freq = 1;
+mcmcInfo.rs_freq = 10;
 mcmcInfo.tres = sampling_res;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 

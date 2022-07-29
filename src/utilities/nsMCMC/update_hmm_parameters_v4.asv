@@ -80,7 +80,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         F_array = repmat(mean(F_array,3),1,1,n_chains);
     end
     
-    swap_indices = NaN(n_chains,nStates);
+    swap_indices = NaN(n_chains,n_states);
     
     for c = 1:n_chains   
         if c == 1 || ~mcmcInfo.ensembleInferenceFlag
@@ -115,19 +115,11 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         mcmcInfo.A_curr(:,:,c) = mcmcInfo.A_curr(si,si,c);        
         mcmcInfo.pi0_curr(c,:) = mcmcInfo.pi0_curr(c,si);
         
-        sc = mcmcInfo.sample_chains(:,c,:);
-        sc_new = sc;
-        for k = 1:nStates
-            sc_new(sc==k) = si(k);
-        end
-        mcmcInfo.sample_chains(:,c,:) = sc_new; 
-        
+
         if update_flag
             mcmcInfo.pi0_inf_array(update_index,:,c) = mcmcInfo.pi0_inf_array(update_index,si,c);
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_inf_array(update_index,si,c);
             mcmcInfo.A_inf_array(:,:,update_index,c) = mcmcInfo.A_inf_array(si,si,update_index,c);
-        end
-    end
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
     
     % get predicted fluorescence (using new v values)
