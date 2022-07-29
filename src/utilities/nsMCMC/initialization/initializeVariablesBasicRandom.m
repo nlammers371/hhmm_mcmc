@@ -3,6 +3,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
     % initialize transition probabilities
     n_scale = numel(mcmcInfo.observed_fluo)/50;
     n_chains = mcmcInfo.n_chains;
+    us_factor = mcmcInfo.upsample_factor;
     
     if ~mcmcInfo.reducedModelFlag && ~mcmcInfo.mhInferenceFlag
         for n = 1:n_chains    
@@ -58,6 +59,7 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.coeff_MS2 = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff);
         for n = 1:mcmcInfo.n_chains_eff
             mcmcInfo.coeff_MS2(:,n) = ms2_loading_coeff_frac(mcmcInfo.alphaCurr(n), mcmcInfo.nStepsCurr(n), mcmcInfo.nStepsMax)';
+            mcmcInfo.coeff_MS2_us(:,n) = ms2_loading_coeff_frac(us_factor*mcmcInfo.alphaCurr(n), us_factor*mcmcInfo.nStepsCurr(n), us_factor*mcmcInfo.nStepsMax)';            
         end
 
         % initialize v    
@@ -81,13 +83,13 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
             mcmcInfo.v_inf_array(1,:,n) = mcmcInfo.v_curr(n,:);
         end      
     elseif mcmcInfo.reducedModelFlag && mcmcInfo.mhInferenceFlag && mcmcInfo.nStates == 3
-        kon_init = rand()*0.02;     
-        koff_init = rand()*0.02;     
+        kon_init = rand()*0.04;     
+        koff_init = rand()*0.04;     
         k_corr_init = rand()-0.5;
             
         mcmcInfo.k_curr = [kon_init,koff_init,k_corr_init];
         
-        Q_init = Q_helper_fun(kon_init,koff_init,exp(k_corr_init));
+        Q_init = Q_helper_fun(kon_init,koff_init,k_corr_init);
                
         mcmcInfo.A_curr = repmat(expm(Q_init*mcmcInfo.tres),1,1,n_chains);
 
@@ -115,20 +117,22 @@ function mcmcInfo = initializeVariablesBasicRandom(mcmcInfo)
         mcmcInfo.coeff_MS2 = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff);
         for n = 1:mcmcInfo.n_chains_eff
             mcmcInfo.coeff_MS2(:,n) = ms2_loading_coeff_frac(mcmcInfo.alphaCurr(n), mcmcInfo.nStepsCurr(n), mcmcInfo.nStepsMax)';
+            mcmcInfo.coeff_MS2_us(:,n) = ms2_loading_coeff_frac(us_factor*mcmcInfo.alphaCurr(n), us_factor*mcmcInfo.nStepsCurr(n), us_factor*mcmcInfo.nStepsMax)';            
         end
         
         % initialize v
         fluo_vec = mcmcInfo.observed_fluo(:);
         fluo_vec_mid = fluo_vec(fluo_vec >= mean(fluo_vec) & fluo_vec <= mean(fluo_vec) + 2*std(fluo_vec));
         v2 = randsample(fluo_vec_mid,1,true) ./ sum(mcmcInfo.coeff_MS2(:,1))';
-        v_corr_init = rand()-0.5;
-        vc = exp(v_corr_init);
-        mcmcInfo.v_curr = repmat([0 v2 2*v2*vc],n_chains,1);
+        r_corr_init = rand()-0.5;
+        
+        r_vec = r_helper_fun(v2/mcmcInfo.tres,r_corr_init);                
+        mcmcInfo.v_curr = repmat(r_vec*mcmcInfo.n_chains,n_chains,1);
         
         % fluorescence noise parameter
-        mcmcInfo.sigma_curr = repmat(0.2*mean(fluo_vec),n_chains,1);
+        mcmcInfo.sigma_curr = repmat(0.4*mean(fluo_vec),n_chains,1);
         
-        mcmcInfo.r_curr = [v2/mcmcInfo.tres v_corr_init];
+        mcmcInfo.r_curr = [r_vec(2) r_corr_init];
         mcmcInfo.r_inf_array(1,:) = mcmcInfo.r_curr;
     else
         error('Incompatible inference options')

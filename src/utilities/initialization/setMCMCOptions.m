@@ -10,6 +10,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.ensembleInferenceFlag = 0;
     defaultOptions.mhResamplingFlag = 0;
     defaultOptions.PFResamplingFlag = 0;
+    defaultOptions.upsample_factor = 1;
     
     defaultOptions.mhInferenceFlag = 0;
     defaultOptions.reducedModelFlag = 0;

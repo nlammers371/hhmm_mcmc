@@ -3,10 +3,8 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
     % initialize step
     mcmcInfo.step = 1;
     
-    % initialize chains
-    if ~isfield(mcmcInfo, 'sample_chains')
-        mcmcInfo = initialize_chains_v3(mcmcInfo);
-    end
+    % initialize chains    
+    mcmcInfo = initialize_chains_v3(mcmcInfo);    
 
     % get predicted fluorescence
     mcmcInfo = predict_fluo_full_v3(mcmcInfo);
@@ -25,7 +23,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
             logL_vec = mean(mcmcInfo.logL_vec(step-10:step-1,:),1)*numel(mcmcInfo.observed_fluo);
             logL_vec = logL_vec-logsumexp(logL_vec,2);
 %             [~,si_vec] = sort(logL_vec,'descend');
-            prob_vec = mean(exp(logL_vec),1)+0.05; % inject pseudocounts to avoid sparsity issues
+            prob_vec = mean(exp(logL_vec),1)+1e-2; % inject pseudocounts to avoid sparsity issues
 %             rs_ids = repelem(si_vec(1:5),5);
             rs_ids = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,prob_vec);
             % resample latent states and fluo predictions

@@ -1,4 +1,4 @@
-function mcmcInfo = resample_chains_PF_v2(mcmcInfo)
+function mcmcInfo = resample_chains_PF_LL(mcmcInfo)
 
 % This script resamples the microscopic promoter state for each extant
 % chain using particle filtering methods that mimic classical
@@ -28,11 +28,6 @@ sample_chains_fwd = NaN(size(mcmcInfo.sample_chains));
 % conduct forward particle simulations first
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% initial_state_vec = NaN(1,n_chains,n_traces);
-% for n = 1:n_chains
-%     initial_state_vec(1,n,:) = reshape(randsample(1:nStates,n_traces,true,pi0(n,:)),1,1,n_traces);    
-% end 
-
 % generate fluorescent noise lookup table 
 sigma_ref = repmat(mcmcInfo.sigma_curr(1),1,n_chains,n_traces);
 fluo_ref = permute(mcmcInfo.observed_fluo,[1,3,2]);
@@ -43,26 +38,30 @@ max_w = find(mcmcInfo.coeff_MS2(:,1)>0,1,'last');
 ms2_kernel = mcmcInfo.coeff_MS2(1:max_w,:);
 
 % generate array for conversion from longform to short CP state notation
-cp_vec = (nStates).^(max_w-1:-1:0);
-cp_conv_array = repmat(cp_vec',1,n_chains,n_traces);
+% cp_vec = (nStates).^(max_w-1:-1:0);
+% cp_conv_array = repmat(cp_vec',1,n_chains,n_traces);
 
 % initialize array to keep track of compound states
 cp_state_tracker = ones(max_w,n_chains,n_traces);
 cp_init_tracker = zeros(max_w,n_chains,n_traces);
-cp_state_array_fwd = zeros(seq_len,n_chains,n_traces);        
-F_array_fwd_long = zeros(seq_len,n_chains,n_traces,nStates);        
+% cp_state_array_fwd = zeros(seq_len,n_chains,n_traces);        
+% F_array_fwd_long = zeros(seq_len,n_chains,n_traces,nStates);        
 
 % array to store cp state fluo likelihoods
-sample_fluo_prob_fwd = zeros(seq_len,n_chains,n_traces);        
+% sample_fluo_prob_fwd = zeros(seq_len,n_chains,n_traces);        
 
 % initialize new "predicted fluo" array
 sample_fluo_fwd = NaN(size(sample_chains_fwd));
 sample_logL_fwd = NaN(size(sample_chains_fwd));
+sample_parent_fwd = NaN(size(sample_chains_fwd,1)+1,n_chains,n_traces);
+sample_parent_fwd(1,:,:) = repmat(1:n_chains,1,1,n_traces);
+sample_parent_cum_fwd = NaN(size(sample_chains_fwd,1)+1,n_chains,n_traces);
+sample_parent_cum_fwd(1,:,:) = repmat(1:n_chains,1,1,n_traces);
 
 % initialize tracker for state transitions
 % tr_tracker_fwd = zeros(nStates, nStates, seq_len-1, n_traces);
 
-tic
+% tic
 
 % iterate through indices to sample
 for i = 1:seq_len
@@ -92,11 +91,10 @@ for i = 1:seq_len
         
     else                
         new_states = reshape(randsample(1:nStates,n_traces*n_chains,true,pi0),1,n_chains,n_traces);            
+        new_state_tr_vec = log(pi0(new_states));
     end    
     sample_chains_fwd(i,:,:) = new_states;  
-    
-    
-    
+            
     %%% update compound state tracker
     cp_state_tracker = circshift(cp_state_tracker,1,1);
     cp_state_tracker(1,:,:) = new_states;        
@@ -108,58 +106,59 @@ for i = 1:seq_len
     
     %%% calculate fluorescence
     fluo_next = sum(cp_init_tracker.*ms2_kernel,1);    
-    
+    sample_fluo_fwd(i,:,:) = fluo_next;
     %%% resample based on difference from observed fluo %%%
     
-    % calculate fluo probabilities 
-    logL_fluo_full = -0.5*(((reshape(fluo_ref(i,:),1,1,[])-fluo_next)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
-    probs_fluo = exp(logL_fluo_full-logsumexp(logL_fluo_full,2));    
-       
-    % resample
-    option_array = [zeros(1,1,n_traces) cumsum(probs_fluo,2)];
-    rand_array = rand(1,n_chains,n_traces);    
+    % calculate chain probabilities 
+    logL_fluo_full = -0.5*(((reshape(fluo_ref(i,:),1,1,[])-fluo_next)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));    
     
-    for t = 1:n_traces
+%         fluo_logL_fwd(i,:,:) = fluo_logL_fwd(i-1,:,:) + logL_fluo_full;
+    sample_logL_fwd(i,:,:) = logL_fluo_full + new_state_tr_vec;
+%         fluo_logL_fwd(i,:,:) = logL_fluo_full;
+    
+    % calculate RS factor
+    rs_factor = mean(exp(2*logsumexp(sample_logL_fwd(i,:,:),2) - logsumexp(2*sample_logL_fwd(i,:,:),2)),3);
+    
+    if rs_factor < n_chains*0.5
       
+        % check to see if we need to resample
+        probs_chain = exp(sample_logL_fwd(i,:,:)-logsumexp(sample_logL_fwd(i,:,:),2));    
+
         % resample
-        rs_ids = discretize(rand_array(1,:,t),option_array(1,:,t));
-        
-        % resample arrays
-        sample_chains_fwd(i,:,t) = sample_chains_fwd(i,rs_ids,t);
-        sample_fluo_fwd(i,:,t) = fluo_next(1,rs_ids,t);
-        if i > 1
-            prev_state_array(1,:,t) = prev_state_array(1,rs_ids,t);
-        end
-        
-        % resample compound state trackers
-        cp_state_tracker(:,:,t) = cp_state_tracker(:,rs_ids,t);
-        cp_init_tracker(:,:,t) = cp_init_tracker(:,rs_ids,t);
-        
-        % add fluo probabilities
-        sample_fluo_prob_fwd(i,:,t) = probs_fluo(1, rs_ids, t);
-    end
+        option_array = [zeros(1,1,n_traces) cumsum(probs_chain,2)];
+        rand_array = rand(1,n_chains,n_traces);    
     
-    % convert cp states to integer representation   
-    cp_state_array_fwd(i,:,:) = 1 + sum(cp_conv_array.*(cp_state_tracker-1),1);    
-    for k = 1:nStates
-%         test(k,:,:) = sum(ms2_kernel.*(cp_state_tracker==k),1);
-        F_array_fwd_long(i,:,:,k) = sum(ms2_kernel.*(cp_state_tracker==k),1);
+        for t = 1:n_traces
+
+            % resample
+            rs_ids = discretize(rand_array(1,:,t),option_array(1,:,t));
+
+            % resample arrays
+            sample_chains_fwd(i,:,t) = sample_chains_fwd(i,rs_ids,t);
+            sample_fluo_fwd(i,:,t) = sample_fluo_fwd(i,rs_ids,t);
+            sample_logL_fwd(i,:,t) = sample_logL_fwd(i,rs_ids,t);
+            sample_parent_fwd(i+1,:,t) = rs_ids;
+            sample_parent_cum_fwd(i+1,:,t) = sample_parent_cum_fwd(i,rs_ids,t);
+            if i > 1
+                prev_state_array(1,:,t) = prev_state_array(1,rs_ids,t);
+            end
+
+            % resample compound state trackers
+            cp_state_tracker(:,:,t) = cp_state_tracker(:,rs_ids,t);
+            cp_init_tracker(:,:,t) = cp_init_tracker(:,rs_ids,t);
+
+        end
+%         fluo_logL_fwd(i,:,:) = 0;
+    else
+        sample_parent_fwd(i+1,:,:) = repmat(1:n_chains,1,1,n_traces);
+        sample_parent_cum_fwd(i+1,:,:) = sample_parent_cum_fwd(i,:,:);
     end
-%     if i > 1
-%         tr_counts_temp = tr_tracker_fwd(:,:,i-1,:);
-%         for n = 1:nStates
-%             for m = 1:nStates
-%                 tr_counts_temp(n,m,1,:) = reshape(sum(prev_state_array==m & sample_chains_fwd(i,:,t)==n,2),1,1,1,[]);
-%             end
-%         end
-%         tr_tracker_fwd(:,:,i-1,:) = tr_counts_temp;
-%     end
-end 
+   
+end
+
+mcmcInfo.sample_fluo = sample_fluo_fwd;
+mcmcInfo.sample_chains = sample_chains_fwd;
+mcmcInfo.sample_logL = sample_logL_fwd;
+mcmcInfo.LL = 5*mean(mean(logsumexp(sample_logL_fwd,2)-log(n_chains),3),1);% - log(n_chains*n_traces);
 % toc
 
-
-%%
-em_time = toc;
-if mcmcInfo.em_timer_flag
-    mcmcInfo.em_time_vec(mcmcInfo.step) = em_time;
-end

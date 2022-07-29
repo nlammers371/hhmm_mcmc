@@ -88,8 +88,7 @@ for i = 1:seq_len
         new_states = sum(rand_array_prop > option_array) + 1;
                         
         % calculate likelihood associated with each choice
-        new_state_tr_vec = log(tr_probs(new_states+nStates*mcmcInfo.chain_id_ref));
-        
+        new_state_tr_vec = log(tr_probs(new_states+nStates*mcmcInfo.chain_id_ref))
     else                
         new_states = reshape(randsample(1:nStates,n_traces*n_chains,true,pi0),1,n_chains,n_traces);            
     end    

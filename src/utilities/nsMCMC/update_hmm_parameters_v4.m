@@ -2,19 +2,12 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
 
     % extrace parameters
     nStates = mcmcInfo.nStates;
-    seq_len = mcmcInfo.seq_length;
+    seq_length = mcmcInfo.seq_length;
     n_traces = mcmcInfo.n_traces;
     n_chains = mcmcInfo.n_chains_eff;
     coeff_MS2 = mcmcInfo.coeff_MS2;        
-    
-    % generate lookup table with ms2 kernel values
-    nStepsMax = 0;
-    for n = 1:n_chains
-        nStepsMax = max([nStepsMax find(mcmcInfo.coeff_MS2(:,n)>0,1,'last')]);
-    end    
-%     max_w = nStepsMax;
-    coeff_MS2 = coeff_MS2(1:nStepsMax,:);
-    
+    coeff_MS2_us = mcmcInfo.coeff_MS2_us;        
+    us_factor = mcmcInfo.upsample_factor;        
     %% %%%%%%%%%% update transition matrix (A) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     update_flag = mod(mcmcInfo.step,mcmcInfo.update_increment) == 0 || mcmcInfo.step == mcmcInfo.n_mcmc_steps;
     mcmcInfo.update_flag = update_flag;
@@ -23,15 +16,14 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     else
         update_index = mcmcInfo.step;
     end
-    A_counts = mcmcInfo.transition_count_array;  
+    A_counts = mcmcInfo.transition_count_array/us_factor;  
     pi0_counts = sum(A_counts,1);
-    
     if mcmcInfo.ensembleInferenceFlag
         A_counts = repmat(mean(A_counts,3),1,1,n_chains);
         pi0_counts = repmat(mean(pi0_counts,3),1,1,n_chains);
     end
     
-%     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);    
+%     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
         if n == 1 || ~mcmcInfo.ensembleInferenceFlag
             T = 1;%mcmcInfo.tempGradVec(n);
@@ -52,43 +44,40 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             mcmcInfo.pi0_inf_array(update_index,:,n) = mcmcInfo.pi0_curr(n,:);
         end
     end
-    
+                
     
     %% %%%%%%%%%%%%% update emission vector(V) %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % update V   
     
-    % generate F count arrays             
-    F_array = zeros(seq_len*n_traces,nStates,n_chains);            
-    y_array = repmat(reshape(mcmcInfo.observed_fluo,[],1),1,n_chains);
-    if mcmcInfo.inferNStepsFlag && ~mcmcInfo.ensembleInferenceFlag
-        for c = 1:n_chains
-            for n = 1:n_traces        
-                ind1 = (n-1)*seq_len+1;
-                ind2 = n*seq_len;
-                % record observed fluo            
-
-                for m = 1:nStates
-                    % record counts
-                    state_counts = convn(coeff_MS2(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full');            
-                    F_array(ind1:ind2,m,c) = state_counts(1:end-size(coeff_MS2,1)+1,:);                        
-                end
+    % generate F count arrays
+    F_array = zeros(seq_length*n_traces,nStates,n_chains);        
+    y_array = NaN(seq_length*n_traces,n_chains);    
+        
+    for c = 1:n_chains
+        for n = 1:n_traces        
+            ind1 = (n-1)*seq_length+1;
+            ind2 = n*seq_length;
+            % record observed fluo            
+            if ~mcmcInfo.bootstrapFlag              
+                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+            else
+                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,c,n);
             end
-        end  
-    else
-       for k = 1:nStates
-          c_array_temp = permute(convn(coeff_MS2(:,1),mcmcInfo.sample_chains==k,'full'),[1 3 2]);
-          c_array_temp = c_array_temp(1:end-size(coeff_MS2,1)+1,:,:);
-          F_array(:,k,:) = reshape(c_array_temp,[],n_chains,1);
-       end
-    end
+            for m = 1:nStates
+                % record counts
+                state_counts = convn(coeff_MS2_us(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full')/us_factor;            
+                state_counts = state_counts(1:end-size(coeff_MS2_us,1)+1,:);
+                state_counts = state_counts(us_factor:us_factor:end,:);
+                F_array(ind1:ind2,m,c) = state_counts;                        
+            end
+        end
+    end  
     if mcmcInfo.ensembleInferenceFlag
         if mcmcInfo.bootstrapFlag
             error('incompatible inference options')
         end
         F_array = repmat(mean(F_array,3),1,1,n_chains);
-    end    
-         
-    
+    end
     for c = 1:n_chains   
         if c == 1 || ~mcmcInfo.ensembleInferenceFlag
             T = 1;%mcmcInfo.tempGradVec(c);
@@ -101,17 +90,22 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
 
             % sample
-            mcmcInfo.v_curr(c,:) = sort(mvnrnd(v_mean, v_cov_mat)'); 
+%             try
+            mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
+%             catch
+%                 v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
+%                 mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
+%                 mcmcInfo.err_flag_vec(c) = 1;
+%             end
         else
-            mcmcInfo.v_curr(c,:) = sort(mcmcInfo.v_curr(1,:));
+            mcmcInfo.v_curr(c,:) = mcmcInfo.v_curr(1,:);
         end
         if update_flag
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_curr(c,:);   
         end
     end
- 
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
-
+    
     % get predicted fluorescence (using new v values)
     mcmcInfo = predict_fluo_full_v3(mcmcInfo);
     
@@ -126,9 +120,9 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             % see: https://discdown.org/flexregression/bayesreg.html                        
             if ~mcmcInfo.bootstrapFlag
                 a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
-                F_diff = reshape(permute(mcmcInfo.sample_fluo(:,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+                F_diff = reshape(permute(mcmcInfo.sample_fluo(us_factor:us_factor:end,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
             else
-                F_diff = reshape(mcmcInfo.sample_fluo(:,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
+                F_diff = reshape(mcmcInfo.sample_fluo(us_factor:us_factor:end,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
                 a = (numel(mcmcInfo.observed_fluo(:,1,:))/2 + mcmcInfo.a0)./T;    
             end
             b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';

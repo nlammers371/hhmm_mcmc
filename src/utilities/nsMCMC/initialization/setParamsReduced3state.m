@@ -9,7 +9,7 @@ trueParams.nStates = 3;
 % define transition rate parameters
 kon = 0.01;
 koff = 0.02;
-k_corr_factor = 1.2;
+k_corr_factor = 0.18;
 trueParams.R = Q_helper_fun(kon,koff,k_corr_factor);
 trueParams.A = expm(trueParams.R*trueParams.tres);                  
 trueParams.kon = kon;
@@ -18,8 +18,11 @@ trueParams.k_corr_factor = k_corr_factor;
                     
 % define emissions vector
 r = 0.1;
-r_corr_factor = 1.3;
-trueParams.v = [0, r, 2*r*r_corr_factor]'*tres;
+trueParams.r = r;
+r_corr_factor = log(1.3);
+trueParams.r_corr_factor = r_corr_factor;
+
+trueParams.v = [0, r, 2*r*exp(r_corr_factor)]'*tres;
 trueParams.sigma = 1.5;
 [V, D] = eig(trueParams.A);
 [~, mi] = max(real(diag(D)));

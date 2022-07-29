@@ -2,7 +2,10 @@ function mcmcInfo = resample_chains_v5(mcmcInfo)
 
 % This script resamples the microscopic promoter state for each extant
 % chain in an asynchronous manner. 
-tic
+if mcmcInfo.em_timer_flag
+    tic
+end
+% tic
 
 % extract parameters
 A_log = log(mcmcInfo.A_curr);
@@ -10,10 +13,10 @@ pi0 = mcmcInfo.pi0_curr;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains_eff;
-
+us_factor = mcmcInfo.upsample_factor;
 
 % nStepsMax = mcmcInfo.nStepsMax;
-seq_len = mcmcInfo.seq_length;
+seq_len = size(mcmcInfo.sample_chains,1);%mcmcInfo.seq_length;
 
 % generate lookup table with ms2 kernel values
 nStepsMax = 0;
@@ -22,9 +25,10 @@ for n = 1:n_chains
 end    
 mcmcInfo.max_w = nStepsMax;
 mcmcInfo.MS2_kernel = mcmcInfo.coeff_MS2(1:nStepsMax,:);
+mcmcInfo.MS2_kernel_us = mcmcInfo.coeff_MS2_us(1:nStepsMax*us_factor,:);
 
 % note that this version uses normal array indexing
-mcmcInfo.v_curr_long = repmat(permute(mcmcInfo.v_curr',[3 2 1]),nStepsMax,1,1);
+mcmcInfo.v_curr_long = repmat(permute(mcmcInfo.v_curr',[3 2 1]),nStepsMax*us_factor,1,1);
 
 % generate reference vector
 mcmcInfo.chain_id_ref = 0:n_chains-1;
@@ -32,8 +36,8 @@ mcmcInfo.trace_id_ref = reshape(0:n_traces-1,1,1,[]);
 mcmcInfo.row_ref = (1:nStates)';
 
 % generate random sampling orders
-n_reps = mcmcInfo.n_reps;
-sample_indices = randsample(repelem(1:seq_len,n_reps),n_reps*seq_len,false);
+% n_reps = mcmcInfo.n_reps;
+% sample_indices = randsample(repelem(1:seq_len,n_reps),n_reps*seq_len,false);
 
 % generate temporary chain array that includes post and prior states to
 % make resampling easier below
@@ -87,7 +91,7 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
     [logL_fluo, new_fluo_array, comp_indices] = calculate_fluo_logL_v5(mcmcInfo);       
  
     %%% put everything together
-    total_log_likelihoods = logL_tr + logL_fluo/mcmcInfo.upsample_factor;    
+    total_log_likelihoods = logL_tr + logL_fluo;    
     
     total_log_likelihoods = total_log_likelihoods - logsumexp(total_log_likelihoods,1);
     total_likelihoods = exp(total_log_likelihoods);    
@@ -113,7 +117,7 @@ mcmcInfo.sample_chains = sample_chains_temp(2:end-1,:,:);
 mcmcInfo.sample_fluo = mcmcInfo.sample_fluo_temp;
 mcmcInfo = rmfield(mcmcInfo,{'sample_chains_temp','sample_chains_temp','sample_chains_temp'});
 
-em_time = toc;
-if true%mcmcInfo.em_timer_flag
+if mcmcInfo.em_timer_flag
+    em_time = toc;
     mcmcInfo.em_time_vec(mcmcInfo.step) = em_time;
 end
