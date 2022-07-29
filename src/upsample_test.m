@@ -18,6 +18,7 @@ n_traces = 20;
 seq_length = 100;
 inferMemory = 0;
 ensembleInferenceFlag = 0;
+mcmcInfo.mhResamplingFlag = 1;
 
 % global mcmcInfo
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
@@ -28,7 +29,7 @@ mcmcInfo.tres = sampling_res;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 
 % characteristics of simulated data
-mcmcInfo.upsample_factor = 1;
+mcmcInfo.upsample_factor = 3;
 mcmcInfo.n_reps = 2;
 mcmcInfo.n_traces = n_traces;
 mcmcInfo.seq_length = seq_length; % length of simulated traces in time steps
