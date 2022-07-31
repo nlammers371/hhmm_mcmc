@@ -17,21 +17,58 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     else
         update_index = mcmcInfo.step;
     end
-    A_counts = mcmcInfo.transition_count_array/us_factor;  
-    pi0_counts = sum(A_counts,1);
+    tr_counts = mcmcInfo.transition_count_array/us_factor;  
+    pi0_counts = sum(tr_counts,1);
     if mcmcInfo.ensembleInferenceFlag
-        A_counts = repmat(mean(A_counts,3),1,1,n_chains);
+        tr_counts = repmat(mean(tr_counts,3),1,1,n_chains);
         pi0_counts = repmat(mean(pi0_counts,3),1,1,n_chains);
     end
     
 %     ref_chain_ids = repelem(find(mcmcInfo.refChainVec),mcmcInfo.n_temps_per_chain);
     for n = 1:n_chains
         if n == 1 || ~mcmcInfo.ensembleInferenceFlag
-            T = 1;%mcmcInfo.tempGradVec(n);
-            A_chain = A_counts(:,:,n).^(1/T); % NL: note that this technically should be applied to full distribution, including prior       
-            A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
-            mcmcInfo.A_curr(:,:,n) = A_samp;
-
+            if ~mcmcInfo.rateSamplingFlag
+                T = 1;%mcmcInfo.tempGradVec(n);
+                A_chain = tr_counts(:,:,n).^(1/T); % NL: note that this technically should be applied to full distribution, including prior       
+                A_samp = sample_A_dirichlet(mcmcInfo.A_alpha(:,:,n), A_chain);    
+                mcmcInfo.A_curr(:,:,n) = A_samp;
+            else
+                if nStates == 2
+                    kon_tr = tr_counts(2,1,n);
+                    kon_total = pi0_counts(1,1,n);
+                    koff_tr = tr_counts(1,2,n);
+                    koff_total = pi0_counts(1,2,n);
+                    % sample from gamma 
+                    kon = gamrnd(mcmcInfo.alpha_kon+kon_tr,1/(mcmcInfo.beta_kon+kon_total));
+                    koff = gamrnd(mcmcInfo.alpha_koff+koff_tr,1/(mcmcInfo.beta_koff+koff_total));
+                    % generate new rate matrix
+                    Q_init = [-kon koff;  kon -koff];
+                    mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
+                    mcmcInfo.A_curr(:,:,n) = Q_init + eye(2);
+                elseif nStates == 3
+                    % calculate for high and low states first
+                    kon_tr = tr_counts(2,1,n);
+                    kon_total = pi0_counts(1,1,n);
+                    koff_tr = tr_counts(2,3,n);
+                    koff_total = pi0_counts(1,3,n);
+                    % sample from gamma 
+                    kon = gamrnd(2*mcmcInfo.alpha_kon+kon_tr,1/(mcmcInfo.beta_kon+kon_total));
+                    koff = gamrnd(2*mcmcInfo.alpha_koff+koff_tr,1/(mcmcInfo.beta_koff+koff_total));
+                    % now middle
+                    mid_tr = pi0_counts(1,2,n) - tr_counts(2,2,n);
+                    mid_rate = gamrnd(mcmcInfo.alpha_koff+mcmcInfo.alpha_kon+mid_tr,1/(2*mcmcInfo.beta_koff+mid_tr));
+                    kon_frac = tr_counts(3,2)/(tr_counts(3,2)+tr_counts(1,2));
+                    kon_mid = mid_rate*kon_frac;
+                    koff_mid = mid_rate*(1-kon_frac);
+                    % make rate matrix
+                    Q_init = [-kon koff_mid 0; kon -mid_rate koff; 0 kon_mid -koff];
+                    mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
+                    mcmcInfo.A_curr(:,:,n) = Q_init + eye(3);
+                    mcmcInfo.A_curr(:,:,n) = mcmcInfo.A_curr(:,:,n)/sum(
+                else
+                    error('Rate sampling not supported for nStates>3');
+                end
+            end
             % update pi0      
             pi0_ct = pi0_counts(1,:,n) + sum(mcmcInfo.A_alpha(:,:,n),1);
             mcmcInfo.pi0_curr(n,:) = drchrnd(pi0_ct,1);
@@ -41,8 +78,11 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         end
         % check that pi0 values are pos
         if update_flag
-            mcmcInfo.A_inf_array(:,:,update_index,n) = mcmcInfo.A_curr(:,:,n);
+            mcmcInfo.A_inf_array(:,:,update_index,n) = mcmcInfo.A_curr(:,:,n);            
             mcmcInfo.pi0_inf_array(update_index,:,n) = mcmcInfo.pi0_curr(n,:);
+            if mcmcInfo.rateSamplingFlag
+                mcmcInfo.Q_inf_array(:,:,update_index,n) = mcmcInfo.Q_curr(:,:,n);
+            end
         end
     end
                 
@@ -80,7 +120,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         F_array = repmat(mean(F_array,3),1,1,n_chains);
     end
     
-    swap_indices = NaN(n_chains,n_states);
+    swap_indices = NaN(n_chains,nStates);
     
     for c = 1:n_chains   
         if c == 1 || ~mcmcInfo.ensembleInferenceFlag
@@ -94,13 +134,14 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
 
             % sample
-%             try
+            try
             [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 
-%             catch
+            catch
+                error('wtf')
 %                 v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 *inv(mcmcInfo.M0));
 %                 mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
 %                 mcmcInfo.err_flag_vec(c) = 1;
-%             end
+            end
         else
             mcmcInfo.v_curr(c,:) = mcmcInfo.v_curr(1,:);
         end
@@ -115,11 +156,19 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         mcmcInfo.A_curr(:,:,c) = mcmcInfo.A_curr(si,si,c);        
         mcmcInfo.pi0_curr(c,:) = mcmcInfo.pi0_curr(c,si);
         
-
+        sc = mcmcInfo.sample_chains(:,c,:);
+        sc_new = sc;
+        for k = 1:nStates
+            sc_new(sc==k) = si(k);
+        end
+        mcmcInfo.sample_chains(:,c,:) = sc_new; 
+        
         if update_flag
             mcmcInfo.pi0_inf_array(update_index,:,c) = mcmcInfo.pi0_inf_array(update_index,si,c);
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_inf_array(update_index,si,c);
             mcmcInfo.A_inf_array(:,:,update_index,c) = mcmcInfo.A_inf_array(si,si,update_index,c);
+        end
+    end
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
     
     % get predicted fluorescence (using new v values)

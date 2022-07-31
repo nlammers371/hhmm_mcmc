@@ -6,30 +6,30 @@ close all force
 addpath(genpath('utilities'))
 
 % initialize info structure
-sampling_res = 16.85;
-% sampling_res = 5;
-trueParams = setParamsBasic2state(sampling_res);
+% sampling_res = 16.85;
+sampling_res = 5;
+trueParams = setParamsBasic3state(sampling_res);
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 500;
-n_chains = 25;
+n_mcmc_steps = 200;
+n_chains = 50;
 n_traces = 20;
 seq_length = 100;
 inferMemory = 0;
 ensembleInferenceFlag = 0;
-mcmcInfo.mhResamplingFlag = 1;
+mcmcInfo.rateSamplingFlag = 1;
 
 % global mcmcInfo
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.burn_in = 100;
+mcmcInfo.burn_in = 50;
 mcmcInfo.resampleTracesFlag = 1;
 mcmcInfo.rs_freq = 10;
 mcmcInfo.tres = sampling_res;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 
 % characteristics of simulated data
-mcmcInfo.upsample_factor = 3;
+mcmcInfo.upsample_factor = 1;
 mcmcInfo.n_reps = 2;
 mcmcInfo.n_traces = n_traces;
 mcmcInfo.seq_length = seq_length; % length of simulated traces in time steps
@@ -71,8 +71,8 @@ mcmcInfo = setMCMCOptions(mcmcInfo);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize inference arrays and variables
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-mcmcInfo = initializeInferenceArrays(mcmcInfo);
-mcmcInfo = initializeVariablesBasicRandom(mcmcInfo);
+mcmcInfo = initializeInferenceArrays_v2(mcmcInfo);
+mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % conduct inference

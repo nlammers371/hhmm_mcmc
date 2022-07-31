@@ -27,6 +27,6 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
   
     n_vec = (0:n_chains-1)*nStates^2;
     for i = 1:length(unique_indices)        
-        mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==i,1),3);
+        mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==unique_indices(i),1),3);
     end    
     

@@ -11,6 +11,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.mhResamplingFlag = 0;
     defaultOptions.PFResamplingFlag = 0;
     defaultOptions.upsample_factor = 1;
+    defaultOptions.rateSamplingFlag = 0;
     
     defaultOptions.mhInferenceFlag = 0;
     defaultOptions.reducedModelFlag = 0;
@@ -28,11 +29,10 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     for i = find(optionFlags)'
         mcmcInfo.(fnamesDefault{i}) = defaultOptions.(fnamesDefault{i});
     end               
-    
+        
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
-%     mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
     mcmcInfo.trace_id_array = repmat((1:mcmcInfo.n_traces)',1,mcmcInfo.n_chains);
-%     mcmcInfo.bootstrapFlag = bootstrapFlag;
+
     if mcmcInfo.bootstrapFlag
         % randomly assign subset of traces to each chain
 %         mcmcInfo.n_traces_per_chain = ceil(200/mcmcInfo.seq_length);
