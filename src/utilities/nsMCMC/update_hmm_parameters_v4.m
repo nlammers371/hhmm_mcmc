@@ -17,8 +17,8 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     else
         update_index = mcmcInfo.step;
     end
-    tr_counts = mcmcInfo.transition_count_array/us_factor;  
-    pi0_counts = sum(tr_counts,1);
+    tr_counts = mcmcInfo.transition_count_array;  
+    pi0_counts = mcmcInfo.state_counts;
     if mcmcInfo.ensembleInferenceFlag
         tr_counts = repmat(mean(tr_counts,3),1,1,n_chains);
         pi0_counts = repmat(mean(pi0_counts,3),1,1,n_chains);
@@ -44,7 +44,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                     % generate new rate matrix
                     Q_init = [-kon koff;  kon -koff];
                     mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
-                    mcmcInfo.A_curr(:,:,n) = Q_init + eye(2);
+                    mcmcInfo.A_curr(:,:,n) = eye(2) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
                 elseif nStates == 3
                     % calculate for high and low states first
                     kon_tr = tr_counts(2,1,n);
@@ -75,6 +75,9 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         else
             mcmcInfo.A_curr(:,:,n) = mcmcInfo.A_curr(:,:,1);
             mcmcInfo.pi0_curr(n,:) = mcmcInfo.pi0_curr(1,:);
+        end
+        if ~any(mcmcInfo.pi0_curr(n,:)>=0)
+            error('wtf')
         end
         % check that pi0 values are pos
         if update_flag

@@ -27,10 +27,10 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
     %                                   0.0225    0.0958    0.3030];
         else
             % set hyperparameters
-            mcmcInfo.beta_kon = n_scale;
-            mcmcInfo.beta_koff = n_scale;
-            mcmcInfo.alpha_kon = 0.005 + rand()*0.25*n_scale;
-            mcmcInfo.alpha_koff = 0.005 + rand()*0.25*n_scale;
+            mcmcInfo.beta_kon = n_scale/2;
+            mcmcInfo.beta_koff = n_scale/2;
+            mcmcInfo.alpha_kon = 0.005 + rand()*0.25*n_scale/2;
+            mcmcInfo.alpha_koff = 0.005 + rand()*0.25*n_scale/2;
             % randomly draw kon and koff
             kon = gamrnd(mcmcInfo.alpha_kon,1/mcmcInfo.beta_kon);
             koff = gamrnd(mcmcInfo.alpha_koff,1/mcmcInfo.beta_koff);
@@ -42,9 +42,9 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
                 mcmcInfo.A_curr(:,:,n) = Q_init+eye(3);
             elseif mcmcInfo.nStates==2
                 Q_init = [-kon koff; kon -koff];
-                mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres/mcmcInfo.upsample_factor;
+                mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
                 % convert to probability matrix (assume single transition)
-                mcmcInfo.A_curr(:,:,n) = Q_init+eye(2);
+                mcmcInfo.A_curr(:,:,n) = eye(2) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
             else
                 error('Rate sampling not supported for nStates>3')
             end

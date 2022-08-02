@@ -20,8 +20,8 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     % get state counts
     for k = 1:nStates
         mcmcInfo.initial_state_array(k,:) = sum(mcmcInfo.sample_chains(1,:,:)==k,3);% / n_chains;
-    end
-    
+    end        
+        
     % get transition counts
     unique_indices = unique(lin_index_array(:));    
   
@@ -29,4 +29,8 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     for i = 1:length(unique_indices)        
         mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==unique_indices(i),1),3);
     end    
+    mcmcInfo.state_counts = sum(mcmcInfo.transition_count_array,1);
+    if mcmcInfo.rateSamplingFlag % calculate adjusted counts if necessary
+        mcmcInfo = adjust_tr_counts(mcmcInfo);
+    end
     
