@@ -37,15 +37,14 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                     kon_tr = tr_counts(2,1,n)+mcmcInfo.alpha_kon;
                     kon_total = pi0_counts(1,1,n)+mcmcInfo.beta_kon;
                     koff_tr = tr_counts(1,2,n)+mcmcInfo.alpha_koff;
-                    koff_total = pi0_counts(1,2,n)+mcmcInfo.beta_koff;
+                    koff_total = pi0_counts(1,2,n);
                     % sample from gamma 
                     kon = gamrnd(kon_tr,1/kon_total);
-                    koff = gamrnd(koff_tr,1/koff_total);
+                    koff = gamrnd(mcmcInfo.alpha_koff+koff_tr,1/(mcmcInfo.beta_koff+koff_total));
                     % generate new rate matrix
                     Q_init = [-kon koff;  kon -koff];
                     mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
                     mcmcInfo.A_curr(:,:,n) = eye(2) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
-                    
                 elseif nStates == 3
                   
                     % calculate for high and low states first
@@ -74,7 +73,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                     Q_init = [-kon koff2 0; kon -k_mid koff; 0 kon2 -koff];
                     mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
                     if mcmcInfo.adjustSamplingFlag
-                        mcmcInfo.A_curr(:,:,n) = expm(Q_init);%eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;                    
+                        mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;                    
                     else
                         mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init;
                     end

@@ -6,19 +6,21 @@ close all force
 addpath(genpath('utilities'))
 
 % initialize info structure
-sampling_res = 16.85;
+sampling_res = 16.85/3;
 % sampling_res = 2.5;
-trueParams = setParamsBasic2state(sampling_res);
+trueParams = setParamsBasic3state(sampling_res);
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 250;
+n_mcmc_steps = 150;
 n_chains = 25;
 n_traces = 20;
 seq_length = 100;
 inferMemory = 0;
 ensembleInferenceFlag = 0;
 mcmcInfo.rateSamplingFlag = 1;
+mcmcInfo.adjustSamplingFlag = 1;
+
 trueParams.discrete_data_flag = 0;
 
 % global mcmcInfo
@@ -30,7 +32,7 @@ mcmcInfo.tres = sampling_res;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 
 % characteristics of simulated data
-mcmcInfo.upsample_factor = 2;
+mcmcInfo.upsample_factor = 3;
 mcmcInfo.n_reps = 2;
 mcmcInfo.n_traces = n_traces;
 mcmcInfo.seq_length = seq_length; % length of simulated traces in time steps

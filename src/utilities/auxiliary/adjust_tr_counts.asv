@@ -118,14 +118,14 @@ function mcmcInfo = adjust_tr_counts(mcmcInfo)
         
         % 2->1
         w112 = calculate_jump_weights1(k12,T); %2->1
-        w312_1 = zeros(size(w211));%calculate_jump_weights3(k32,k23,k12,T); % 2->3->2->1
-        w312_2 = zeros(size(w211));%calculate_jump_weights3Rep(k12,k21,T); % 2->1->2->1
+        w312_1 = calculate_jump_weights3(k32,k23,k12,T); % 2->3->2->1
+        w312_2 = calculate_jump_weights3Rep(k12,k21,T); % 2->1->2->1
         denom12 = w112+w312_1+w312_2;
         
         % 2->3
         w132 = calculate_jump_weights1(k32,T); %2->3
-        w332_1 = zeros(size(w211));%calculate_jump_weights3Rep(k32,k23,T); % 2->3->2->3
-        w332_2 = zeros(size(w211));%calculate_jump_weights3(k12,k21,k32,T); % 2->1->2->3
+        w332_1 = calculate_jump_weights3Rep(k32,k23,T); % 2->3->2->3
+        w332_2 = calculate_jump_weights3(k12,k21,k32,T); % 2->1->2->3
         denom32 = w132+w332_1+w332_2;
         
         % 3->3
@@ -143,8 +143,8 @@ function mcmcInfo = adjust_tr_counts(mcmcInfo)
         
         % 3->2
         w123 = calculate_jump_weights1(k23,T); %3->2
-        w323_1 = zeros(size(w211));%calculate_jump_weights3Rep(k23,k32,T); % 3->2->3->2
-        w323_2 = zeros(size(w211));%calculate_jump_weights3(k23,k12,k21,T); % 3->2->1->2
+        w323_1 = calculate_jump_weights3Rep(k23,k32,T); % 3->2->3->2
+        w323_2 = calculate_jump_weights3(k23,k12,k21,T); % 3->2->1->2
         denom23 = w123+w323_1+w323_2;
         
         % apply adjustments        

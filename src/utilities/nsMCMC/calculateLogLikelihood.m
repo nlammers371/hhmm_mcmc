@@ -18,12 +18,12 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     lin_index_array = row_col_array;
 
     % get transition counts
-    unique_indices = unique(lin_index_array(:));    
+%     unique_indices = unique(lin_index_array(:));    
 
-    n_vec = (0:n_chains-1)*nStates^2;
-    for i = 1:length(unique_indices)        
-        mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==i,1),3);
-    end
+%     n_vec = (0:n_chains-1)*nStates^2;
+%     for i = 1:length(unique_indices)        
+%         mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==i,1),3);
+%     end
 
     % calculate transition likelihoods
     logL_transition_array = A_log(lin_index_array);
