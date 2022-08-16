@@ -18,21 +18,17 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
         mcmcInfo.step = step;       
         
-        if mcmcInfo.resampleTracesFlag && step >= mcmcInfo.burn_in %&& mod(step,mcmcInfo.rs_freq) == 0
+        if mcmcInfo.resampleTracesFlag && step >= mcmcInfo.burn_in && mod(step,mcmcInfo.rs_freq) == 0
             % resample using total likelihood
             logL_vec = mcmcInfo.logL_vec(step-1,:)*numel(mcmcInfo.observed_fluo);
             
-            rs_factor = exp(2*logsumexp(logL_vec,2) - logsumexp(2*logL_vec,2));
+%             rs_factor = exp(2*logsumexp(logL_vec,2) - logsumexp(2*logL_vec,2));
             if true%rs_factor <= mcmcInfo.n_chains/2
                 logL_vec = logL_vec-logsumexp(logL_vec,2);
 %             [~,si_vec] = sort(logL_vec,'descend');
                 prob_vec = exp(logL_vec); % inject pseudocounts to avoid sparsity issues
-    %             rs_ids = repelem(si_vec(1:5),5);
-                try
-                    rs_ids = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,prob_vec);
-                catch
-                    error('check')
-                end
+    %             rs_ids = repelem(si_vec(1:5),5);              
+                rs_ids = randsample(1:mcmcInfo.n_chains,mcmcInfo.n_chains,true,prob_vec);          
                 % resample latent states and fluo predictions
                 mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,rs_ids,:);
                 mcmcInfo.sample_fluo = mcmcInfo.sample_fluo(:,rs_ids,:);

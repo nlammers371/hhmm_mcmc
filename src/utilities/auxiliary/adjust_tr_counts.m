@@ -90,20 +90,32 @@ function mcmcInfo = adjust_tr_counts(mcmcInfo)
         % 1->1
         w011 = 1-calculate_jump_weights1(k21,T); %1->1
         w211 = calculate_jump_weights2(k21,k12,T); % 1->2->1
-        w411Rep = zeros(size(w211));%calculate_jump_weights4Rep(k21,k12,T); % 1->2->1->2->1
-        w411 = zeros(size(w211));%calculate_jump_weights4(k21,k32,k23,k12,T); % 1->2->3->2->1
+        w411Rep = zeros(size(w211));%
+        w411 = zeros(size(w211));
+        if mcmcInfo.rateSamplingHRFlag
+            w411Rep = calculate_jump_weights4Rep(k21,k12,T); % 1->2->1->2->1
+            w411 = calculate_jump_weights4(k21,k32,k23,k12,T); % 1->2->3->2->1
+        end
         denom11 = w011+w211+w411+w411Rep;
         
         % 1->2        
         w121 = calculate_jump_weights1(k21,T); %1->2
         w321Rep = zeros(size(w211));%calculate_jump_weights3Rep(k21,k12,T); % 1->2->1->2
         w321 = zeros(size(w211));%calculate_jump_weights3(k21,k32,k23,T); % 1->2->3->2
+        if mcmcInfo.rateSamplingHRFlag
+            w321Rep = calculate_jump_weights3Rep(k21,k12,T); % 1->2->1->2
+            w321 = calculate_jump_weights3(k21,k32,k23,T); % 1->2->3->2
+        end
         denom21 = w121+w321+w321Rep;
         
         % 1->3 
         w231 = calculate_jump_weights2(k21,k32,T); % 1->2->3        
         w431_1 = zeros(size(w231));%calculate_jump_weights4Rep1(k21,k12,k32,T);%calculate_jump_weights2(k21,k32,T); % 1->2->1->2->3        
         w431_2 = zeros(size(w231));%calculate_jump_weights4Rep2(k21,k32,k23,T);%calculate_jump_weights2(k21,k32,T); % 1->2->3->2->3
+        if mcmcInfo.rateSamplingHRFlag
+            w431_1 = calculate_jump_weights4Rep1(k21,k12,k32,T);%calculate_jump_weights2(k21,k32,T); % 1->2->1->2->3        
+            w431_2 = calculate_jump_weights4Rep2(k21,k32,k23,T);%calculate_jump_weights2(k21,k32,T); % 1->2->3->2->3
+        end
         denom31 = w231+w431_1+w431_2;
         
         % 2->2
@@ -114,18 +126,32 @@ function mcmcInfo = adjust_tr_counts(mcmcInfo)
         w422_2 = zeros(size(w231));%calculate_jump_weights4Rep(k32,k23,T); % 2->3->2->3->2
         w422_3 = zeros(size(w231));%calculate_jump_weights4(k12,k21,k32,k23,T); % 2->1->2->3->2
         w422_4 = zeros(size(w231));%calculate_jump_weights4(k32,k23,k12,k21,T); % 2->3->2->1->2
+        if mcmcInfo.rateSamplingHRFlag
+            w422_1 = calculate_jump_weights4Rep(k12,k21,T); % 2->1->2->1->2
+            w422_2 = calculate_jump_weights4Rep(k32,k23,T); % 2->3->2->3->2
+            w422_3 = calculate_jump_weights4(k12,k21,k32,k23,T); % 2->1->2->3->2
+            w422_4 = calculate_jump_weights4(k32,k23,k12,k21,T); % 2->3->2->1->2
+        end
         denom22 = w022+w222_1+w222_2+w422_1+w422_2+w422_3+w422_4;
         
         % 2->1
         w112 = calculate_jump_weights1(k12,T); %2->1
         w312_1 = zeros(size(w211));%calculate_jump_weights3(k32,k23,k12,T); % 2->3->2->1
         w312_2 = zeros(size(w211));%calculate_jump_weights3Rep(k12,k21,T); % 2->1->2->1
+        if mcmcInfo.rateSamplingHRFlag
+            w312_1 = calculate_jump_weights3(k32,k23,k12,T); % 2->3->2->1
+            w312_2 = calculate_jump_weights3Rep(k12,k21,T); % 2->1->2->1
+        end
         denom12 = w112+w312_1+w312_2;
         
         % 2->3
         w132 = calculate_jump_weights1(k32,T); %2->3
         w332_1 = zeros(size(w211));%calculate_jump_weights3Rep(k32,k23,T); % 2->3->2->3
         w332_2 = zeros(size(w211));%calculate_jump_weights3(k12,k21,k32,T); % 2->1->2->3
+        if mcmcInfo.rateSamplingHRFlag
+            w332_1 = calculate_jump_weights3Rep(k32,k23,T); % 2->3->2->3
+            w332_2 = calculate_jump_weights3(k12,k21,k32,T); % 2->1->2->3
+        end
         denom32 = w132+w332_1+w332_2;
         
         % 3->3
@@ -133,18 +159,30 @@ function mcmcInfo = adjust_tr_counts(mcmcInfo)
         w233 = calculate_jump_weights2(k23,k32,T); % 3->2->3       
         w433_1 = zeros(size(w231));%calculate_jump_weights4Rep(k23,k32,T); % 3->2->3->2->3
         w433_2 = zeros(size(w231));%calculate_jump_weights4(k23,k12,k21,k32,T); % 3->2->1->2->3
+        if mcmcInfo.rateSamplingHRFlag
+            w433_1 = calculate_jump_weights4Rep(k23,k32,T); % 3->2->3->2->3
+            w433_2 = calculate_jump_weights4(k23,k12,k21,k32,T); % 3->2->1->2->3
+        end
         denom33 = w033+w233+w433_1+w433_2;
         
         % 3->1
         w213 = calculate_jump_weights2(k23,k12,T); % 3->2->1        
         w413_1 = zeros(size(w231));%calculate_jump_weights4Rep1(k23,k32,k12,T);%calculate_jump_weights2(k21,k32,T); % 3->2->3->2->1        
         w413_2 = zeros(size(w231));%calculate_jump_weights4Rep2(k23,k21,k12,T);%calculate_jump_weights2(k21,k32,T); % 3->2->1->2->1
+        if mcmcInfo.rateSamplingHRFlag
+            w413_1 = calculate_jump_weights4Rep1(k23,k32,k12,T);%calculate_jump_weights2(k21,k32,T); % 3->2->3->2->1        
+            w413_2 = calculate_jump_weights4Rep2(k23,k21,k12,T);%calculate_jump_weights2(k21,k32,T); % 3->2->1->2->1
+        end
         denom13 = w213+w413_1+w413_2;
         
         % 3->2
         w123 = calculate_jump_weights1(k23,T); %3->2
         w323_1 = zeros(size(w211));%calculate_jump_weights3Rep(k23,k32,T); % 3->2->3->2
         w323_2 = zeros(size(w211));%calculate_jump_weights3(k23,k12,k21,T); % 3->2->1->2
+        if mcmcInfo.rateSamplingHRFlag
+            w323_1 = calculate_jump_weights3Rep(k23,k32,T); % 3->2->3->2
+            w323_2 = calculate_jump_weights3(k23,k12,k21,T); % 3->2->1->2
+        end
         denom23 = w123+w323_1+w323_2;
         
         % apply adjustments        
