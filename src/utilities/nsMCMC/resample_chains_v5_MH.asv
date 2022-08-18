@@ -91,17 +91,18 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
     post_time_index = prev_time_index + 2;
     
     %%% previous state %%%
-%     samp_index_micro = us_factor*mcmcInfo.samp_index;
+    samp_index_micro = us_factor*mcmcInfo.samp_index;
     prev_time_index_micro = (i-1)*us_factor+1;
-    post_time_index_micro = i*us_factor+2;
+    post_time_index_micro = us_factor*(post_time_index-1);
     try
-      sim_block = mcmcInfo.sample_chains_temp(prev_time_index_micro:post_time_index_micro,:,:);
+      sim_block = sample_chains_temp(prev_time_index_micro:post_time_index_micro,:,:);
     catch
       error('afa')
     end
     mcmcInfo.relevant_indices = prev_time_index_micro+1:post_time_index_micro-1;
     mcmcInfo.curr_block = sim_block(2:end-1,:,:);
-%     mcmcInfo.fluo_curr_block = sample_fluo_temp(prev_time_index_micro-us_factor+2:post_time_index_micro-us_factor,:,:);
+    mcmcInfo.fluo_curr_block = sample_fluo_temp(prev_time_index_micro-us_factor+2:post_time_index_micro-us_factor,:,:);
+%     sim_block(end,:,:) = sample_chains_temp(post_time_index_micro,:,:);
     
     % conduct forward simulation    
     for t = [2:us_factor-1 us_factor-1:-1:2]
@@ -138,7 +139,7 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
    
 end 
 
-mcmcInfo.sample_chains = mcmcInfo.sample_chains_temp(2:end-1,:,:);
+mcmcInfo.sample_chains = sample_chains_temp(2:end-1,:,:);
 mcmcInfo.sample_fluo = mcmcInfo.sample_fluo_temp;
 mcmcInfo = rmfield(mcmcInfo,{'sample_chains_temp','sample_chains_temp','sample_chains_temp'});
 
