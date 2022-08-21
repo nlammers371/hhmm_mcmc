@@ -35,10 +35,6 @@ mcmcInfo.chain_id_ref = 0:n_chains-1;
 mcmcInfo.trace_id_ref = reshape(0:n_traces-1,1,1,[]);
 mcmcInfo.row_ref = (1:nStates)';
 
-% generate random sampling orders
-% n_reps = mcmcInfo.n_reps;
-% sample_indices = randsample(repelem(1:seq_len,n_reps),n_reps*seq_len,false);
-
 % generate temporary chain array that includes post and prior states to
 % make resampling easier below
 sample_chains_temp = NaN(size(mcmcInfo.sample_chains,1)+2,size(mcmcInfo.sample_chains,2),size(mcmcInfo.sample_chains,3));
@@ -58,7 +54,6 @@ mcmcInfo.sample_fluo_temp = sample_fluo_temp;
 % preallocate helper array for indexing
 index_helper2 = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates;
 
-% sample_indices = 
 % iterate through indices to sample
 for i = [(1:seq_len) ((seq_len-1):-1:1)]
     

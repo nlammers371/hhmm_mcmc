@@ -12,34 +12,18 @@ trueParams = setParamsBasic2state(sampling_res);
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 150;
-n_chains = 25;
-n_traces = 20;
-seq_length = 100;
-inferMemory = 0;
-ensembleInferenceFlag = 0;
-mcmcInfo.rateSamplingFlag = 1;
-mcmcInfo.adjustSamplingFlag = 0;
-mcmcInfo.rateSamplingHRFlag = 0; % NL: currently not working
-trueParams.discrete_data_flag = 0;
-
-% global mcmcInfo
-mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
-mcmcInfo.burn_in = 50;
-mcmcInfo.resampleTracesFlag = 0;
-mcmcInfo.rs_freq = 10;
 mcmcInfo.tres = sampling_res;
-mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
-
-% characteristics of simulated data
+mcmcInfo.n_mcmc_steps = 150;
+mcmcInfo.n_chains = 25;
+mcmcInfo.n_traces = 20;
+mcmcInfo.burn_in = 50;
+mcmcInfo.seq_length = 100;
+mcmcInfo.inferMemory = 0;
+mcmcInfo.rateSamplingFlag = 1;
+trueParams.discrete_data_flag = 0;
+mcmcInfo.resampleTracesFlag = 1;
+mcmcInfo.rs_freq = 10;
 mcmcInfo.upsample_factor = 5;
-mcmcInfo.n_reps = 2;
-mcmcInfo.n_traces = n_traces;
-mcmcInfo.seq_length = seq_length; % length of simulated traces in time steps
-
-mcmcInfo.mhInferenceFlag = 0;
-mcmcInfo.reducedModelFlag = 0;
-mcmcInfo.ensembleInferenceFlag = ensembleInferenceFlag;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
