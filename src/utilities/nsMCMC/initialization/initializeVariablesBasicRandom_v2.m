@@ -72,11 +72,11 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
 
     % initialize nSteps
     if ~mcmcInfo.inferNStepsFlag
-        mcmcInfo.nStepsCurr = repelem(mcmcInfo.nSteps,mcmcInfo.n_chains_eff)'; % current guess (can be fractional)
+        mcmcInfo.nStepsCurr = repelem(mcmcInfo.nSteps,mcmcInfo.n_chains)'; % current guess (can be fractional)
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
     else
         % generate prior distribution and draw samples        
-        mcmcInfo.nStepsCurr = mcmcInfo.nStepsGuess + 2*trandn(-ones(1,mcmcInfo.n_chains_eff),ones(1,mcmcInfo.n_chains_eff));
+        mcmcInfo.nStepsCurr = mcmcInfo.nStepsGuess + 2*trandn(-ones(1,mcmcInfo.n_chains),ones(1,mcmcInfo.n_chains));
         mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr<mcmcInfo.nStepsMin) = mcmcInfo.nStepsMin;
         mcmcInfo.nStepsCurr(mcmcInfo.nStepsCurr>mcmcInfo.nStepsMax) = mcmcInfo.nStepsMax;
         mcmcInfo.alphaCurr = mcmcInfo.nStepsCurr * mcmcInfo.alpha_frac;
@@ -84,8 +84,8 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
     end
 
     % calculate MS2 convolution kernel
-    mcmcInfo.coeff_MS2 = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains_eff);
-    for n = 1:mcmcInfo.n_chains_eff
+    mcmcInfo.coeff_MS2 = NaN(mcmcInfo.nStepsMax,mcmcInfo.n_chains);
+    for n = 1:mcmcInfo.n_chains
         mcmcInfo.coeff_MS2(:,n) = ms2_loading_coeff_frac(mcmcInfo.alphaCurr(n), mcmcInfo.nStepsCurr(n), mcmcInfo.nStepsMax)';
         mcmcInfo.coeff_MS2_us(:,n) = ms2_loading_coeff_frac(us_factor*mcmcInfo.alphaCurr(n), us_factor*mcmcInfo.nStepsCurr(n), us_factor*mcmcInfo.nStepsMax)';            
     end

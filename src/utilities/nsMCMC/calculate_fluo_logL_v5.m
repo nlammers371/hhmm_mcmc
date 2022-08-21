@@ -3,15 +3,12 @@ function [logL_fluo, new_fluo_array, comp_indices] = calculate_fluo_logL_v5(mcmc
     
     % extract key hyperparameters
     nStates = mcmcInfo.nStates;
-    n_chains = mcmcInfo.n_chains_eff;   
+    n_chains = mcmcInfo.n_chains;   
     n_traces = mcmcInfo.n_traces;
-%     coeff_MS2 = mcmcInfo.MS2_kernel; 
     us_factor = mcmcInfo.upsample_factor;
     seq_length = mcmcInfo.seq_length*us_factor;
     coeff_MS2_us = mcmcInfo.MS2_kernel_us; 
-%     if ~mcmcInfo.inferNStepsFlag
-%         coeff_MS2 = coeff_MS2(:,1);
-%     end
+
     nStepsMax = size(coeff_MS2_us,1);         
     
     % calculate relevant indices 

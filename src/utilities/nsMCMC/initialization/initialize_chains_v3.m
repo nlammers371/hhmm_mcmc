@@ -5,7 +5,7 @@ function mcmcInfo = initialize_chains_v3(mcmcInfo)
     nStates = mcmcInfo.nStates;
     pi0 = mcmcInfo.pi0_curr;
     sql = mcmcInfo.seq_length*mcmcInfo.upsample_factor;
-    n_chains = mcmcInfo.n_chains_eff;
+    n_chains = mcmcInfo.n_chains;
     n_traces = mcmcInfo.n_traces;    
 
     % generate reference vector

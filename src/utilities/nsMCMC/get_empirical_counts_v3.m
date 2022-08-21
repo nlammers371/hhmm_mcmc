@@ -3,7 +3,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     % extract parameters
     A_curr = mcmcInfo.A_curr;
     nStates = size(A_curr,1);
-    n_chains = mcmcInfo.n_chains_eff;
+    n_chains = mcmcInfo.n_chains;
 
     % initialize count arrays 
     mcmcInfo.transition_count_array = zeros(size(A_curr,1),size(A_curr,2),n_chains);    

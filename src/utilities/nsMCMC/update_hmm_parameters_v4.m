@@ -4,7 +4,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     nStates = mcmcInfo.nStates;
     seq_length = mcmcInfo.seq_length;
     n_traces = mcmcInfo.n_traces;
-    n_chains = mcmcInfo.n_chains_eff;    
+    n_chains = mcmcInfo.n_chains;    
     coeff_MS2_us = mcmcInfo.coeff_MS2_us;        
     us_factor = mcmcInfo.upsample_factor; 
     
@@ -27,6 +27,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             mcmcInfo.A_curr(:,:,n) = A_samp;
         else
             if nStates == 2
+              
                 kon_tr = tr_counts(2,1,n)+mcmcInfo.alpha_kon;
                 kon_total = pi0_counts(1,1,n)+mcmcInfo.beta_kon;
                 koff_tr = tr_counts(1,2,n)+mcmcInfo.alpha_koff;
@@ -121,14 +122,13 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     swap_indices = NaN(n_chains,nStates); % deal with label switching
     for c = 1:n_chains   
         
-        T = 1;%mcmcInfo.tempGradVec(c);
         M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
         b = ((F_array(:,:,c)'*y_array(:,c)));
 
         % calculate mean and variance
         v_lsq = M\b;
         v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
-        v_cov_mat = T * inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
+        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
 
         % sample            
         [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 
@@ -164,16 +164,11 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     
     % Update sigma
     for c = 1:n_chains
-        
-        T = 1;%mcmcInfo.tempGradVec(c);
-        % see: https://discdown.org/flexregression/bayesreg.html                        
-        if ~mcmcInfo.bootstrapFlag
-            a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0)./T;    
-            F_diff = reshape(permute(mcmcInfo.sample_fluo(us_factor:us_factor:end,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
-        else
-            F_diff = reshape(mcmcInfo.sample_fluo(us_factor:us_factor:end,c,:) - mcmcInfo.observed_fluo(:,c,:),[],1);       
-            a = (numel(mcmcInfo.observed_fluo(:,1,:))/2 + mcmcInfo.a0)./T;    
-        end
+                
+        % see: https://discdown.org/flexregression/bayesreg.html                              
+        a = (numel(mcmcInfo.observed_fluo)/2 + mcmcInfo.a0);    
+        F_diff = reshape(permute(mcmcInfo.sample_fluo(us_factor:us_factor:end,c,:),[1 3 2]) - mcmcInfo.observed_fluo,[],1);       
+      
         b_prior_piece = mcmcInfo.b0 + (mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))*inv(mcmcInfo.M0)*(mcmcInfo.v_curr(c,:)-mcmcInfo.v0(c,:))';
         b = (F_diff'*F_diff / 2 + b_prior_piece);
 

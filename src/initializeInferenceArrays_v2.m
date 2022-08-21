@@ -6,7 +6,7 @@ function mcmcInfo = initializeInferenceArrays_v2(mcmcInfo)
     
     % initialize arrays to store inference results
     n_updates = ceil(mcmcInfo.n_mcmc_steps/mcmcInfo.update_increment);
-    n_chains = mcmcInfo.n_chains_eff;
+    n_chains = mcmcInfo.n_chains;
     mcmcInfo.logL_vec = NaN(n_updates,n_chains);
     
     
@@ -22,8 +22,8 @@ function mcmcInfo = initializeInferenceArrays_v2(mcmcInfo)
            
     % initialize arrays to store current parameters
     mcmcInfo.A_curr = NaN(mcmcInfo.nStates,mcmcInfo.nStates,mcmcInfo.n_chains);
-    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);
-    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains_eff,mcmcInfo.nStates);   
+    mcmcInfo.pi0_curr = NaN(mcmcInfo.n_chains,mcmcInfo.nStates);
+    mcmcInfo.v_curr = NaN(mcmcInfo.n_chains,mcmcInfo.nStates);   
     mcmcInfo.sigma_curr = NaN(mcmcInfo.n_chains,1);
     
     if mcmcInfo.em_timer_flag

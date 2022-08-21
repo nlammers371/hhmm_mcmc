@@ -3,7 +3,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     % set defaults
     defaultOptions = struct;
 %     defaultOptions.ensembleInferenceFlag = 0;
-%     defaultOptions.strongAPriorFlag = 0;
+    defaultOptions.strongAPriorFlag = 0;
 %     defaultOptions.bootstrapFlag = 0;
 %     defaultOptions.bootstrapFlagPar = 0;
     defaultOptions.annealingSigmaFlag = 0;
@@ -54,7 +54,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     end
     
     % inference type
-    mcmcInfo.refChainVec = true(1,mcmcInfo.n_chains_eff);
+    mcmcInfo.refChainVec = true(1,mcmcInfo.n_chains);
     mcmcInfo.chainIDVec = 1:mcmcInfo.n_chains;
 
     

@@ -12,7 +12,7 @@ A_log = log(mcmcInfo.A_curr);
 pi0 = mcmcInfo.pi0_curr;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
-n_chains = mcmcInfo.n_chains_eff;
+n_chains = mcmcInfo.n_chains;
 us_factor = mcmcInfo.upsample_factor;
 
 % nStepsMax = mcmcInfo.nStepsMax;
