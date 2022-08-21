@@ -17,7 +17,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     else
         update_index = mcmcInfo.step;
     end
-    tr_counts = mcmcInfo.transition_count_array;  
+    tr_counts = mcmcInfo.transition_count_array/us_factor;  
     pi0_counts = mcmcInfo.state_counts;
     if mcmcInfo.ensembleInferenceFlag
         tr_counts = repmat(mean(tr_counts,3),1,1,n_chains);
@@ -44,7 +44,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                     % generate new rate matrix
                     Q_init = [-kon koff;  kon -koff];
                     mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
-                    mcmcInfo.A_curr(:,:,n) = eye(2) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
+                    mcmcInfo.A_curr(:,:,n) = expm(Q_init);%eye(2) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
                     
                 elseif nStates == 3
                   
@@ -83,9 +83,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                     error('Rate sampling not supported for nStates>3');
                 end
             end
-            if any(isnan(mcmcInfo.A_curr(:)))
-                error('check')
-            end
+ 
             % update pi0      
             pi0_ct = pi0_counts(1,:,n) + sum(mcmcInfo.A_alpha(:,:,n),1);
             mcmcInfo.pi0_curr(n,:) = drchrnd(pi0_ct,1);
@@ -116,12 +114,10 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         for n = 1:n_traces        
             ind1 = (n-1)*seq_length+1;
             ind2 = n*seq_length;
-            % record observed fluo            
-            if ~mcmcInfo.bootstrapFlag              
-                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
-            else
-                y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,c,n);
-            end
+            
+            % record observed fluo                        
+            y_array(ind1:ind2,c) = mcmcInfo.observed_fluo(:,n);
+      
             for m = 1:nStates
                 % record counts
                 state_counts = convn(coeff_MS2_us(:,c),mcmcInfo.sample_chains(:,c,n)==m,'full')/us_factor;            
@@ -131,10 +127,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             end
         end
     end  
-    if mcmcInfo.ensembleInferenceFlag
-        if mcmcInfo.bootstrapFlag
-            error('incompatible inference options')
-        end
+    if mcmcInfo.ensembleInferenceFlag   
         F_array = repmat(mean(F_array,3),1,1,n_chains);
     end
     

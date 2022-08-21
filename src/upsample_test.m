@@ -12,7 +12,7 @@ trueParams = setParamsBasic2state(sampling_res);
 
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 100;
+n_mcmc_steps = 150;
 n_chains = 25;
 n_traces = 20;
 seq_length = 100;
@@ -32,7 +32,7 @@ mcmcInfo.tres = sampling_res;
 mcmcInfo.n_chains = n_chains; % number of parallel MCMC chains to run
 
 % characteristics of simulated data
-mcmcInfo.upsample_factor = 10;
+mcmcInfo.upsample_factor = 5;
 mcmcInfo.n_reps = 2;
 mcmcInfo.n_traces = n_traces;
 mcmcInfo.seq_length = seq_length; % length of simulated traces in time steps
