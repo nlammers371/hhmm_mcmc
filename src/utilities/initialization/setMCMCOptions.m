@@ -13,8 +13,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.upsample_factor = 1;
     
     defaultOptions.rateSamplingFlag = 0;
-%     defaultOptions.adjustSamplingFlag = 0;
-%     defaultOptions.rateSamplingHRFlag = 0;
+    defaultOptions.adjustSamplingFlag = 0;
+    defaultOptions.rateSamplingHRFlag = 0;
     
 %     defaultOptions.mhInferenceFlag = 0;
 %     defaultOptions.reducedModelFlag = 0;

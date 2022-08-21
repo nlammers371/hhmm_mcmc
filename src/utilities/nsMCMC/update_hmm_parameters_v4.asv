@@ -69,15 +69,11 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
 
                 % make rate matrix
                 Q_init = [-kon koff2 0; kon -k_mid koff; 0 kon2 -koff];
-                mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;           
-                if ~mcmcInfo.adjustSamplingFlag
-                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init;                
-                elseif ~mcmcInfo.rateSamplingHRFlag
-                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2;                
-                else
-                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + + Q_init^4/24;                
+                mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
+              
+                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init;
                 end
-                
+                mcmcInfo.A_curr(:,:,n) = mcmcInfo.A_curr(:,:,n) ./ sum(mcmcInfo.A_curr(:,:,n),1);
             else
                 error('Rate sampling not supported for nStates>3');
             end
@@ -136,11 +132,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
 
         % sample            
-        try
-            [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 
-        catch
-            error('check')
-        end
+        [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 
       
         if update_flag
             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_curr(c,:);   

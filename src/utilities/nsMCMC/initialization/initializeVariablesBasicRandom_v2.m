@@ -29,11 +29,12 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
             % set hyperparameters
             mcmcInfo.beta_kon = n_scale/2;
             mcmcInfo.beta_koff = n_scale/2;
-            mcmcInfo.alpha_kon = 0.1 + rand()*0.25*n_scale/2;
-            mcmcInfo.alpha_koff = 0.1 + rand()*0.25*n_scale/2;
+            
+            mcmcInfo.alpha_kon = 0.1 + 0.9*rand()*n_scale/2/us_factor;
+            mcmcInfo.alpha_koff = 0.1 + 0.9*rand()*n_scale/2/us_factor;
             % randomly draw kon and koff
-            kon = min([max([0.1 gamrnd(mcmcInfo.alpha_kon,1/mcmcInfo.beta_kon)]) 1]);
-            koff = min([max([0.1 gamrnd(mcmcInfo.alpha_koff,1/mcmcInfo.beta_koff)]) 1]);
+            kon = gamrnd(mcmcInfo.alpha_kon,1/mcmcInfo.beta_kon);%min([max([0.1 gamrnd(mcmcInfo.alpha_kon,1/mcmcInfo.beta_kon)]) 1]);
+            koff = gamrnd(mcmcInfo.alpha_koff,1/mcmcInfo.beta_koff);%min([max([0.1 gamrnd(mcmcInfo.alpha_koff,1/mcmcInfo.beta_koff)]) 1]);
             % generate rate matrix
             if mcmcInfo.nStates==3
                 Q_init = [-2*kon koff 0; 2*kon -kon-koff 2*koff; 0 kon -2*koff];
