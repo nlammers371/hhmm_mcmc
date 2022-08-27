@@ -22,11 +22,12 @@ mcmcInfo.inferMemory = 0;
 
 mcmcInfo.rateSamplingFlag = 1;
 mcmcInfo.adjustSamplingFlag = 0;
+mcmcInfo.mhResamplingFlag = 1;
 
 trueParams.discrete_data_flag = 0;
 mcmcInfo.resampleTracesFlag = 1;
 mcmcInfo.rs_freq = 10;
-mcmcInfo.upsample_factor = 5;
+mcmcInfo.upsample_factor = 8;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options

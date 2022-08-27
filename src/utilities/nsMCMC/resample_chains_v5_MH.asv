@@ -1,4 +1,4 @@
-cd pro  function mcmcInfo = resample_chains_v5_MH(mcmcInfo)
+function mcmcInfo = resample_chains_v5_MH(mcmcInfo)
 
 if mcmcInfo.em_timer_flag
     tic
@@ -15,7 +15,7 @@ n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains;
 us_factor = mcmcInfo.upsample_factor;
 
-% A1 = Q*mcmcInfo.tres/us_factor + eye(nStates);
+A1 = Q*mcmcInfo.tres/us_factor + eye(nStates);
 % set parameters for rejection sampling
 sim_factor = 5;
 n_reps = 100;
@@ -104,7 +104,7 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
         % predict next state
         
         % extract probabilities
-        prev_probs = A(row_col_array_from);
+        prev_probs = A1(row_col_array_from);
         option_array = cumsum(prev_probs,1);
         rand_array = repmat(rand(1,n_chains,n_traces,n_reps),nStates,1);
         state_block(t,:,:,:) = sum(rand_array > option_array) + 1;

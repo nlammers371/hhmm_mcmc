@@ -8,7 +8,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
 %     defaultOptions.bootstrapFlagPar = 0;
     defaultOptions.annealingSigmaFlag = 0;
 %     defaultOptions.ensembleInferenceFlag = 0;
-%     defaultOptions.mhResamplingFlag = 0;
+    defaultOptions.mhResamplingFlag = 0;
 %     defaultOptions.PFResamplingFlag = 0;
     defaultOptions.upsample_factor = 1;
     

@@ -28,7 +28,7 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         end
         
         % resample chains  promoter state sequences        
-        if false%mcmcInfo.mhResamplingFlag
+        if mcmcInfo.mhResamplingFlag
             mcmcInfo = resample_chains_v5_MH(mcmcInfo);
         elseif false%mcmcInfo.rateSamplingFlag
             mcmcInfo = resample_chains_v5_MH(mcmcInfo);                 
