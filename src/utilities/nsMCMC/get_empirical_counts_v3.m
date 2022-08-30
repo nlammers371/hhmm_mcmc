@@ -31,7 +31,7 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     end    
     
     mcmcInfo.state_counts = sum(mcmcInfo.transition_count_array,1);
-    if mcmcInfo.rateSamplingFlag&&mcmcInfo.adjustSamplingFlag % calculate adjusted counts if necessary
-        mcmcInfo = adjust_tr_counts(mcmcInfo);
-    end
+%     if mcmcInfo.rateSamplingFlag&&mcmcInfo.adjustSamplingFlag % calculate adjusted counts if necessary
+%         mcmcInfo = adjust_tr_counts(mcmcInfo);
+%     end
     

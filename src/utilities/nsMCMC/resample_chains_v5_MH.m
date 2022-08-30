@@ -1,4 +1,4 @@
-cd pro  function mcmcInfo = resample_chains_v5_MH(mcmcInfo)
+function mcmcInfo = resample_chains_v5_MH(mcmcInfo)
 
 if mcmcInfo.em_timer_flag
     tic
@@ -14,15 +14,6 @@ nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains;
 us_factor = mcmcInfo.upsample_factor;
-
-% A1 = Q*mcmcInfo.tres/us_factor + eye(nStates);
-% set parameters for rejection sampling
-sim_factor = 5;
-n_reps = 100;
-dt_array = NaN(n_chains,nStates);
-for i = 1:n_chains
-    dt_array(i,:) = -1./diag(Q(:,:,i));
-end    
 
 % nStepsMax = mcmcInfo.nStepsMax;
 seq_len = mcmcInfo.seq_length;%mcmcInfo.seq_length;
@@ -65,11 +56,35 @@ sample_fluo_temp = mcmcInfo.sample_fluo;
 mcmcInfo.sample_fluo_temp = sample_fluo_temp;
 
 % preallocate helper array for indexing
-index_helper2 = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates;
+% index_helper2 = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates;
 
 % generate block to store state guesses
 % sim_block = NaN(2*us_factor+1,n_chains,n_traces);
 
+% generate helper arrays with pre-calculated transition probs
+post_prob_array = NaN(nStates,nStates,n_chains,nStates,us_factor);
+% iter_vec_fw = reshape(1:us_factor,1,1,[]);
+iter_vec_bk = reshape(us_factor:-1:1,1,1,[]);
+
+
+for n = 1:n_chains
+    A_temp = A(:,:,n);
+%     A_array_fw = NaN(nStates,nStates,us_factor);
+    A_array_bk = NaN(nStates,nStates,us_factor);
+    for u = 1:us_factor
+%         A_array_fw(:,:,u) = A_temp^iter_vec_fw(u);
+        A_array_bk(:,:,u) = A_temp^iter_vec_bk(u);
+    end
+    for k = 1:nStates
+        for j = 1:nStates
+            tr_slice = permute(A_array_bk(k,:,:),[2 3 1]);%permute(A_array_fw(:,j,:),[1 3 2]).*;
+            tr_slice = tr_slice;% ./ sum(tr_slice,1);
+            post_prob_array(k,j,n,:,:) = tr_slice;
+        end
+    end                      
+end  
+
+mcmcInfo.iter = 1;
 % sample_indices = 
 % iterate through indices to sample
 for i = [(1:seq_len) ((seq_len-1):-1:1)]
@@ -85,45 +100,16 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
  
     mcmcInfo.relevant_indices = prev_time_index_micro+1:post_time_index_micro-1;
     mcmcInfo.curr_block = sim_block(2:end-1,:,:);
-%     mcmcInfo.fluo_curr_block = sample_fluo_temp(prev_time_index_micro-us_factor+2:post_time_index_micro-us_factor,:,:);
+            
+    % subsample posterior prob arrays 
+    start_i = sim_block(1,:,:);
+    stop_i = sim_block(end,:,:);
     
-    % initialize
-    state_block = zeros(sim_factor,n_chains,n_traces,n_reps);
-    time_block = zeros(sim_factor,n_chains,n_traces,n_reps);
-    
-    state_block(1,:,:,:) = repmat(sim_block(1,:,:),1,1,1,n_reps);
-    lin_indices = mcmcInfo.chain_id_ref + 1 + (state_block(1,:,:,:)-1)*n_chains;
-    dt_array_temp = dt_array(lin_indices);
-    time_block(1,:,:,:) = exprnd(dt_array_temp);
-    
-    for t = 2:sim_factor
-        curr_state_array = state_block(t-1,:,:,:);
-        row_col_array_from = mcmcInfo.chain_id_ref*nStates^2 + (curr_state_array-1)*nStates+mcmcInfo.row_ref;
-        
-        %%%%%%%%%%%%
-        % predict next state
-        
-        % extract probabilities
-        prev_probs = A(row_col_array_from);
-        option_array = cumsum(prev_probs,1);
-        rand_array = repmat(rand(1,n_chains,n_traces,n_reps),nStates,1);
-        state_block(t,:,:,:) = sum(rand_array > option_array) + 1;
-        
-        %%%%%%%%%%%%
-        % predict jump time
-        lin_indices = mcmcInfo.chain_id_ref + 1 + (state_block(t,:,:,:)-1)*n_chains;
-        dt_array_temp = dt_array(lin_indices);
-        time_block(t,:,:,:) = time_block(t-1,:,:,:)+exprnd(dt_array_temp);        
-    end
-    % check for chains that (a) are of sufficient duration and (b) end in
-    % the correct state
-    t_flags = (cumsum(time_block>=mcmcInfo.tres,1))==1;
-    p_states = NaN(1,n_chains,n_traces,n_reps);
-    p_states(max(t_flags,[],1)==1) = state_block(t_flags);
-    use_flags = p_states==repmat(sim_block(end,:,:),1,1,1,n_reps);
-    
+    lin_indices = stop_i + nStates*(start_i-1) + mcmcInfo.chain_id_ref*nStates^2 ...
+                  + nStates^2*n_chains*(0:nStates-1)' + nStates^3*n_chains*reshape(0:us_factor-1,1,1,1,[]);
+                
     % conduct forward simulation    
-    for t = [2:us_factor-1 us_factor-1:-1:2]
+    for t = 2:us_factor+1
       
         % calculate linear indices 
         prev_state_array = sim_block(t-1,:,:);
@@ -132,16 +118,22 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
         % extract probabilities
         prev_probs = A(row_col_array_from);
           
-        % calculate linear indices 
-        post_state_array = sim_block(t+1,:,:);
-        row_col_array_to = index_helper2 + post_state_array;
+%         % calculate linear indices 
+%         post_state_array = sim_block(t+1,:,:);
+%         row_col_array_to = index_helper2 + post_state_array;
         
-        % extract probabilities                
-        post_probs = A(row_col_array_to);
-        post_probs = post_probs ./ sum(post_probs,1);
+%         % extract probabilities                
+%         post_probs = A(row_col_array_to);
+%         post_probs = post_probs ./ sum(post_probs,1);
+%         
+%         tr_probs = post_probs.*prev_probs;
+%         tr_probs = tr_probs ./ sum(tr_probs);
         
-        tr_probs = post_probs.*prev_probs;
-        tr_probs = tr_probs ./ sum(tr_probs);
+        % Combine with pre-calculated posterior probs
+        post_probs = post_prob_array(lin_indices(:,:,:,t-1));
+        
+        tr_probs = prev_probs.*post_probs;
+        tr_probs = tr_probs ./ sum(tr_probs,1);
         
         %%% draw new samples
         option_array = cumsum(tr_probs);
@@ -155,6 +147,7 @@ for i = [(1:seq_len) ((seq_len-1):-1:1)]
     % calculate fluo error term        
     mcmcInfo = calculate_fluo_logL_v5_MH(mcmcInfo);        
    
+    mcmcInfo.iter = mcmcInfo.iter + 1;
 end 
 
 mcmcInfo.sample_chains = mcmcInfo.sample_chains_temp(2:end-1,:,:);
@@ -165,3 +158,39 @@ if mcmcInfo.em_timer_flag
     em_time = toc;
     mcmcInfo.em_time_vec(mcmcInfo.step) = em_time;
 end
+
+
+% initialize
+%     state_block = zeros(sim_factor,n_chains,n_traces,n_reps);
+%     time_block = zeros(sim_factor,n_chains,n_traces,n_reps);
+%     
+%     state_block(1,:,:,:) = repmat(sim_block(1,:,:),1,1,1,n_reps);
+%     lin_indices = mcmcInfo.chain_id_ref + 1 + (state_block(1,:,:,:)-1)*n_chains;
+%     dt_array_temp = dt_array(lin_indices);
+%     time_block(1,:,:,:) = exprnd(dt_array_temp);
+%     
+%     for t = 2:sim_factor
+%         curr_state_array = state_block(t-1,:,:,:);
+%         row_col_array_from = mcmcInfo.chain_id_ref*nStates^2 + (curr_state_array-1)*nStates+mcmcInfo.row_ref;
+%         
+%         %%%%%%%%%%%%
+%         % predict next state
+%         
+%         % extract probabilities
+%         prev_probs = A(row_col_array_from);
+%         option_array = cumsum(prev_probs,1);
+%         rand_array = repmat(rand(1,n_chains,n_traces,n_reps),nStates,1);
+%         state_block(t,:,:,:) = sum(rand_array > option_array) + 1;
+%         
+%         %%%%%%%%%%%%
+%         % predict jump time
+%         lin_indices = mcmcInfo.chain_id_ref + 1 + (state_block(t,:,:,:)-1)*n_chains;
+%         dt_array_temp = dt_array(lin_indices);
+%         time_block(t,:,:,:) = time_block(t-1,:,:,:)+exprnd(dt_array_temp);        
+%     end
+%     % check for chains that (a) are of sufficient duration and (b) end in
+%     % the correct state
+%     t_flags = (cumsum(time_block>=mcmcInfo.tres,1))==1;
+%     p_states = NaN(1,n_chains,n_traces,n_reps);
+%     p_states(max(t_flags,[],1)==1) = state_block(t_flags);
+%     use_flags = p_states==repmat(sim_block(end,:,:),1,1,1,n_reps);

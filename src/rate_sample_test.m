@@ -5,6 +5,8 @@ close all force
 
 addpath(genpath('utilities'))
 
+rng('shuffle')
+
 % initialize info structure
 sampling_res = 16.85;
 % sampling_res = 2.5;
@@ -13,10 +15,10 @@ trueParams = setParamsBasic3state(sampling_res);
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
 mcmcInfo.tres = sampling_res;
-mcmcInfo.n_mcmc_steps = 250;
+mcmcInfo.n_mcmc_steps = 150;
 mcmcInfo.n_chains = 25;
 mcmcInfo.n_traces = 20;
-mcmcInfo.burn_in = 100;
+mcmcInfo.burn_in = 75;
 mcmcInfo.seq_length = 100;
 mcmcInfo.inferMemory = 0;
 
@@ -27,7 +29,7 @@ mcmcInfo.mhResamplingFlag = 1;
 trueParams.discrete_data_flag = 0;
 mcmcInfo.resampleTracesFlag = 1;
 mcmcInfo.rs_freq = 10;
-mcmcInfo.upsample_factor = 8;
+mcmcInfo.upsample_factor = 4;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options

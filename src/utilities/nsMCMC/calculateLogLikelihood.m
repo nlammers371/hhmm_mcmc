@@ -8,13 +8,13 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     n_traces = mcmcInfo.n_traces;
     n_chains = mcmcInfo.n_chains;
     us_factor = mcmcInfo.upsample_factor;
-    
+    mcmcInfo.chain_id_ref = 0:n_chains-1;
     %%% record transitions
 
     % get linear indices
     from_array = mcmcInfo.sample_chains(1:end-1,:,:);
     to_array = mcmcInfo.sample_chains(2:end,:,:);        
-    row_col_array = (from_array-1)*nStates+ to_array;% + nStates^2*mcmcInfo.chain_id_ref;
+    row_col_array = (from_array-1)*nStates+ to_array + nStates^2*mcmcInfo.chain_id_ref;
     lin_index_array = row_col_array;
 
     % calculate transition likelihoods
@@ -41,6 +41,9 @@ function mcmcInfo = calculateLogLikelihood(mcmcInfo)
     update_index = floor((mcmcInfo.step-1)/mcmcInfo.update_increment) + 1;
     if mcmcInfo.step == 1
         update_index = 1;
+    end
+    if any(isinf(mean(mcmcInfo.trace_logL_vec,3)))
+      error('wtf')
     end
     if update_flag
         mcmcInfo.logL_vec(update_index,:) = mean(mcmcInfo.trace_logL_vec,3);%

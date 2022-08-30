@@ -48,7 +48,8 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         end
         
         % calculate updated logL        
-        mcmcInfo = calculateLogLikelihood(mcmcInfo);        
+        mcmcInfo = calculateLogLikelihood(mcmcInfo);     
+          
 %         toc
     end
     

@@ -84,8 +84,7 @@ function mcmcInfo = calculate_fluo_logL_v5_MH(mcmcInfo)
     fluo_full_curr(accept_flags_fluo) = fluo_new(accept_flags_fluo);
     current_states(accept_flags_state) = prop_states(accept_flags_state);
   
-    mcmcInfo.accept_flag_tracker(mcmcInfo.iter,mcmcInfo.step-1) = mean(af(:));
-    
+    mcmcInfo.accept_flag_tracker(mcmcInfo.samp_index,mcmcInfo.step-1) = 
     mcmcInfo.sample_fluo_temp(comp_indices-1,:,:) = fluo_full_curr;
     mcmcInfo.sample_chains_temp(mcmcInfo.relevant_indices,:,:) = current_states;
     

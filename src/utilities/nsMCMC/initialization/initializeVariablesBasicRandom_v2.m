@@ -38,9 +38,9 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
             % generate rate matrix
             if mcmcInfo.nStates==3
                 Q_init = [-2*kon koff 0; 2*kon -kon-koff 2*koff; 0 kon -2*koff];
-                mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
+                mcmcInfo.Q_curr(:,:,n) = Q_init;
                 % convert to probability matrix (assume single transition)
-                mcmcInfo.A_curr(:,:,n) = expm(Q_init);%eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
+                mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init*mcmcInfo.tres/mcmcInfo.upsample_factor;%eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
             elseif mcmcInfo.nStates==2
                 Q_init = [-kon koff; kon -koff];
                 mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;

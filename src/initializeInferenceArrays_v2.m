@@ -30,4 +30,7 @@ function mcmcInfo = initializeInferenceArrays_v2(mcmcInfo)
         mcmcInfo.em_time_vec = NaN(mcmcInfo.n_mcmc_steps,1);
     end
    
+    if mcmcInfo.mhResamplingFlag
+        mcmcInfo.accept_flag_tracker = NaN(2*mcmcInfo.seq_length,mcmcInfo.n_mcmc_steps);
+    end
       

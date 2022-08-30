@@ -124,20 +124,25 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         end
     end  
     
-    swap_indices = NaN(n_chains,nStates); % deal with label switching
+%     swap_indices = NaN(n_chains,nStates); % deal with label switching
     for c = 1:n_chains   
         
-        M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1e-1;    
+        M = ((F_array(:,:,c)'*F_array(:,:,c))) + 1;    
         b = ((F_array(:,:,c)'*y_array(:,c)));
 
         % calculate mean and variance
         v_lsq = M\b;
-        v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
-        v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
-
+        if ~any(isnan(v_lsq))
+            v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
+            v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
+        else % if issue with lsq solution, draw from prior
+             v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
+             v_mean = mcmcInfo.v0(n,:);
+        end
         % sample            
         try
-            [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 
+%             [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 
+            mcmcInfo.v_curr(c,:) = mvnrnd(v_mean, v_cov_mat)'; 
         catch
             error('check')
         end
@@ -148,24 +153,24 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     end
     
     % deal with label switches
-    for c = 1:n_chains
-        si = swap_indices(c,:);
-        mcmcInfo.A_curr(:,:,c) = mcmcInfo.A_curr(si,si,c);        
-        mcmcInfo.pi0_curr(c,:) = mcmcInfo.pi0_curr(c,si);
-        
-        sc = mcmcInfo.sample_chains(:,c,:);
-        sc_new = sc;
-        for k = 1:nStates
-            sc_new(sc==k) = si(k);
-        end
-        mcmcInfo.sample_chains(:,c,:) = sc_new; 
-        
-        if update_flag
-            mcmcInfo.pi0_inf_array(update_index,:,c) = mcmcInfo.pi0_inf_array(update_index,si,c);
-            mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_inf_array(update_index,si,c);
-            mcmcInfo.A_inf_array(:,:,update_index,c) = mcmcInfo.A_inf_array(si,si,update_index,c);
-        end
-    end
+%     for c = 1:n_chains
+%         si = swap_indices(c,:);
+%         mcmcInfo.A_curr(:,:,c) = mcmcInfo.A_curr(si,si,c);        
+%         mcmcInfo.pi0_curr(c,:) = mcmcInfo.pi0_curr(c,si);
+%         
+%         sc = mcmcInfo.sample_chains(:,c,:);
+%         sc_new = sc;
+%         for k = 1:nStates
+%             sc_new(sc==k) = si(k);
+%         end
+%         mcmcInfo.sample_chains(:,c,:) = sc_new; 
+%         
+%         if update_flag
+%             mcmcInfo.pi0_inf_array(update_index,:,c) = mcmcInfo.pi0_inf_array(update_index,si,c);
+%             mcmcInfo.v_inf_array(update_index,:,c) = mcmcInfo.v_inf_array(update_index,si,c);
+%             mcmcInfo.A_inf_array(:,:,update_index,c) = mcmcInfo.A_inf_array(si,si,update_index,c);
+%         end
+%     end
     %% %%%%%%%%%%%%% update noise parameter (sigma) %%%%%%%%%%%%%%%%%%%%%%%
     
     % get predicted fluorescence (using new v values)
