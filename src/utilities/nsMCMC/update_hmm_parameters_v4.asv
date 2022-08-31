@@ -72,7 +72,7 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                 mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;           
                 if ~mcmcInfo.adjustSamplingFlag
                     mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init;                
-                elseif ~mcmcInfo.rateSamplingHRFlag
+                else ~mcmcInfo.rateSamplingHRFlag
                     mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2;                
                 else
                     mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + + Q_init^4/24;                
@@ -135,10 +135,10 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
         if ~any(isnan(v_lsq))
             v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
             v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
-        else
+        else % if issue with lsq solution, draw from prior
              v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
-             v_temp = sort(mvnrnd(mcmcInfo.v0(n,:), v_cov_mat)');        
-             v_temp(v_temp<0) = 0;
+             v_mean = mcmcInfo.v0(n,:);
+        end
         % sample            
         try
 %             [mcmcInfo.v_curr(c,:), swap_indices(c,:)] = sort(mvnrnd(v_mean, v_cov_mat)'); 

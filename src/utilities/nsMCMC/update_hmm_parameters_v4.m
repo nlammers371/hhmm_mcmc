@@ -70,13 +70,9 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
                 % make rate matrix
                 Q_init = [-kon koff2 0; kon -k_mid koff; 0 kon2 -koff];
                 mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;           
-                if ~mcmcInfo.adjustSamplingFlag
-                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init;                
-                elseif ~mcmcInfo.rateSamplingHRFlag
-                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2;                
-                else
-                    mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + + Q_init^4/24;                
-                end
+               
+                mcmcInfo.A_curr(:,:,n) = generate_A_matrix(Q_init);                
+               
                 
             else
                 error('Rate sampling not supported for nStates>3');

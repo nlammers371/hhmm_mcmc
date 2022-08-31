@@ -75,6 +75,9 @@ function mcmcInfo = calculate_fluo_logL_v5_MH(mcmcInfo)
     % perform MH move
     mh_factor_array = exp(-d_logL);    
     af = mh_factor_array >= rand(1,n_chains,n_traces);
+%     if mcmcInfo.step >= 65
+%         error('check')
+%     end
     accept_flags_fluo = repmat(af,length(comp_indices),1,1);
     accept_flags_state = repmat(af,ns,1,1);
 %     if mcmcInfo.step>10&&mcmcInfo.relevant_indices(1)>=200

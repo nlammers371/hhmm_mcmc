@@ -42,11 +42,13 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
                 Q_init = [-2*kon koff 0; 2*kon -kon-koff 2*koff; 0 kon -2*koff];
                 mcmcInfo.Q_curr(:,:,n) = Q_init;
                 
-                % make A matrix
-                A = generate_A_matrix(Q_init);
-                
+                diag_terms = diag(-Q_init);
+                p_jump = 1-exp(-diag_terms);
+                A = zeros(3);
+                A(eye(3)==1) = 1-p_jump;
+                A
                 % convert to probability matrix (assume single transition)
-                mcmcInfo.A_curr(:,:,n) = A;%eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
+                mcmcInfo.A_curr(:,:,n) = eye(3) + Q_init/mcmcInfo.upsample_factor;%eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
             elseif mcmcInfo.nStates==2
                 Q_init = [-kon koff; kon -koff];
                 mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
