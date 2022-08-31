@@ -9,8 +9,16 @@ pi0 = mcmcInfo.pi0_curr;
 nStates = mcmcInfo.nStates;
 n_traces = mcmcInfo.n_traces;
 n_chains = mcmcInfo.n_chains_eff;
-nStepsMax = mcmcInfo.nStepsMax;
+% nStepsMax = mcmcInfo.nStepsMax;
 seq_length = mcmcInfo.seq_length;
+
+% generate lookup table with ms2 kernel values
+nStepsMax = 0;
+for n = 1:n_chains
+    nStepsMax = max([nStepsMax find(mcmcInfo.coeff_MS2(:,n)>0,1,'last')]);
+end    
+mcmcInfo.max_w = nStepsMax;
+mcmcInfo.MS2_kernel = flipud(mcmcInfo.coeff_MS2(1:nStepsMax,:));
 
 % generate reference vector
 mcmcInfo.chain_id_ref = 0:n_chains-1;
@@ -49,6 +57,7 @@ for i = 1:seq_length*n_reps
     post_time_index = prev_time_index + 2;
     
     %%% previous state %%%
+    
     % calculate linear indices 
     prev_state_array = sample_chains_temp(prev_time_index,:,:);
     row_col_array_from = mcmcInfo.chain_id_ref*nStates^2 + (prev_state_array-1)*nStates+mcmcInfo.row_ref;    
@@ -68,7 +77,8 @@ for i = 1:seq_length*n_reps
     logL_tr = prev_probs_log + post_probs_log;
     
     %%% calculate fluorescence probability component
-    % calculate fluo error term           
+    % calculate fluo error term    
+
     logL_fluo = calculate_fluo_logL_v4(mcmcInfo);              
     
     %%% put everything together
@@ -92,7 +102,7 @@ for i = 1:seq_length*n_reps
 end 
 
 mcmcInfo.sample_chains = sample_chains_temp(2:end-1,:,:);
-em_time = toc;
+em_time = toc
 if mcmcInfo.em_timer_flag
     mcmcInfo.em_time_vec(mcmcInfo.step) = em_time;
 end

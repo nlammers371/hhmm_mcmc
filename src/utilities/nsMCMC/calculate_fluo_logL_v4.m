@@ -7,11 +7,14 @@ function logL_fluo = calculate_fluo_logL_v4(mcmcInfo)
     n_chains = mcmcInfo.n_chains_eff;
     seq_length = mcmcInfo.seq_length;
     n_traces = mcmcInfo.n_traces;
-    coeff_MS2 = mcmcInfo.coeff_MS2;    
+    coeff_MS2 = mcmcInfo.MS2_kernel; 
+    nStepsMax = size(coeff_MS2,1); 
     
     % calculate relevant indices 
     samp_index = mcmcInfo.samp_index;
     relevant_indices = mcmcInfo.step_ref + samp_index;
+    n_pad_pre = sum(relevant_indices<=0);
+    n_pad_post = sum(relevant_indices>seq_length);
     relevant_indices = relevant_indices(relevant_indices>0&relevant_indices<=seq_length);
     ind_filter = relevant_indices == samp_index;
     comp_filter = relevant_indices>=samp_index;
@@ -28,16 +31,16 @@ function logL_fluo = calculate_fluo_logL_v4(mcmcInfo)
     v_lin_indices = (sample_chain_array-1)*n_chains + mcmcInfo.chain_id_ref + 1;
     initiation_fragment = mcmcInfo.v_curr(v_lin_indices);
      
-    % use this to generate predicted fluorescence
-    fluo_fragment = NaN(size(initiation_fragment,1) + size(coeff_MS2,1)-1,n_chains,n_traces,nStates);
-    for i = 1:n_chains
-        fluo_fragment(:,i,:,:) = convn(coeff_MS2(:,i),initiation_fragment(:,i,:,:),'full');
+    % pad with zeros if necessary
+    if n_pad_pre > 0
+        initiation_fragment = cat(1,zeros(n_pad_pre,n_chains,n_traces,nStates),initiation_fragment);
     end
-    
-    % cut back down to size
-    fluo_fragment = fluo_fragment(1:end-size(coeff_MS2,1)+1,:,:,:);
-    fluo_fragment = fluo_fragment(comp_filter,:,:,:);
-    
+
+    fluo_fragment = zeros(nStepsMax-n_pad_post,n_chains,n_traces,nStates);
+    for i = 1:nStepsMax-n_pad_post
+        fluo_fragment(i,:,:,:) = sum(coeff_MS2.*initiation_fragment(i:i+nStepsMax-1,:,:,:),1);
+    end
+
     % extract corresponding fragment from experimental traces   
     if ~mcmcInfo.bootstrapFlag
         ref_fluo = repmat(permute(mcmcInfo.observed_fluo(comp_indices,:),[1 3 2]),1,n_chains,1,nStates);
@@ -46,9 +49,12 @@ function logL_fluo = calculate_fluo_logL_v4(mcmcInfo)
     end
        
     % generate sigma array    
-    sigma_ref = repmat(mcmcInfo.sigma_curr',size(ref_fluo,1),1,n_traces,nStates);
-    logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
-
+    try
+        sigma_ref = repmat(mcmcInfo.sigma_curr',size(ref_fluo,1),1,n_traces,nStates);
+        logL_fluo_full = -0.5*(((ref_fluo-fluo_fragment)./sigma_ref).^2 + log(2*pi*sigma_ref.^2));
+    catch
+        error('sigh')
+    end
     % take average    
     logL_fluo = sum(logL_fluo_full,1);%-sum(0.5.*ms2_weights.*log_fluo_diffs_full,1)./ sum(coeff_MS2);% - log(sqrt(2*pi)*sigma);
    

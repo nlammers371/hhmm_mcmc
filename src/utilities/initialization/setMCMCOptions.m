@@ -9,6 +9,16 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     defaultOptions.annealingSigmaFlag = 0;
     defaultOptions.ensembleInferenceFlag = 0;
     defaultOptions.mhResamplingFlag = 0;
+    defaultOptions.PFResamplingFlag = 0;
+    defaultOptions.upsample_factor = 1;
+    
+    defaultOptions.rateSamplingFlag = 0;
+    defaultOptions.adjustSamplingFlag = 0;
+    defaultOptions.rateSamplingHRFlag = 0;
+    
+    defaultOptions.mhInferenceFlag = 0;
+    defaultOptions.reducedModelFlag = 0;
+    
     defaultOptions.inferNStepsFlag = 0;
     defaultOptions.n_chains = 25;
     defaultOptions.update_increment = 1; 
@@ -22,11 +32,10 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     for i = find(optionFlags)'
         mcmcInfo.(fnamesDefault{i}) = defaultOptions.(fnamesDefault{i});
     end               
-    
+        
     %%%%%%%%%%%%%%%%%%%%% MCMC parameters %%%%%%%%%%%%%%%%
-%     mcmcInfo.n_traces_per_chain = mcmcInfo.n_traces;
     mcmcInfo.trace_id_array = repmat((1:mcmcInfo.n_traces)',1,mcmcInfo.n_chains);
-%     mcmcInfo.bootstrapFlag = bootstrapFlag;
+
     if mcmcInfo.bootstrapFlag
         % randomly assign subset of traces to each chain
 %         mcmcInfo.n_traces_per_chain = ceil(200/mcmcInfo.seq_length);
@@ -68,8 +77,8 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
     mcmcInfo.nStepsPropSize = 0.15;    
     mcmcInfo.nStep_tries_per_run = 10;
     mcmcInfo.nStepsGuess = 5 + rand()*3;
-    mcmcInfo.nStepsMax = 14; % set upper limit
-    mcmcInfo.nStepsMin = 3.5; % lower limit   
+    mcmcInfo.nStepsMax = 40; % set upper limit
+    mcmcInfo.nStepsMin = 3; % lower limit   
 %     if ~mcmcInfo.inferNStepsFlag 
 %         mcmcInfo.nStepsMax = ceil(mcmcInfo.nSteps);
 %     end

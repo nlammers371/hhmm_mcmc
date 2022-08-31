@@ -1,4 +1,4 @@
-function l = allowed_to(state, K, w)   
+function l = allowed_to_array(state, K, w)   
     % List of all compound states that can transition into the given 
     % compound state.
     % 

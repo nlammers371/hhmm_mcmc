@@ -1,11 +1,11 @@
-function trueParams = setParamsBasic2state
+function trueParams = setParamsBasic2state(tres)
 
 trueParams = struct;
 
-trueParams.tres = 20;
+trueParams.tres = tres;
 trueParams.discrete_data_flag = true;
 % define parameters to be inferred
-trueParams.R = [-.02, .05 ; .02 -.05];
+trueParams.R = [-.015, .02 ; .015 -.02];
 trueParams.A = expm(trueParams.R*trueParams.tres);
 trueParams.v = [0, 4]';
 trueParams.sigma = 1.5;
