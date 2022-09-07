@@ -18,18 +18,19 @@ mcmcInfo.tres = sampling_res;
 mcmcInfo.n_mcmc_steps = 150;
 mcmcInfo.n_chains = 25;
 mcmcInfo.n_traces = 20;
-mcmcInfo.burn_in = 100;
+mcmcInfo.burn_in = 75;
 mcmcInfo.seq_length = 120;
 mcmcInfo.inferMemory = 0;
 
 mcmcInfo.rateSamplingFlag = 1;
 mcmcInfo.adjustSamplingFlag = 0;
-mcmcInfo.mhResamplingFlag = 1;
+mcmcInfo.mhResamplingFlag = 0;
+mcmcInfo.mhQSamplingFlag = 0;
 
 trueParams.discrete_data_flag = 0;
 mcmcInfo.resampleTracesFlag = 1;
 mcmcInfo.rs_freq = 10;
-mcmcInfo.upsample_factor = 16;
+mcmcInfo.upsample_factor = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
@@ -75,7 +76,7 @@ toc
 
 %%
 close all
-
+% mcmcInfo.burn_in = 100;
 figure;
 hold on
 

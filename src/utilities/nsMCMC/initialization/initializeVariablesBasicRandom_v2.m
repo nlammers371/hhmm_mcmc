@@ -40,10 +40,18 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
             % generate rate matrix
             if mcmcInfo.nStates==3
                 Q_init = [-2*kon koff 0; 2*kon -kon-koff 2*koff; 0 kon -2*koff];
-                mcmcInfo.Q_curr(:,:,n) = Q_init;
+                Q_real = Q_init/mcmcInfo.tres*us_factor;
+                Q_real(Q_real>mcmcInfo.QMax) = mcmcInfo.QMax;
+                Q_real(eye(3)==1) = 0;
+                Q_real(eye(3)==1) = -sum(Q_real);
+                mcmcInfo.Q_curr(:,:,n) = Q_real;
                 
                 % make A matrix
-                A = generate_A_matrix(Q_init);
+                if ~mcmcInfo.mhQSamplingFlag
+                    A = generate_A_matrix(Q_real*mcmcInfo.tres/us_factor);
+                else
+                    A = expm(Q_real*mcmcInfo.tres/us_factor);
+                end
                 
                 % convert to probability matrix (assume single transition)
                 mcmcInfo.A_curr(:,:,n) = A;%eye(3) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;

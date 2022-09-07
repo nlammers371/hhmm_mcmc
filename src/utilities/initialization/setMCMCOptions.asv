@@ -39,20 +39,12 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
 
     % memory parameter
     if mcmcInfo.inferNStepsFlag
-        mcmcInfo.nStepsPropSize = 0.15;    
-        mcmcInfo.nStep_tries_per_run = 10;
-    end
+    mcmcInfo.nStepsPropSize = 0.15;    
+    mcmcInfo.nStep_tries_per_run = 10;
     mcmcInfo.nStepsGuess = 5 + rand()*3;
     mcmcInfo.nStepsMax = 20; % set upper limit
-    mcmcInfo.nStepsMin = 3; % lower limit   5
+    mcmcInfo.nStepsMin = 3; % lower limit   
 
-    % Rate matrix sampling options
-    if mcmcInfo.mhQSamplingFlag
-        mcmcInfo.QPropSize = 0.05;    
-        mcmcInfo.Q_n_tries_per_run = 10;        
-    end
-    mcmcInfo.QMax = 0.2;
-    
     % set curve if we are using sigma-mediated annealing 
     if mcmcInfo.annealingSigmaFlag
         stepVec = 1:mcmcInfo.n_mcmc_steps;
