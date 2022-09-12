@@ -29,9 +29,9 @@ function mcmcInfo = get_empirical_counts_v3(mcmcInfo)
     for i = 1:length(unique_indices)        
         mcmcInfo.transition_count_array(n_vec+unique_indices(i)) = sum(sum(lin_index_array==unique_indices(i),1),3);
     end    
-    
     mcmcInfo.state_counts = sum(mcmcInfo.transition_count_array,1);
-%     if mcmcInfo.rateSamplingFlag&&mcmcInfo.adjustSamplingFlag % calculate adjusted counts if necessary
-%         mcmcInfo = adjust_tr_counts(mcmcInfo);
-%     end
+    mcmcInfo.state_counts_orig = mcmcInfo.state_counts;
+    if mcmcInfo.rateSamplingFlag&&mcmcInfo.adjustSamplingFlag % calculate adjusted counts if necessary
+        mcmcInfo = adjust_tr_counts_v2(mcmcInfo);
+    end
     

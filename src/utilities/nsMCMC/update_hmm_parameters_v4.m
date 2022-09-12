@@ -16,12 +16,10 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
     else
         update_index = mcmcInfo.step;
     end
-    
-    
+        
     if ~mcmcInfo.mhQSamplingFlag
         % perform Gibbs update
-        mcmcInfo = gibbs_update_A(mcmcInfo);
-                
+        mcmcInfo = gibbs_update_A(mcmcInfo);                
     else
         % perform MH update
         mcmcInfo = mh_update_A(mcmcInfo);
@@ -65,8 +63,8 @@ function mcmcInfo = update_hmm_parameters_v4(mcmcInfo)
             v_mean = (M + mcmcInfo.M0)^-1 * (mcmcInfo.M0*mcmcInfo.v0(c,:)' + M*v_lsq);
             v_cov_mat = inv(mcmcInfo.sigma_curr(c)^-2 * M +  mcmcInfo.sigma_curr(c)^-2 * inv(mcmcInfo.M0));
         else % if issue with lsq solution, draw from prior
-             v_cov_mat = mcmcInfo.sigma_curr(n)^2 * inv(mcmcInfo.M0);
-             v_mean = mcmcInfo.v0(n,:);
+             v_cov_mat = mcmcInfo.sigma_curr(c)^2 * inv(mcmcInfo.M0);
+             v_mean = mcmcInfo.v0(c,:);
         end
         % sample            
         try

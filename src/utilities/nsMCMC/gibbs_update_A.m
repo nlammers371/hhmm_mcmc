@@ -64,8 +64,11 @@ function mcmcInfo = gibbs_update_A(mcmcInfo)
                 % make rate matrix
                 Q_init = [-kon koff2 0; kon -k_mid koff; 0 kon2 -koff];
                 mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;           
-
-                mcmcInfo.A_curr(:,:,n) = generate_A_matrix(Q_init);                
+                if ~mcmcInfo.adjustSamplingFlag
+                    mcmcInfo.A_curr(:,:,n) = generate_A_matrix(Q_init);                
+                else
+                    mcmcInfo.A_curr(:,:,n) = expm(Q_init);                
+                end
 
             else
                 error('Rate sampling not supported for nStates>3');

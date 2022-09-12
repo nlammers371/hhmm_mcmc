@@ -29,11 +29,11 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         
         % resample chains  promoter state sequences        
         if mcmcInfo.mhResamplingFlag
-            mcmcInfo = resample_chains_v5_MH(mcmcInfo);
+            mcmcInfo = resample_chains_v5_MH_v2(mcmcInfo);
         elseif false%mcmcInfo.rateSamplingFlag
             mcmcInfo = resample_chains_v5_MH(mcmcInfo);                 
         else
-            mcmcInfo = resample_chains_v5(mcmcInfo);
+            mcmcInfo = resample_chains_v5_us(mcmcInfo);
         end
         
         % get empirical transition and occupancy counts          

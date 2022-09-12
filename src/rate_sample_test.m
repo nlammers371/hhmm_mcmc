@@ -18,8 +18,8 @@ mcmcInfo.tres = sampling_res;
 mcmcInfo.n_mcmc_steps = 150;
 mcmcInfo.n_chains = 25;
 mcmcInfo.n_traces = 20;
-mcmcInfo.burn_in = 75;
-mcmcInfo.seq_length = 120;
+mcmcInfo.burn_in = 100;
+mcmcInfo.seq_length = 100;
 mcmcInfo.inferMemory = 0;
 
 mcmcInfo.rateSamplingFlag = 1;
@@ -29,13 +29,13 @@ mcmcInfo.mhQSamplingFlag = 0;
 
 trueParams.discrete_data_flag = 0;
 mcmcInfo.resampleTracesFlag = 1;
-mcmcInfo.rs_freq = 10;
+mcmcInfo.rs_freq = 15;
 mcmcInfo.upsample_factor = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nSteps = 7;
+nSteps = 8;
 trueParams.nSteps = nSteps;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,4 +97,4 @@ plot([Q(3,2) Q(3,2)], [yl(1) yl(2)],'--k','LineWidth',2);
 
 legend('q12 (true=0.021)','q21 (true=0.02)','q32 (true=0.012)','q23 (true=0.07)')
 
-xlim([0 0.08])
+xlim([0 0.2])

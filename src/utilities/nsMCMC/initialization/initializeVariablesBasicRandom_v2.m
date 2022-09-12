@@ -47,7 +47,7 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
                 mcmcInfo.Q_curr(:,:,n) = Q_real;
                 
                 % make A matrix
-                if ~mcmcInfo.mhQSamplingFlag
+                if ~mcmcInfo.mhQSamplingFlag && ~mcmcInfo.adjustSamplingFlag
                     A = generate_A_matrix(Q_real*mcmcInfo.tres/us_factor);
                 else
                     A = expm(Q_real*mcmcInfo.tres/us_factor);
@@ -60,6 +60,7 @@ function mcmcInfo = initializeVariablesBasicRandom_v2(mcmcInfo)
                 mcmcInfo.Q_curr(:,:,n) = Q_init/mcmcInfo.tres*mcmcInfo.upsample_factor;
                 
                 % convert to probability matrix (assume single transition)
+                error('update this')
                 mcmcInfo.A_curr(:,:,n) = eye(2) + Q_init + Q_init^2/2 + Q_init^3/6 + Q_init^4/24;
             else
                 error('Rate sampling not supported for nStates>3')

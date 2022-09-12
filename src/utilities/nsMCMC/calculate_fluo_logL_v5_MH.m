@@ -13,7 +13,8 @@ function mcmcInfo = calculate_fluo_logL_v5_MH(mcmcInfo)
     relevant_indices =  mcmcInfo.relevant_indices(1):mcmcInfo.relevant_indices(1)+nStepsMax-1;%(samp_index:samp_index+nStepsMax-1)';
     comp_filter = relevant_indices-1<=seq_length;
     comp_indices = relevant_indices(comp_filter);    
-    comp_indices_fluo = ceil((comp_indices(1))/us_factor):floor((comp_indices(end))/us_factor); % map to experimental data indices
+    
+    comp_indices_fluo = ceil((comp_indices(1)-1)/us_factor):floor((comp_indices(end)-1)/us_factor); % map to experimental data indices
     coeff_MS2 = coeff_MS2_us(comp_filter,:);
     us_map_filter = ismember((comp_indices-1)/us_factor,comp_indices_fluo);
 %     v_curr_long = mcmcInfo.v_curr_long(comp_filter,:,:);
@@ -74,7 +75,7 @@ function mcmcInfo = calculate_fluo_logL_v5_MH(mcmcInfo)
 
     % perform MH move
     mh_factor_array = exp(-d_logL);    
-    af = mh_factor_array >= rand(1,n_chains,n_traces);
+    af = (mh_factor_array >= rand(1,n_chains,n_traces))&mcmcInfo.tr_match_flags;
 %     if mcmcInfo.step >= 65
 %         error('check')
 %     end
