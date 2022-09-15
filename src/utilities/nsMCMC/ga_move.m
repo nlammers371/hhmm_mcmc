@@ -13,7 +13,9 @@ function mcmcInfo = ga_move(mcmcInfo)
         mcmcInfo.sample_chains = mcmcInfo.sample_chains(:,rs_ids,:);
         mcmcInfo.sample_fluo = mcmcInfo.sample_fluo(:,rs_ids,:);
         mcmcInfo.A_curr = mcmcInfo.A_curr(:,:,rs_ids);
-        mcmcInfo.Q_curr = mcmcInfo.Q_curr(:,:,rs_ids);
+        if mcmcInfo.rateSamplingFlag
+            mcmcInfo.Q_curr = mcmcInfo.Q_curr(:,:,rs_ids);
+        end
         mcmcInfo.v_curr = mcmcInfo.v_curr(rs_ids,:);
         mcmcInfo.pi0_curr = mcmcInfo.pi0_curr(rs_ids,:);
         mcmcInfo.sigma_curr = mcmcInfo.sigma_curr(rs_ids);

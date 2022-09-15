@@ -2,15 +2,22 @@ function mcmcInfo = adjust_tr_counts_v2(mcmcInfo)
 
     nStates = mcmcInfo.nStates;    
     n_chains = mcmcInfo.n_chains;    
-           
+    us_factor = mcmcInfo.upsample_factor;
+    
     % Calculate expected state visits and state transitions
     us_factor_fine = 100;
-    us_tres_fine = mcmcInfo.tres/us_factor_fine;
+    us_tres_fine = mcmcInfo.tres/us_factor_fine/us_factor;
     Q = mcmcInfo.Q_curr;
     
     iter_vec_fw = reshape(1:us_factor_fine,1,1,[]);
     iter_vec_bk = reshape(us_factor_fine:-1:1,1,1,[]);
 
+    % initialize new array to store state probs
+    sample_chains_prob = cell(1,nStates);
+    for s = 1:nStates
+        sample_chains_prob{s} = zeros(size(mcmcInfo.sample_chains));
+    end
+    
     for n = 1:n_chains
         
       % extract transition prob matrix
@@ -29,6 +36,9 @@ function mcmcInfo = adjust_tr_counts_v2(mcmcInfo)
         
         % initialize state occupancy counts 
         state_counts_temp = zeros(1,nStates);
+        
+        % initialize array to store updated state counts
+%         sc_slice = sample_chains_prob(:,n,:,:);
         
         for u = 1:us_factor_fine-1
             A_array_fw(:,:,u) = A_temp^iter_vec_fw(u);
@@ -59,15 +69,25 @@ function mcmcInfo = adjust_tr_counts_v2(mcmcInfo)
                 tr_counts = sum(tr_counts./ sum(sum(tr_counts,1),2),3);
                 
                 % add estimates to arrays
-                tr_counts(eye(nStates)==1) = 0;                
-                n_tr = sum(from_array(:)==from & to_array(:)==to);
+                tr_counts(eye(nStates)==1) = 0;
+                i_flags = from_array==from & to_array==to;
+                
+                n_tr = sum(i_flags(:));
                 
                 tr_counts_temp = tr_counts_temp + n_tr*tr_counts;
                 state_counts_temp = state_counts_temp + n_tr*state_counts';
+                
+                for s = 1:nStates
+                    sc_slice = sample_chains_prob{s}(1:end-1,n,:);
+                    sc_slice(i_flags) = state_counts(s);
+                    sample_chains_prob{s}(1:end-1,n,:) = sc_slice;
+                    ec = sample_chains_prob{s}(end,n,:);
+                    sample_chains_prob{s}(end,n,ec==s) = 1;
+                end
             end
         end                  
         mcmcInfo.state_counts(:,:,n) = state_counts_temp;
         mcmcInfo.transition_count_array(:,:,n) = tr_counts_temp;
     end  
-    
+    mcmcInfo.sample_chains_prob = sample_chains_prob;
 %     mcmcInfo.state_counts = sum(mcmcInfo.transition_count_array,1);
