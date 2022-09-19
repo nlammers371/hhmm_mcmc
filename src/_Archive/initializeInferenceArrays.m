@@ -39,3 +39,6 @@ function mcmcInfo = initializeInferenceArrays(mcmcInfo)
     end
    
       
+    if mcmcInfo.mhQSamplingFlag
+        mcmcInfo.mh_flag_Q = NaN(n_updates,n_chains);
+    end

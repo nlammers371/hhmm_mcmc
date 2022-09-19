@@ -48,7 +48,7 @@ function mcmcInfo = setMCMCOptions(mcmcInfo)
 
     % Rate matrix sampling options
     if mcmcInfo.mhQSamplingFlag
-        mcmcInfo.QPropSize = 0.005;    
+        mcmcInfo.QPropSize = 0.075;    
         mcmcInfo.Q_n_tries_per_run = 1;        
     end
     mcmcInfo.QMax = 0.2;

@@ -27,18 +27,23 @@ lin_index_array = row_col_array;
 
 % tic
 for iter = 1:mcmcInfo.Q_n_tries_per_run
+
     % extract current rate matrix
     Q_curr = mcmcInfo.Q_curr;        
+
     % reshape for sampling
     Q_curr_array = Q_curr(lin_indices_to);
+
     % draw random proposals
     ubArray = mcmcInfo.QMax-Q_curr_array;
     lbArray = 0-Q_curr_array;
     prop_deltas = reshape(trandn(lbArray,ubArray)*mcmcInfo.QPropSize,n_chains,[]);
+
     % generate proposed rate matrix
     Q_prop = zeros(size(Q_curr));
     Q_prop(lin_indices_to) = Q_curr_array + prop_deltas;        
     Q_prop(repmat(eye(nStates)==1,1,1,n_chains)) = -sum(Q_prop);
+
     % convert to transition probability
     A_prop = NaN(size(Q_prop));
     for n = 1:n_chains
@@ -47,9 +52,24 @@ for iter = 1:mcmcInfo.Q_n_tries_per_run
     A_curr_log = log(mcmcInfo.A_curr);
     A_prop_log = log(A_prop);
     
-    % calculate likelihoods
+%     A_counts = mcmcInfo.transition_count_array/us_factor; 
+%     A_alpha = mcmcInfo.A_alpha; 
+%     logL_transition_curr = NaN(nStates,n_chains);
+%     logL_transition_prop = NaN(nStates,n_chains);
+% 
+%     % calculate likelihoods
+%     for k = 1:nStates
+%         for n = 1:n_chains
+%             alpha_vec = A_alpha(:,k) + A_counts(:,k,n);
+%             logL_transition_curr(k,n) = logdrchpdf(A_curr(:,k,n)',alpha_vec');
+%             logL_transition_prop(k,n) = logdrchpdf(A_curr(:,k,n)',alpha_vec');
+%         end
+%     end
+%     logL_transition_curr = sum(logL_transition_curr,1);
+%     logL_transition_prop = sum(logL_transition_curr,1);    
+
     logL_transition_curr = sum(sum(A_curr_log(lin_index_array),1),3);
-    logL_transition_prop = sum(sum(A_prop_log(lin_index_array),1),3);    
+    logL_transition_prop = sum(sum(A_prop_log(lin_index_array),1),3);
 
     % calculate MH metric
     L_factor = exp(logL_transition_prop-logL_transition_curr);
@@ -71,6 +91,7 @@ for iter = 1:mcmcInfo.Q_n_tries_per_run
         if update_flag
             mcmcInfo.A_inf_array(:,:,update_index,n) = mcmcInfo.A_curr(:,:,n);            
             mcmcInfo.pi0_inf_array(update_index,:,n) = mcmcInfo.pi0_curr(n,:);
+            mcmcInfo.mh_flag_Q(update_index,:) = mh_flags;
             if mcmcInfo.rateSamplingFlag
                 mcmcInfo.Q_inf_array(:,:,update_index,n) = mcmcInfo.Q_curr(:,:,n);
             end

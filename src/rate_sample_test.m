@@ -15,7 +15,7 @@ trueParams = setParamsBasic3state(sampling_res);
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
 mcmcInfo.tres = sampling_res;
-mcmcInfo.n_mcmc_steps = 300;
+mcmcInfo.n_mcmc_steps = 3e2;
 mcmcInfo.n_chains = 25;
 mcmcInfo.n_traces = 20;
 mcmcInfo.burn_in = 150;
@@ -30,7 +30,7 @@ mcmcInfo.mhQSamplingFlag = 0;
 
 trueParams.discrete_data_flag = 0;
 mcmcInfo.resampleTracesFlag = 1;
-mcmcInfo.rs_freq = 15;
+mcmcInfo.rs_freq = 5;
 mcmcInfo.upsample_factor = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

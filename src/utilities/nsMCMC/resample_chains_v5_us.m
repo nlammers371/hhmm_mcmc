@@ -18,11 +18,11 @@ us_factor = mcmcInfo.upsample_factor;
 
 % nStepsMax = mcmcInfo.nStepsMax;
 seq_len = size(mcmcInfo.sample_chains,1);%mcmcInfo.seq_length;
-seq_len_orig = round(seq_len/us_factor);
+% seq_len_orig = round(seq_len/us_factor);
 
 % draw sample indices
-n_reps = mcmcInfo.n_reps;
-sample_indices = randsample(1:seq_len,n_reps*seq_len_orig,true);
+% n_reps = mcmcInfo.n_reps;
+% sample_indices = randsample(1:seq_len,n_reps*seq_len_orig,true);
 
 % generate lookup table with ms2 kernel values
 nStepsMax = 0;
@@ -61,7 +61,7 @@ mcmcInfo.sample_fluo_temp = sample_fluo_temp;
 index_helper2 = mcmcInfo.chain_id_ref*nStates^2 + (mcmcInfo.row_ref-1)*nStates;
 
 % iterate through indices to sample
-for i = sample_indices%[(1:seq_len) ((seq_len-1):-1:1)]
+for i = [(1:seq_len) ((seq_len-1):-1:1)]
     
     mcmcInfo.samp_index = i;%sample_indices(i);        
     prev_time_index = i;%sample_indices(i);    
