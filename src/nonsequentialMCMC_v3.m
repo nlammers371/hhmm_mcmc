@@ -61,7 +61,7 @@ tic
 mcmcInfo = inferenceWrapper(mcmcInfo);
 toc
 
-%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % plot results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
