@@ -18,9 +18,9 @@ function mcmcInfo = inferenceWrapper(mcmcInfo)
         waitbar(step/mcmcInfo.n_mcmc_steps,wb);     
         mcmcInfo.step = step;       
         
-        if mcmcInfo.resampleTracesFlag && step >= mcmcInfo.burn_in && mod(step,mcmcInfo.rs_freq) == 0
-            mcmcInfo = ga_move(mcmcInfo);
-        end
+%         if mcmcInfo.resampleTracesFlag && step >= mcmcInfo.burn_in && mod(step,mcmcInfo.rs_freq) == 0
+%             mcmcInfo = ga_move(mcmcInfo);
+%         end
         
         % if tempering, artificially raise sigma values
         if mcmcInfo.annealingSigmaFlag

@@ -5,12 +5,9 @@ close all force
 
 addpath(genpath('utilities'))
 
-% initialize info structure
-trueParams = setParamsBasic2state;
-
 %%%%%%%%%%%%%%%%%%%%% Simulated data %%%%%%%%%%%%%%%%
 % basic inference params 
-n_mcmc_steps = 100;
+n_mcmc_steps = 1000;
 mcmcInfo.n_mcmc_steps = n_mcmc_steps; % number of MCMC steps (need to add convergence criteria)
 mcmcInfo.burn_in = 100;
 n_chains = 2;
@@ -21,7 +18,10 @@ mcmcInfo.n_reps = 1; % number of chain state resampling passes per inference ste
 mcmcInfo.n_traces = 50;
 mcmcInfo.n_traces_per_chain = 10;
 mcmcInfo.seq_length = 120; % length of simulated traces in time steps
+tres = 20; % sampling resolution in seconds
 
+% initialize info structure
+trueParams = setParamsBasic2state(tres);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set MCMC options
@@ -65,6 +65,9 @@ toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % plot results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mcmcInfo.n_temps_per_chain = 1;
+mcmcInfo.trueParams = trueParams;
+
 ref_chain_ids = repelem(1:mcmcInfo.n_chains,mcmcInfo.n_temps_per_chain);
 cmap = brewermap(mcmcInfo.n_chains,'Spectral');
 
